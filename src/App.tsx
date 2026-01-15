@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber';
 function App() {
   return (
     <div className="app-root">
-      <Canvas style={{ background: 'green', width: '100vw', height: '100vh' }}>
+      <Canvas style={{ background: 'black', width: '100vw', height: '100vh' }}>
         <axesHelper args={[5]} />
         <mesh></mesh>
 
