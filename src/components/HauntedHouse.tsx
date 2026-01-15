@@ -6,6 +6,9 @@ Command: npx gltfjsx@6.5.3 public/models/hauntedHouse.glb --types --keepnames -o
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
+import { useEffect } from 'react';
+import { useGrannyState } from '../store/useGrannyState';
+import { usePlayerState } from '../store/usePlayerState';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -336,8 +339,20 @@ type GLTFResult = GLTF & {
   animations: GLTFAction[];
 };
 
-export function Model(props: JSX.IntrinsicElements['group']) {
+export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/hauntedHouse.glb') as GLTFResult;
+  const { setGrannySpawn } = useGrannyState();
+  const { setPlayerSpawn } = usePlayerState();
+
+  useEffect(() => {
+    if ('spawn_granny' in nodes) {
+      setGrannySpawn((nodes.spawn_granny as THREE.Object3D).position.clone());
+    }
+    if ('spawn_player' in nodes) {
+      setPlayerSpawn((nodes.spawn_player as THREE.Object3D).position.clone());
+    }
+  }, [nodes]);
+
   return (
     <group {...props} dispose={null}>
       <mesh

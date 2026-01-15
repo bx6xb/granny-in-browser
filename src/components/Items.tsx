@@ -39,7 +39,7 @@ type GLTFResult = GLTF & {
   animations: GLTFAction[];
 };
 
-export function Model(props: JSX.IntrinsicElements['group']) {
+export function Items(props: JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/items.glb') as GLTFResult;
   return (
     <group {...props} dispose={null}>

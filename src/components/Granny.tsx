@@ -6,6 +6,7 @@ Command: npx gltfjsx@6.5.3 public/models/granny.glb --types --keepnames -o src/c
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
+import { useGrannyState } from '../store/useGrannyState';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -26,10 +27,12 @@ type GLTFResult = GLTF & {
   animations: GLTFAction[];
 };
 
-export function Model(props: JSX.IntrinsicElements['group']) {
+export function Granny(props: JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/granny.glb') as GLTFResult;
+  const { grannySpawnArray } = useGrannyState();
+
   return (
-    <group {...props} dispose={null}>
+    <group {...props} dispose={null} position={grannySpawnArray || [0, 0, 0]}>
       <mesh
         name="leg"
         geometry={nodes.leg.geometry}
