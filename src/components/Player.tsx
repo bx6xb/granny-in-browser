@@ -105,7 +105,12 @@ export function Player() {
 
     // Determine current height based on crouch state
     const currentHeight = movement.current.crouch ? CROUCH_HEIGHT : PLAYER_HEIGHT;
-    const currentSpeed = movement.current.crouch ? CROUCH_SPEED : MOVE_SPEED;
+    let currentSpeed = movement.current.crouch ? CROUCH_SPEED : MOVE_SPEED;
+    
+    // Boost speed when climbing (going up) to maintain consistent feel
+    if (velocity.y > 0.1) {
+      currentSpeed *= 1.4; // 40% boost when going uphill
+    }
 
     // Detect nearby doors using raycasting
     const playerPosition = player.translation();
@@ -202,7 +207,7 @@ export function Player() {
       moveDirection.multiplyScalar(currentSpeed);
     }
 
-    // Apply horizontal movement
+    // Apply horizontal movement (with instant stop when no input)
     player.setLinvel(
       {
         x: moveDirection.x,
@@ -211,6 +216,11 @@ export function Player() {
       },
       true
     );
+
+    // Apply gentle downward force ONLY when moving and going downward to prevent ramp flying
+    if (moveDirection.length() > 0 && velocity.y < -0.1) {
+      player.applyImpulse({ x: 0, y: -0.2, z: 0 }, true);
+    }
 
     // Update camera position based on crouch state
     const cameraPlayerPosition = player.translation();
@@ -265,9 +275,14 @@ export function Player() {
         lockRotations
         colliders={false}
         mass={80}
+        linearDamping={5} // Moderate damping for quick stop without killing speed
       >
         {/* Capsule collider with dynamic height based on crouch state */}
-        <CapsuleCollider args={[(isCrouching ? CROUCH_HEIGHT : PLAYER_HEIGHT) / 2, 0.3]} />
+        <CapsuleCollider 
+          args={[(isCrouching ? CROUCH_HEIGHT : PLAYER_HEIGHT) / 2, 0.3]} 
+          friction={1.5} // Good grip without too much resistance
+          restitution={0} // No bounciness
+        />
       </RigidBody>
     </>
   );
