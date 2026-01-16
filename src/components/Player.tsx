@@ -119,38 +119,38 @@ export function Player() {
     const playerPosition = player.translation();
     const ceilingRaycaster = new THREE.Raycaster();
     const upDirection = new THREE.Vector3(0, 1, 0);
-    
+
     // Cast ray upward from player position to check for obstacles
     const rayOrigin = new THREE.Vector3(
-      playerPosition.x, 
-      playerPosition.y + CROUCH_HEIGHT / 2, 
+      playerPosition.x,
+      playerPosition.y + CROUCH_HEIGHT / 2,
       playerPosition.z
     );
-    
+
     ceilingRaycaster.set(rayOrigin, upDirection);
     const ceilingIntersects = ceilingRaycaster.intersectObjects(scene.children, true);
-    
+
     // Calculate needed clearance (difference between standing and crouching height + small buffer)
-    const neededClearance = (PLAYER_HEIGHT - CROUCH_HEIGHT) + 0.2;
+    const neededClearance = PLAYER_HEIGHT - CROUCH_HEIGHT + 0.2;
     let hasClearance = true;
-    
+
     for (const intersect of ceilingIntersects) {
       if (intersect.distance < neededClearance) {
         hasClearance = false;
         break;
       }
     }
-    
+
     // If player wants to stand up but there's no clearance, force crouch
     if (!movement.current.crouch && !hasClearance) {
       forcedCrouch.current = true;
     } else if (hasClearance) {
       forcedCrouch.current = false;
     }
-    
+
     // Determine actual crouch state (either manual or forced)
     const isActuallyCrouching = movement.current.crouch || forcedCrouch.current;
-    
+
     // Update visual crouch state for collider
     if (isCrouching !== isActuallyCrouching) {
       setIsCrouching(isActuallyCrouching);
