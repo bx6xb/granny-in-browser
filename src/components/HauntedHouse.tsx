@@ -433,7 +433,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
         material={materials.wood2}
         position={[-18.561, -1.215, -20.538]}
         scale={[1, 1, 0.031]}
-        openDirection={-1}
+        openDirection={1}
       />
       <Door
         doorId="closet_for_hiding_door001"
