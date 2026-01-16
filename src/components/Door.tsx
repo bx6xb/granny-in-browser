@@ -13,6 +13,7 @@ interface DoorProps {
   rotation?: [number, number, number];
   scale?: number | [number, number, number];
   openDirection?: 1 | -1; // 1 for clockwise (default), -1 for counter-clockwise
+  children?: React.ReactNode; // Optional additional meshes (e.g., handles)
 }
 
 export function Door({
@@ -23,9 +24,11 @@ export function Door({
   rotation = [0, 0, 0],
   scale = 1,
   openDirection = 1,
+  children,
 }: DoorProps) {
   const doorRef = useRef<RapierRigidBody>(null);
   const meshRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
   const { initializeDoor, getDoorState, setDoorRotating, updateDoorRotation } = useDoors();
 
   // Initialize door on mount
@@ -36,7 +39,8 @@ export function Door({
   // Animate door rotation
   useFrame(() => {
     const doorState = getDoorState(doorId);
-    if (!doorState || !meshRef.current) return;
+    const targetRef = groupRef.current || meshRef.current;
+    if (!doorState || !targetRef) return;
 
     if (doorState.isRotating) {
       const rotationSpeed = 0.15; // Adjust for smoother/faster animation
@@ -47,12 +51,12 @@ export function Door({
         const newRotation = doorState.currentRotation + diff * rotationSpeed;
         updateDoorRotation(doorId, newRotation);
         
-        // Update mesh rotation
-        meshRef.current.rotation.y = rotation[1] + newRotation;
+        // Update rotation (group or mesh)
+        targetRef.rotation.y = rotation[1] + newRotation;
       } else {
         // Snap to target and stop rotating
         updateDoorRotation(doorId, doorState.targetRotation);
-        meshRef.current.rotation.y = rotation[1] + doorState.targetRotation;
+        targetRef.rotation.y = rotation[1] + doorState.targetRotation;
         setDoorRotating(doorId, false);
       }
     }
@@ -60,6 +64,29 @@ export function Door({
 
   const doorState = getDoorState(doorId);
   const isRotating = doorState?.isRotating || false;
+
+  // If children are provided, wrap in a group; otherwise render mesh directly
+  if (children) {
+    return (
+      <RigidBody
+        ref={doorRef}
+        type="fixed"
+        colliders={isRotating ? false : 'trimesh'} // Disable collision while rotating
+        position={position}
+        userData={{ isDoor: true, doorId }}
+      >
+        <group ref={groupRef} rotation={rotation}>
+          <mesh
+            ref={meshRef}
+            geometry={geometry}
+            material={material}
+            scale={scale}
+          />
+          {children}
+        </group>
+      </RigidBody>
+    );
+  }
 
   return (
     <RigidBody
