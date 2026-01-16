@@ -39,10 +39,10 @@ export function Door({
     if (!doorState || !meshRef.current) return;
 
     if (doorState.isRotating) {
-      const rotationSpeed = 0.05; // Adjust for smoother/faster animation
+      const rotationSpeed = 0.15; // Adjust for smoother/faster animation
       const diff = doorState.targetRotation - doorState.currentRotation;
 
-      if (Math.abs(diff) > 0.01) {
+      if (Math.abs(diff) > 0.05) {
         // Smoothly interpolate towards target
         const newRotation = doorState.currentRotation + diff * rotationSpeed;
         updateDoorRotation(doorId, newRotation);
