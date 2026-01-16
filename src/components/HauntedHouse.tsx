@@ -356,15 +356,15 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
       />
 
       {/* Interactive Doors - outside fixed RigidBody */}
-      <Door
-        doorId="main_door"
-        geometry={nodes.main_door.geometry}
-        material={materials.wood2}
-        position={[9.188, -0.116, -2.992]}
-        rotation={[0, 0, Math.PI]}
-        scale={[1, 1, 0.09]}
-        openDirection={-1}
-      />
+      {/* Main door - non-interactive */}
+      <RigidBody type="fixed" colliders="trimesh" position={[9.188, -0.116, -2.992]}>
+        <mesh
+          geometry={nodes.main_door.geometry}
+          material={materials.wood2}
+          rotation={[0, 0, Math.PI]}
+          scale={[1, 1, 0.09]}
+        />
+      </RigidBody>
       <Door
         doorId="room_door001"
         geometry={nodes.room_door001.geometry}
