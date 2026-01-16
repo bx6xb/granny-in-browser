@@ -483,7 +483,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
         position={[-4.346, 0.107, -11.632]}
         rotation={[0, -0.485, 0]}
         scale={[0.552, 0.276, 0.552]}
-        openDirection={1}
+        openDirection={-1}
       />
       <Door
         doorId="kitchen_cupboard_door001"
