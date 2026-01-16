@@ -22,7 +22,7 @@ export function GameUI() {
         }}
       >
         <div style={{ marginBottom: '10px', fontSize: '16px', fontWeight: 'bold' }}>
-          🏚️ Haunted House
+          🏚️ Haunted House - Night Mode
         </div>
         <div style={{ marginBottom: '5px' }}>
           <strong>Controls:</strong>
@@ -33,6 +33,9 @@ export function GameUI() {
         <div>• C - Crouch</div>
         <div>• E - Interact with doors</div>
         <div>• ESC - Unlock mouse</div>
+        <div style={{ marginTop: '8px', fontSize: '12px', opacity: 0.8 }}>
+          💡 Use your flashlight to see in the dark
+        </div>
       </div>
 
       {/* Door interaction prompt */}

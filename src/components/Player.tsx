@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import type { RapierRigidBody } from '@react-three/rapier';
 import { usePlayerState } from '../store/usePlayerState';
 import { useDoors } from '../store/useDoors';
+import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
 const CROUCH_HEIGHT = 0.9; // Adjust this value to fit through holes
@@ -16,6 +17,7 @@ const INTERACTION_DISTANCE = 3; // Distance at which player can interact with do
 export function Player() {
   const playerRef = useRef<RapierRigidBody>(null);
   const controlsRef = useRef(null);
+  const flashlightRef = useRef<ThreeSpotLight>(null);
   const { camera, scene } = useThree();
   const { playerSpawnArray } = usePlayerState();
   const { toggleDoor, setNearbyDoor } = useDoors();
@@ -217,6 +219,24 @@ export function Player() {
       cameraPlayerPosition.y + currentHeight,
       cameraPlayerPosition.z
     );
+
+    // Update flashlight to follow camera direction
+    if (flashlightRef.current) {
+      const flashlight = flashlightRef.current;
+      
+      // Position flashlight at camera position (slightly offset down and forward)
+      const flashlightOffset = new THREE.Vector3(0, -0.2, 0);
+      flashlightOffset.applyQuaternion(camera.quaternion);
+      flashlight.position.copy(camera.position).add(flashlightOffset);
+      
+      // Point flashlight in the direction camera is looking
+      const lookDirection = new THREE.Vector3();
+      camera.getWorldDirection(lookDirection);
+      
+      // Set target position ahead of the flashlight in look direction
+      flashlight.target.position.copy(flashlight.position).add(lookDirection.multiplyScalar(5));
+      flashlight.target.updateMatrixWorld();
+    }
   });
 
   // Get spawn position
@@ -225,6 +245,19 @@ export function Player() {
   return (
     <>
       <PointerLockControls ref={controlsRef} />
+      
+      {/* Player flashlight - optimized spotlight that follows camera direction */}
+      <spotLight
+        ref={flashlightRef}
+        intensity={50}
+        angle={Math.PI / 6}
+        penumbra={0.5}
+        distance={20}
+        decay={2}
+        castShadow={false} // Disabled for performance
+        color="#fff5e6"
+      />
+      
       <RigidBody
         ref={playerRef}
         position={spawnPosition}
