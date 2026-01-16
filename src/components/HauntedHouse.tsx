@@ -6,6 +6,7 @@ Command: npx gltfjsx@6.5.3 public/models/hauntedHouse.glb --types --keepnames -o
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
+import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { useHauntedHouse } from '../hooks/useHauntedHouse';
 
 type GLTFResult = GLTF & {
@@ -343,13 +344,14 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   useHauntedHouse(nodes);
 
   return (
-    <group {...props} dispose={null}>
-      <mesh
-        name="navmesh"
-        geometry={nodes.navmesh.geometry}
-        material={materials.navmesh}
-        position={[-13.92, -3.029, -24.248]}
-      />
+    <RigidBody type="fixed" colliders="trimesh">
+      <group {...props} dispose={null}>
+        <mesh
+          name="navmesh"
+          geometry={nodes.navmesh.geometry}
+          material={materials.navmesh}
+          position={[-13.92, -3.029, -24.248]}
+        />
       <mesh
         name="Plane005"
         geometry={nodes.Plane005.geometry}
@@ -1946,7 +1948,8 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
         rotation={[-Math.PI, Math.PI / 4, -Math.PI]}
         scale={[0.221, 14.826, 8.85]}
       />
-    </group>
+      </group>
+    </RigidBody>
   );
 }
 
