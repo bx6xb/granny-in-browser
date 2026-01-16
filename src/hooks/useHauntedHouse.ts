@@ -15,9 +15,5 @@ export const useHauntedHouse = (nodes: GLTF['nodes']) => {
     if ('spawn_player' in nodes) {
       setPlayerSpawn((nodes.spawn_player as THREE.Object3D).position.clone());
     }
-    if ('navmesh' in nodes) {
-      const navmesh = nodes.navmesh as THREE.Mesh;
-      navmesh.visible = false;
-    }
   }, [nodes]);
 };
