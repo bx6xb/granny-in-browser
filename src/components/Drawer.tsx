@@ -10,7 +10,6 @@ interface DrawerProps {
   rotation?: [number, number, number];
   scale?: [number, number, number] | number;
   slideDistance?: number;
-  direction?: 'x' | '-x' | 'z' | '-z';
 }
 
 export function Drawer({
@@ -20,7 +19,6 @@ export function Drawer({
   rotation,
   scale,
   slideDistance = 14,
-  direction = 'x',
 }: DrawerProps) {
   const groupRef = useRef<THREE.Group>(null);
   const innerGroupRef = useRef<THREE.Group>(null);
@@ -48,22 +46,11 @@ export function Drawer({
       userDataSet.current = true;
     }
 
-    // Animate drawer sliding
-    const targetDistance = isOpen ? slideDistance : 0;
-
-    // Determine which axis to slide along based on direction
-    if (direction === 'x' || direction === '-x') {
-      const multiplier = direction === 'x' ? 1 : -1;
-      const currentX = innerGroupRef.current.position.x;
-      const newX = THREE.MathUtils.lerp(currentX, targetDistance * multiplier, 0.1);
-      innerGroupRef.current.position.x = newX;
-    } else {
-      // 'z' or '-z'
-      const multiplier = direction === 'z' ? 1 : -1;
-      const currentZ = innerGroupRef.current.position.z;
-      const newZ = THREE.MathUtils.lerp(currentZ, targetDistance * multiplier, 0.1);
-      innerGroupRef.current.position.z = newZ;
-    }
+    // Animate drawer sliding along X axis
+    const targetX = isOpen ? slideDistance : 0;
+    const currentX = innerGroupRef.current.position.x;
+    const newX = THREE.MathUtils.lerp(currentX, targetX, 0.1);
+    innerGroupRef.current.position.x = newX;
   });
 
   return (
