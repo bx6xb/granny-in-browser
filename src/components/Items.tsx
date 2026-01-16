@@ -6,6 +6,8 @@ Command: npx gltfjsx@6.5.3 public/models/items.glb --types --keepnames -o src/co
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
+import { RigidBody } from '@react-three/rapier';
+import type React from 'react';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -36,82 +38,197 @@ type GLTFResult = GLTF & {
     watermelon_green: THREE.MeshStandardMaterial;
     watermelon_black: THREE.MeshStandardMaterial;
   };
-  animations: GLTFAction[];
 };
 
-export function Items(props: JSX.IntrinsicElements['group']) {
-  const { nodes, materials } = useGLTF('/models/items.glb') as GLTFResult;
+export function Items(props: React.JSX.IntrinsicElements['group']) {
+  const { nodes, materials } = useGLTF('/models/items.glb') as unknown as GLTFResult;
+
+  // Collision groups:
+  // - Group 0 (0x0001): Static geometry (floors, walls, furniture)
+  // - Group 1 (0x0002): Player
+  // - Group 2 (0x0004): Items
+  // Format: (filterMask << 16) | membershipGroup
+  // Items belong to group 2 and collide with groups 0 and 2 (not player)
+  const itemCollisionGroup = (0x0005 << 16) | 0x0004; // Collides with 0x0001 | 0x0004 = 0x0005
+
   return (
     <group {...props} dispose={null}>
-      <group name="padlock_key" position={[-32.494, 3.712, -1]} scale={[0.054, 0.014, 0.042]}>
-        <mesh name="Cube002" geometry={nodes.Cube002.geometry} material={materials.metal} />
-        <mesh
-          name="Cube002_1"
-          geometry={nodes.Cube002_1.geometry}
-          material={materials.padlock_key}
-        />
-      </group>
-      <group name="master_key" position={[-32.494, 3.712, -1.237]} scale={[0.054, 0.014, 0.042]}>
-        <mesh name="Cube003" geometry={nodes.Cube003.geometry} material={materials.metal} />
-        <mesh
-          name="Cube003_1"
-          geometry={nodes.Cube003_1.geometry}
-          material={materials.master_key}
-        />
-      </group>
-      <group name="card" position={[-31.094, 4.549, -1.511]} scale={[0.145, 0.007, 0.06]}>
-        <mesh name="Cube009" geometry={nodes.Cube009.geometry} material={materials.vase} />
-        <mesh name="Cube009_1" geometry={nodes.Cube009_1.geometry} material={materials.black} />
-      </group>
-      <group name="safe_key" position={[-32.494, 3.712, -1.597]} scale={[0.054, 0.014, 0.042]}>
-        <mesh name="Cube010" geometry={nodes.Cube010.geometry} material={materials.metal} />
-        <mesh name="Cube010_1" geometry={nodes.Cube010_1.geometry} material={materials.safe_key} />
-      </group>
-      <mesh
-        name="handle"
-        geometry={nodes.handle.geometry}
-        material={materials.wood2}
-        position={[-31.146, 4.548, -2.027]}
-      />
-      <group
-        name="watermelon"
-        position={[-30.856, 4.175, -0.522]}
-        rotation={[-Math.PI / 2, 1.57, 0]}
-        scale={[0.308, 0.427, 0.308]}
+      {/* Padlock Key - small key with CCD */}
+      <RigidBody
+        type="dynamic"
+        colliders="cuboid"
+        restitution={0.2}
+        friction={0.8}
+        canSleep={true}
+        ccd={true}
+        collisionGroups={itemCollisionGroup}
+        scale={0.8} // Slightly smaller collider
+      >
+        <group name="padlock_key" position={[-32.494, 3.712, -1]} scale={[0.054, 0.014, 0.042]}>
+          <mesh name="Cube002" geometry={nodes.Cube002.geometry} material={materials.metal} />
+          <mesh
+            name="Cube002_1"
+            geometry={nodes.Cube002_1.geometry}
+            material={materials.padlock_key}
+          />
+        </group>
+      </RigidBody>
+
+      {/* Master Key - small key with CCD */}
+      <RigidBody
+        type="dynamic"
+        colliders="cuboid"
+        restitution={0.2}
+        friction={0.8}
+        canSleep={true}
+        ccd={true}
+        collisionGroups={itemCollisionGroup}
+        scale={0.8}
+      >
+        <group name="master_key" position={[-32.494, 3.712, -1.237]} scale={[0.054, 0.014, 0.042]}>
+          <mesh name="Cube003" geometry={nodes.Cube003.geometry} material={materials.metal} />
+          <mesh
+            name="Cube003_1"
+            geometry={nodes.Cube003_1.geometry}
+            material={materials.master_key}
+          />
+        </group>
+      </RigidBody>
+
+      {/* Card - thin flat object with CCD */}
+      <RigidBody
+        type="dynamic"
+        colliders="cuboid"
+        restitution={0.2}
+        friction={0.8}
+        canSleep={true}
+        ccd={true}
+        collisionGroups={itemCollisionGroup}
+        scale={0.8}
+      >
+        <group name="card" position={[-31.094, 4.549, -1.511]} scale={[0.145, 0.007, 0.06]}>
+          <mesh name="Cube009" geometry={nodes.Cube009.geometry} material={materials.vase} />
+          <mesh name="Cube009_1" geometry={nodes.Cube009_1.geometry} material={materials.black} />
+        </group>
+      </RigidBody>
+
+      {/* Safe Key - small key with CCD */}
+      <RigidBody
+        type="dynamic"
+        colliders="cuboid"
+        restitution={0.2}
+        friction={0.8}
+        canSleep={true}
+        ccd={true}
+        collisionGroups={itemCollisionGroup}
+        scale={0.8}
+      >
+        <group name="safe_key" position={[-32.494, 3.712, -1.597]} scale={[0.054, 0.014, 0.042]}>
+          <mesh name="Cube010" geometry={nodes.Cube010.geometry} material={materials.metal} />
+          <mesh
+            name="Cube010_1"
+            geometry={nodes.Cube010_1.geometry}
+            material={materials.safe_key}
+          />
+        </group>
+      </RigidBody>
+
+      {/* Handle - cylindrical object */}
+      <RigidBody
+        type="dynamic"
+        colliders="cuboid"
+        restitution={0.2}
+        friction={0.8}
+        canSleep={true}
+        ccd={true}
+        collisionGroups={itemCollisionGroup}
+        scale={0.85}
       >
         <mesh
-          name="Sphere001"
-          geometry={nodes.Sphere001.geometry}
-          material={materials.watermelon_green}
+          name="handle"
+          geometry={nodes.handle.geometry}
+          material={materials.wood2}
+          position={[-31.146, 4.548, -2.027]}
         />
-        <mesh
-          name="Sphere001_1"
-          geometry={nodes.Sphere001_1.geometry}
-          material={materials.watermelon_black}
-        />
-      </group>
-      <group
-        name="cut"
-        position={[-30.185, 4.064, -1.667]}
-        rotation={[-Math.PI, -0.268, 0]}
-        scale={[0.017, 0.008, 0.024]}
+      </RigidBody>
+
+      {/* Watermelon - round object, use ball collider */}
+      <RigidBody
+        type="dynamic"
+        colliders="ball"
+        restitution={0.2}
+        friction={0.8}
+        canSleep={true}
+        ccd={true}
+        collisionGroups={itemCollisionGroup}
+        scale={0.9}
       >
-        <mesh name="Cube024" geometry={nodes.Cube024.geometry} material={materials.metal} />
-        <mesh
-          name="Cube024_1"
-          geometry={nodes.Cube024_1.geometry}
-          material={materials.watermelon_green}
-        />
-      </group>
-      <group
-        name="hammer"
-        position={[-31.461, 4.302, -0.994]}
-        rotation={[0, Math.PI / 2, 0]}
-        scale={[0.181, 0.024, 0.035]}
+        <group
+          name="watermelon"
+          position={[-30.856, 4.175, -0.522]}
+          rotation={[-Math.PI / 2, 1.57, 0]}
+          scale={[0.308, 0.427, 0.308]}
+        >
+          <mesh
+            name="Sphere001"
+            geometry={nodes.Sphere001.geometry}
+            material={materials.watermelon_green}
+          />
+          <mesh
+            name="Sphere001_1"
+            geometry={nodes.Sphere001_1.geometry}
+            material={materials.watermelon_black}
+          />
+        </group>
+      </RigidBody>
+
+      {/* Watermelon Cut - small piece */}
+      <RigidBody
+        type="dynamic"
+        colliders="cuboid"
+        restitution={0.2}
+        friction={0.8}
+        canSleep={true}
+        ccd={true}
+        collisionGroups={itemCollisionGroup}
+        scale={0.8}
       >
-        <mesh name="Cube052" geometry={nodes.Cube052.geometry} material={materials.wood2} />
-        <mesh name="Cube052_1" geometry={nodes.Cube052_1.geometry} material={materials.metal} />
-      </group>
+        <group
+          name="cut"
+          position={[-30.185, 4.064, -1.667]}
+          rotation={[-Math.PI, -0.268, 0]}
+          scale={[0.017, 0.008, 0.024]}
+        >
+          <mesh name="Cube024" geometry={nodes.Cube024.geometry} material={materials.metal} />
+          <mesh
+            name="Cube024_1"
+            geometry={nodes.Cube024_1.geometry}
+            material={materials.watermelon_green}
+          />
+        </group>
+      </RigidBody>
+
+      {/* Hammer - long object, use cuboid */}
+      <RigidBody
+        type="dynamic"
+        colliders="cuboid"
+        restitution={0.2}
+        friction={0.8}
+        canSleep={true}
+        ccd={true}
+        collisionGroups={itemCollisionGroup}
+        scale={0.85}
+      >
+        <group
+          name="hammer"
+          position={[-31.461, 4.302, -0.994]}
+          rotation={[0, Math.PI / 2, 0]}
+          scale={[0.181, 0.024, 0.035]}
+        >
+          <mesh name="Cube052" geometry={nodes.Cube052.geometry} material={materials.wood2} />
+          <mesh name="Cube052_1" geometry={nodes.Cube052_1.geometry} material={materials.metal} />
+        </group>
+      </RigidBody>
     </group>
   );
 }
