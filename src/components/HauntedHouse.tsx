@@ -9,6 +9,7 @@ import type { GLTF } from 'three-stdlib';
 import { RigidBody } from '@react-three/rapier';
 import { useHauntedHouse } from '../hooks/useHauntedHouse';
 import { Door } from './Door';
+import { Drawer } from './Drawer';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -1379,24 +1380,24 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             rotation={[0, -Math.PI / 2, 0]}
             scale={1.365}
           />
-          <group
-            name="nightstand_box002"
+          <Drawer
+            drawerId="nightstand_box002"
             position={[-2.273, 4.9, -23.57]}
             rotation={[0, -Math.PI / 2, 0]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube255" geometry={nodes.Cube255.geometry} material={materials.wood2} />
             <mesh name="Cube255_1" geometry={nodes.Cube255_1.geometry} material={materials.metal} />
-          </group>
-          <group
-            name="nightstand_box003"
+          </Drawer>
+          <Drawer
+            drawerId="nightstand_box003"
             position={[-3.454, 4.9, -23.57]}
             rotation={[0, -Math.PI / 2, 0]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube256" geometry={nodes.Cube256.geometry} material={materials.wood2} />
             <mesh name="Cube256_1" geometry={nodes.Cube256_1.geometry} material={materials.metal} />
-          </group>
+          </Drawer>
           <mesh
             name="nightstand001"
             geometry={nodes.nightstand001.geometry}
@@ -1464,22 +1465,22 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             position={[18.692, 3.788, -12.527]}
             scale={[1, 0.612, 1]}
           />
-          <group
-            name="nightstand_box004"
+          <Drawer
+            drawerId="nightstand_box004"
             position={[13.707, 4.894, -9.547]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube269" geometry={nodes.Cube269.geometry} material={materials.wood2} />
             <mesh name="Cube269_1" geometry={nodes.Cube269_1.geometry} material={materials.metal} />
-          </group>
-          <group
-            name="nightstand_box005"
+          </Drawer>
+          <Drawer
+            drawerId="nightstand_box005"
             position={[13.707, 4.894, -8.366]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube270" geometry={nodes.Cube270.geometry} material={materials.wood2} />
             <mesh name="Cube270_1" geometry={nodes.Cube270_1.geometry} material={materials.metal} />
-          </group>
+          </Drawer>
           <mesh
             name="nightstand002"
             geometry={nodes.nightstand002.geometry}
@@ -1508,24 +1509,24 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
               material={materials['bed 2']}
             />
           </group>
-          <group
-            name="nightstand_box006"
+          <Drawer
+            drawerId="nightstand_box006"
             position={[14.432, 4.893, -16.197]}
             rotation={[0, Math.PI / 2, 0]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube273" geometry={nodes.Cube273.geometry} material={materials.wood2} />
             <mesh name="Cube273_1" geometry={nodes.Cube273_1.geometry} material={materials.metal} />
-          </group>
-          <group
-            name="nightstand_box007"
+          </Drawer>
+          <Drawer
+            drawerId="nightstand_box007"
             position={[15.613, 4.893, -16.197]}
             rotation={[0, Math.PI / 2, 0]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube274" geometry={nodes.Cube274.geometry} material={materials.wood2} />
             <mesh name="Cube274_1" geometry={nodes.Cube274_1.geometry} material={materials.metal} />
-          </group>
+          </Drawer>
           <mesh
             name="nightstand003"
             geometry={nodes.nightstand003.geometry}
@@ -1652,24 +1653,24 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             position={[20.877, -1.174, -12.329]}
             scale={[1, 0.612, 1]}
           />
-          <group
-            name="nightstand_box008"
+          <Drawer
+            drawerId="nightstand_box008"
             position={[23.576, -0.049, -4.921]}
             rotation={[Math.PI, 0, Math.PI]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube299" geometry={nodes.Cube299.geometry} material={materials.wood2} />
             <mesh name="Cube299_1" geometry={nodes.Cube299_1.geometry} material={materials.metal} />
-          </group>
-          <group
-            name="nightstand_box009"
+          </Drawer>
+          <Drawer
+            drawerId="nightstand_box009"
             position={[23.576, -0.049, -6.102]}
             rotation={[Math.PI, 0, Math.PI]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube300" geometry={nodes.Cube300.geometry} material={materials.wood2} />
             <mesh name="Cube300_1" geometry={nodes.Cube300_1.geometry} material={materials.metal} />
-          </group>
+          </Drawer>
           <mesh
             name="nightstand004"
             geometry={nodes.nightstand004.geometry}
@@ -1686,24 +1687,24 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             rotation={[0, -1.571, 0]}
             scale={[1, 0.028, 0.868]}
           />
-          <group
-            name="nightstand_box010"
+          <Drawer
+            drawerId="nightstand_box010"
             position={[-6.432, -0.049, -23.352]}
             rotation={[0, -1.571, 0]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube303" geometry={nodes.Cube303.geometry} material={materials.wood2} />
             <mesh name="Cube303_1" geometry={nodes.Cube303_1.geometry} material={materials.metal} />
-          </group>
-          <group
-            name="nightstand_box011"
+          </Drawer>
+          <Drawer
+            drawerId="nightstand_box011"
             position={[-5.251, -0.049, -23.352]}
             rotation={[0, -1.571, 0]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube304" geometry={nodes.Cube304.geometry} material={materials.wood2} />
             <mesh name="Cube304_1" geometry={nodes.Cube304_1.geometry} material={materials.metal} />
-          </group>
+          </Drawer>
           <group
             name="closet_door008"
             position={[-5.952, -0.097, -16.129]}
@@ -1814,24 +1815,24 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             position={[20.181, 3.756, -28.601]}
             rotation={[0, Math.PI / 2, 0]}
           />
-          <group
-            name="nightstand_box012"
+          <Drawer
+            drawerId="nightstand_box012"
             position={[6.33, 2.72, -32.363]}
             rotation={[0, Math.PI / 2, 0]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube319" geometry={nodes.Cube319.geometry} material={materials.wood2} />
             <mesh name="Cube319_1" geometry={nodes.Cube319_1.geometry} material={materials.metal} />
-          </group>
-          <group
-            name="nightstand_box013"
+          </Drawer>
+          <Drawer
+            drawerId="nightstand_box013"
             position={[7.511, 2.72, -32.363]}
             rotation={[0, Math.PI / 2, 0]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube320" geometry={nodes.Cube320.geometry} material={materials.wood2} />
             <mesh name="Cube320_1" geometry={nodes.Cube320_1.geometry} material={materials.metal} />
-          </group>
+          </Drawer>
           <mesh
             name="nightstand006"
             geometry={nodes.nightstand006.geometry}
@@ -1846,24 +1847,24 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             material={materials.wood2}
             position={[11.714, -6.194, -17.935]}
           />
-          <group
-            name="nightstand_box014"
+          <Drawer
+            drawerId="nightstand_box014"
             position={[13.791, 9.969, -18.008]}
             rotation={[0, -Math.PI / 2, 0]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube326" geometry={nodes.Cube326.geometry} material={materials.wood2} />
             <mesh name="Cube326_1" geometry={nodes.Cube326_1.geometry} material={materials.metal} />
-          </group>
-          <group
-            name="nightstand_box015"
+          </Drawer>
+          <Drawer
+            drawerId="nightstand_box015"
             position={[12.61, 9.969, -18.008]}
             rotation={[0, -Math.PI / 2, 0]}
             scale={[0.03, 0.037, 0.138]}
           >
             <mesh name="Cube327" geometry={nodes.Cube327.geometry} material={materials.wood2} />
             <mesh name="Cube327_1" geometry={nodes.Cube327_1.geometry} material={materials.metal} />
-          </group>
+          </Drawer>
           <mesh
             name="nightstand007"
             geometry={nodes.nightstand007.geometry}
@@ -1937,8 +1938,8 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             rotation={[Math.PI, 0, Math.PI]}
             scale={[1, 0.028, 0.868]}
           />
-          <group
-            name="nightstand_box001"
+          <Drawer
+            drawerId="nightstand_box001"
             position={[24.446, 4.893, -18.187]}
             rotation={[Math.PI, 0, Math.PI]}
             scale={[0.03, 0.037, 0.138]}
@@ -1953,9 +1954,9 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
               geometry={nodes.Cube006_2.geometry}
               material={materials['metal.001']}
             />
-          </group>
-          <group
-            name="nightstand_box016"
+          </Drawer>
+          <Drawer
+            drawerId="nightstand_box016"
             position={[24.446, 4.893, -17.006]}
             rotation={[Math.PI, 0, Math.PI]}
             scale={[0.03, 0.037, 0.138]}
@@ -1970,7 +1971,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
               geometry={nodes.Cube007_2.geometry}
               material={materials['metal.001']}
             />
-          </group>
+          </Drawer>
           <mesh
             name="cut_indicators"
             geometry={nodes.cut_indicators.geometry}

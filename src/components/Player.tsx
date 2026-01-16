@@ -6,13 +6,14 @@ import * as THREE from 'three';
 import type { RapierRigidBody } from '@react-three/rapier';
 import { usePlayerState } from '../store/usePlayerState';
 import { useDoors } from '../store/useDoors';
+import { useDrawers } from '../store/useDrawers';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
 const CROUCH_HEIGHT = 0.9; // Adjust this value to fit through holes
 const MOVE_SPEED = 5;
 const CROUCH_SPEED = 2.5; // Slower movement when crouching
-const INTERACTION_DISTANCE = 3; // Distance at which player can interact with doors
+const INTERACTION_DISTANCE = 3; // Distance at which player can interact with doors/drawers
 
 export function Player() {
   const playerRef = useRef<RapierRigidBody>(null);
@@ -21,6 +22,7 @@ export function Player() {
   const { camera, scene } = useThree();
   const { playerSpawnArray } = usePlayerState();
   const { toggleDoor, setNearbyDoor } = useDoors();
+  const { toggleDrawer, setNearbyDrawer } = useDrawers();
   const [isCrouching, setIsCrouching] = useState(false);
 
   // Movement state
@@ -58,10 +60,13 @@ export function Player() {
           setIsCrouching(true);
           break;
         case 'KeyE': {
-          // Interact with nearby door
+          // Interact with nearby door or drawer
           const nearbyDoorId = useDoors.getState().nearbyDoor;
+          const nearbyDrawerId = useDrawers.getState().nearbyDrawer;
           if (nearbyDoorId) {
             toggleDoor(nearbyDoorId);
+          } else if (nearbyDrawerId) {
+            toggleDrawer(nearbyDrawerId);
           }
           break;
         }
@@ -165,18 +170,16 @@ export function Player() {
     const cameraDirection = new THREE.Vector3();
     camera.getWorldDirection(cameraDirection);
 
-    raycaster.set(
-      new THREE.Vector3(playerPosition.x, playerPosition.y + currentHeight / 2, playerPosition.z),
-      cameraDirection
-    );
+    raycaster.set(camera.position, cameraDirection);
 
-    // Check for doors within interaction distance
+    // Check for doors and drawers within interaction distance
     const intersects = raycaster.intersectObjects(scene.children, true);
     let foundDoor = false;
+    let foundDrawer = false;
 
     for (const intersect of intersects) {
       if (intersect.distance <= INTERACTION_DISTANCE) {
-        // Check if object or its parent has door data
+        // Check if object or its parent has door or drawer data
         let obj: THREE.Object3D | null = intersect.object;
         while (obj) {
           if (obj.userData?.isDoor && obj.userData?.doorId) {
@@ -184,14 +187,27 @@ export function Player() {
             foundDoor = true;
             break;
           }
+          if (obj.userData?.isDrawer && obj.userData?.drawerId) {
+            setNearbyDrawer(obj.userData.drawerId);
+            foundDrawer = true;
+            break;
+          }
+          if (obj.name && obj.name.includes('nightstand_box')) {
+            setNearbyDrawer(obj.name);
+            foundDrawer = true;
+            break;
+          }
           obj = obj.parent;
         }
-        if (foundDoor) break;
+        if (foundDoor || foundDrawer) break;
       }
     }
 
     if (!foundDoor) {
       setNearbyDoor(null);
+    }
+    if (!foundDrawer) {
+      setNearbyDrawer(null);
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground

@@ -1,8 +1,11 @@
 import { useDoors } from '../store/useDoors';
+import { useDrawers } from '../store/useDrawers';
 
 export function GameUI() {
   const { nearbyDoor, getDoorState } = useDoors();
+  const { nearbyDrawer, openDrawers } = useDrawers();
   const doorState = nearbyDoor ? getDoorState(nearbyDoor) : null;
+  const isDrawerOpen = nearbyDrawer ? openDrawers[nearbyDrawer] : false;
 
   return (
     <>
@@ -31,7 +34,7 @@ export function GameUI() {
         <div>• WASD - Move</div>
         <div>• Mouse - Look around</div>
         <div>• C - Crouch</div>
-        <div>• E - Interact with doors</div>
+        <div>• E - Interact with doors/drawers</div>
         <div>• ESC - Unlock mouse</div>
         <div style={{ marginTop: '8px', fontSize: '12px', opacity: 0.8 }}>
           💡 Use your flashlight to see in the dark
@@ -60,6 +63,31 @@ export function GameUI() {
           }}
         >
           Press [E] to {doorState.isOpen ? 'Close' : 'Open'} Door
+        </div>
+      )}
+
+      {/* Drawer interaction prompt */}
+      {nearbyDrawer && !nearbyDoor && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'white',
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '15px 25px',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            textAlign: 'center',
+            border: '2px solid rgba(255, 255, 255, 0.3)',
+          }}
+        >
+          Press [E] to {isDrawerOpen ? 'Close' : 'Open'} Drawer
         </div>
       )}
     </>
