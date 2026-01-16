@@ -7,6 +7,7 @@ import type { RapierRigidBody } from '@react-three/rapier';
 import { usePlayerState } from '../store/usePlayerState';
 import { useDoors } from '../store/useDoors';
 import { useDrawers } from '../store/useDrawers';
+import { useItems } from '../store/useItems';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
@@ -23,6 +24,7 @@ export function Player() {
   const { playerSpawnArray } = usePlayerState();
   const { toggleDoor, setNearbyDoor } = useDoors();
   const { toggleDrawer, setNearbyDrawer } = useDrawers();
+  const { setNearbyItem, grabItem, dropItem, heldItem } = useItems();
   const [isCrouching, setIsCrouching] = useState(false);
 
   // Movement state
@@ -67,6 +69,23 @@ export function Player() {
             toggleDoor(nearbyDoorId);
           } else if (nearbyDrawerId) {
             toggleDrawer(nearbyDrawerId);
+          }
+          break;
+        }
+        case 'KeyF': {
+          // Grab nearby item
+          const nearbyItemName = useItems.getState().nearbyItem;
+          if (nearbyItemName && !useItems.getState().heldItem) {
+            grabItem(nearbyItemName);
+          }
+          break;
+        }
+        case 'Space': {
+          // Drop held item at player position
+          if (useItems.getState().heldItem && playerRef.current) {
+            const pos = playerRef.current.translation();
+            // Drop in front of player, slightly below eye level
+            dropItem([pos.x, pos.y - 0.5, pos.z]);
           }
           break;
         }
@@ -172,10 +191,14 @@ export function Player() {
 
     raycaster.set(camera.position, cameraDirection);
 
-    // Check for doors and drawers within interaction distance
+    // Check for doors, drawers, and items within interaction distance
     const intersects = raycaster.intersectObjects(scene.children, true);
     let foundDoor = false;
     let foundDrawer = false;
+    let foundItem = false;
+
+    // Item names list to check for
+    const itemNames = ['padlock_key', 'master_key', 'card', 'safe_key', 'handle', 'watermelon', 'cut', 'hammer'];
 
     for (const intersect of intersects) {
       if (intersect.distance <= INTERACTION_DISTANCE) {
@@ -197,9 +220,15 @@ export function Player() {
             foundDrawer = true;
             break;
           }
+          // Check for items - only if not holding an item
+          if (!heldItem && itemNames.includes(obj.name)) {
+            setNearbyItem(obj.name);
+            foundItem = true;
+            break;
+          }
           obj = obj.parent;
         }
-        if (foundDoor || foundDrawer) break;
+        if (foundDoor || foundDrawer || foundItem) break;
       }
     }
 
@@ -208,6 +237,9 @@ export function Player() {
     }
     if (!foundDrawer) {
       setNearbyDrawer(null);
+    }
+    if (!foundItem) {
+      setNearbyItem(null);
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground

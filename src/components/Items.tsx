@@ -8,6 +8,7 @@ import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
 import { RigidBody } from '@react-three/rapier';
 import type React from 'react';
+import { useItems } from '../store/useItems';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -42,6 +43,7 @@ type GLTFResult = GLTF & {
 
 export function Items(props: React.JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/items.glb') as unknown as GLTFResult;
+  const { isItemHeld, getItemPosition } = useItems();
 
   // Collision groups:
   // - Group 0 (0x0001): Static geometry (floors, walls, furniture)
@@ -54,181 +56,213 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
   return (
     <group {...props} dispose={null}>
       {/* Padlock Key - small key with CCD */}
-      <RigidBody
-        type="dynamic"
-        colliders="cuboid"
-        restitution={0.2}
-        friction={0.8}
-        canSleep={true}
-        ccd={true}
-        collisionGroups={itemCollisionGroup}
-        scale={0.8} // Slightly smaller collider
-      >
-        <group name="padlock_key" position={[-32.494, 3.712, -1]} scale={[0.054, 0.014, 0.042]}>
-          <mesh name="Cube002" geometry={nodes.Cube002.geometry} material={materials.metal} />
-          <mesh
-            name="Cube002_1"
-            geometry={nodes.Cube002_1.geometry}
-            material={materials.padlock_key}
-          />
-        </group>
-      </RigidBody>
+      {!isItemHeld('padlock_key') && (
+        <RigidBody
+          key={`padlock_key-${getItemPosition('padlock_key', [-32.494, 3.712, -1]).join(',')}`}
+          type="dynamic"
+          position={getItemPosition('padlock_key', [-32.494, 3.712, -1])}
+          colliders="cuboid"
+          restitution={0.2}
+          friction={0.8}
+          canSleep={true}
+          ccd={true}
+          collisionGroups={itemCollisionGroup}
+          scale={0.8} // Slightly smaller collider
+        >
+          <group name="padlock_key" position={[0, 0, 0]} scale={[0.054, 0.014, 0.042]}>
+            <mesh name="Cube002" geometry={nodes.Cube002.geometry} material={materials.metal} />
+            <mesh
+              name="Cube002_1"
+              geometry={nodes.Cube002_1.geometry}
+              material={materials.padlock_key}
+            />
+          </group>
+        </RigidBody>
+      )}
 
       {/* Master Key - small key with CCD */}
-      <RigidBody
-        type="dynamic"
-        colliders="cuboid"
-        restitution={0.2}
-        friction={0.8}
-        canSleep={true}
-        ccd={true}
-        collisionGroups={itemCollisionGroup}
-        scale={0.8}
-      >
-        <group name="master_key" position={[-32.494, 3.712, -1.237]} scale={[0.054, 0.014, 0.042]}>
-          <mesh name="Cube003" geometry={nodes.Cube003.geometry} material={materials.metal} />
-          <mesh
-            name="Cube003_1"
-            geometry={nodes.Cube003_1.geometry}
-            material={materials.master_key}
-          />
-        </group>
-      </RigidBody>
+      {!isItemHeld('master_key') && (
+        <RigidBody
+          key={`master_key-${getItemPosition('master_key', [-32.494, 3.712, -1.237]).join(',')}`}
+          type="dynamic"
+          position={getItemPosition('master_key', [-32.494, 3.712, -1.237])}
+          colliders="cuboid"
+          restitution={0.2}
+          friction={0.8}
+          canSleep={true}
+          ccd={true}
+          collisionGroups={itemCollisionGroup}
+          scale={0.8}
+        >
+          <group name="master_key" position={[0, 0, 0]} scale={[0.054, 0.014, 0.042]}>
+            <mesh name="Cube003" geometry={nodes.Cube003.geometry} material={materials.metal} />
+            <mesh
+              name="Cube003_1"
+              geometry={nodes.Cube003_1.geometry}
+              material={materials.master_key}
+            />
+          </group>
+        </RigidBody>
+      )}
 
       {/* Card - thin flat object with CCD */}
-      <RigidBody
-        type="dynamic"
-        colliders="cuboid"
-        restitution={0.2}
-        friction={0.8}
-        canSleep={true}
-        ccd={true}
-        collisionGroups={itemCollisionGroup}
-        scale={0.8}
-      >
-        <group name="card" position={[-31.094, 4.549, -1.511]} scale={[0.145, 0.007, 0.06]}>
-          <mesh name="Cube009" geometry={nodes.Cube009.geometry} material={materials.vase} />
-          <mesh name="Cube009_1" geometry={nodes.Cube009_1.geometry} material={materials.black} />
-        </group>
-      </RigidBody>
+      {!isItemHeld('card') && (
+        <RigidBody
+          key={`card-${getItemPosition('card', [-31.094, 4.549, -1.511]).join(',')}`}
+          type="dynamic"
+          position={getItemPosition('card', [-31.094, 4.549, -1.511])}
+          colliders="cuboid"
+          restitution={0.2}
+          friction={0.8}
+          canSleep={true}
+          ccd={true}
+          collisionGroups={itemCollisionGroup}
+          scale={0.8}
+        >
+          <group name="card" position={[0, 0, 0]} scale={[0.145, 0.007, 0.06]}>
+            <mesh name="Cube009" geometry={nodes.Cube009.geometry} material={materials.vase} />
+            <mesh name="Cube009_1" geometry={nodes.Cube009_1.geometry} material={materials.black} />
+          </group>
+        </RigidBody>
+      )}
 
       {/* Safe Key - small key with CCD */}
-      <RigidBody
-        type="dynamic"
-        colliders="cuboid"
-        restitution={0.2}
-        friction={0.8}
-        canSleep={true}
-        ccd={true}
-        collisionGroups={itemCollisionGroup}
-        scale={0.8}
-      >
-        <group name="safe_key" position={[-32.494, 3.712, -1.597]} scale={[0.054, 0.014, 0.042]}>
-          <mesh name="Cube010" geometry={nodes.Cube010.geometry} material={materials.metal} />
-          <mesh
-            name="Cube010_1"
-            geometry={nodes.Cube010_1.geometry}
-            material={materials.safe_key}
-          />
-        </group>
-      </RigidBody>
+      {!isItemHeld('safe_key') && (
+        <RigidBody
+          key={`safe_key-${getItemPosition('safe_key', [-32.494, 3.712, -1.597]).join(',')}`}
+          type="dynamic"
+          position={getItemPosition('safe_key', [-32.494, 3.712, -1.597])}
+          colliders="cuboid"
+          restitution={0.2}
+          friction={0.8}
+          canSleep={true}
+          ccd={true}
+          collisionGroups={itemCollisionGroup}
+          scale={0.8}
+        >
+          <group name="safe_key" position={[0, 0, 0]} scale={[0.054, 0.014, 0.042]}>
+            <mesh name="Cube010" geometry={nodes.Cube010.geometry} material={materials.metal} />
+            <mesh
+              name="Cube010_1"
+              geometry={nodes.Cube010_1.geometry}
+              material={materials.safe_key}
+            />
+          </group>
+        </RigidBody>
+      )}
 
       {/* Handle - cylindrical object */}
-      <RigidBody
-        type="dynamic"
-        colliders="cuboid"
-        restitution={0.2}
-        friction={0.8}
-        canSleep={true}
-        ccd={true}
-        collisionGroups={itemCollisionGroup}
-        scale={0.85}
-      >
-        <mesh
-          name="handle"
-          geometry={nodes.handle.geometry}
-          material={materials.wood2}
-          position={[-31.146, 4.548, -2.027]}
-        />
-      </RigidBody>
+      {!isItemHeld('handle') && (
+        <RigidBody
+          key={`handle-${getItemPosition('handle', [-31.146, 4.548, -2.027]).join(',')}`}
+          type="dynamic"
+          position={getItemPosition('handle', [-31.146, 4.548, -2.027])}
+          colliders="cuboid"
+          restitution={0.2}
+          friction={0.8}
+          canSleep={true}
+          ccd={true}
+          collisionGroups={itemCollisionGroup}
+          scale={0.85}
+        >
+          <mesh
+            name="handle"
+            geometry={nodes.handle.geometry}
+            material={materials.wood2}
+            position={[0, 0, 0]}
+          />
+        </RigidBody>
+      )}
 
       {/* Watermelon - round object, use ball collider */}
-      <RigidBody
-        type="dynamic"
-        colliders="ball"
-        restitution={0.2}
-        friction={0.8}
-        canSleep={true}
-        ccd={true}
-        collisionGroups={itemCollisionGroup}
-        scale={0.9}
-      >
-        <group
-          name="watermelon"
-          position={[-30.856, 4.175, -0.522]}
-          rotation={[-Math.PI / 2, 1.57, 0]}
-          scale={[0.308, 0.427, 0.308]}
+      {!isItemHeld('watermelon') && (
+        <RigidBody
+          key={`watermelon-${getItemPosition('watermelon', [-30.856, 4.175, -0.522]).join(',')}`}
+          type="dynamic"
+          position={getItemPosition('watermelon', [-30.856, 4.175, -0.522])}
+          colliders="ball"
+          restitution={0.2}
+          friction={0.8}
+          canSleep={true}
+          ccd={true}
+          collisionGroups={itemCollisionGroup}
+          scale={0.9}
         >
-          <mesh
-            name="Sphere001"
-            geometry={nodes.Sphere001.geometry}
-            material={materials.watermelon_green}
-          />
-          <mesh
-            name="Sphere001_1"
-            geometry={nodes.Sphere001_1.geometry}
-            material={materials.watermelon_black}
-          />
-        </group>
-      </RigidBody>
+          <group
+            name="watermelon"
+            position={[0, 0, 0]}
+            rotation={[-Math.PI / 2, 1.57, 0]}
+            scale={[0.308, 0.427, 0.308]}
+          >
+            <mesh
+              name="Sphere001"
+              geometry={nodes.Sphere001.geometry}
+              material={materials.watermelon_green}
+            />
+            <mesh
+              name="Sphere001_1"
+              geometry={nodes.Sphere001_1.geometry}
+              material={materials.watermelon_black}
+            />
+          </group>
+        </RigidBody>
+      )}
 
       {/* Watermelon Cut - small piece */}
-      <RigidBody
-        type="dynamic"
-        colliders="cuboid"
-        restitution={0.2}
-        friction={0.8}
-        canSleep={true}
-        ccd={true}
-        collisionGroups={itemCollisionGroup}
-        scale={0.8}
-      >
-        <group
-          name="cut"
-          position={[-30.185, 4.064, -1.667]}
-          rotation={[-Math.PI, -0.268, 0]}
-          scale={[0.017, 0.008, 0.024]}
+      {!isItemHeld('cut') && (
+        <RigidBody
+          key={`cut-${getItemPosition('cut', [-30.185, 4.064, -1.667]).join(',')}`}
+          type="dynamic"
+          position={getItemPosition('cut', [-30.185, 4.064, -1.667])}
+          colliders="cuboid"
+          restitution={0.2}
+          friction={0.8}
+          canSleep={true}
+          ccd={true}
+          collisionGroups={itemCollisionGroup}
+          scale={0.8}
         >
-          <mesh name="Cube024" geometry={nodes.Cube024.geometry} material={materials.metal} />
-          <mesh
-            name="Cube024_1"
-            geometry={nodes.Cube024_1.geometry}
-            material={materials.watermelon_green}
-          />
-        </group>
-      </RigidBody>
+          <group
+            name="cut"
+            position={[0, 0, 0]}
+            rotation={[-Math.PI, -0.268, 0]}
+            scale={[0.017, 0.008, 0.024]}
+          >
+            <mesh name="Cube024" geometry={nodes.Cube024.geometry} material={materials.metal} />
+            <mesh
+              name="Cube024_1"
+              geometry={nodes.Cube024_1.geometry}
+              material={materials.watermelon_green}
+            />
+          </group>
+        </RigidBody>
+      )}
 
       {/* Hammer - long object, use cuboid */}
-      <RigidBody
-        type="dynamic"
-        colliders="cuboid"
-        restitution={0.2}
-        friction={0.8}
-        canSleep={true}
-        ccd={true}
-        collisionGroups={itemCollisionGroup}
-        scale={0.85}
-      >
-        <group
-          name="hammer"
-          position={[-31.461, 4.302, -0.994]}
-          rotation={[0, Math.PI / 2, 0]}
-          scale={[0.181, 0.024, 0.035]}
+      {!isItemHeld('hammer') && (
+        <RigidBody
+          key={`hammer-${getItemPosition('hammer', [-31.461, 4.302, -0.994]).join(',')}`}
+          type="dynamic"
+          position={getItemPosition('hammer', [-31.461, 4.302, -0.994])}
+          colliders="cuboid"
+          restitution={0.2}
+          friction={0.8}
+          canSleep={true}
+          ccd={true}
+          collisionGroups={itemCollisionGroup}
+          scale={0.85}
         >
-          <mesh name="Cube052" geometry={nodes.Cube052.geometry} material={materials.wood2} />
-          <mesh name="Cube052_1" geometry={nodes.Cube052_1.geometry} material={materials.metal} />
-        </group>
-      </RigidBody>
+          <group
+            name="hammer"
+            position={[0, 0, 0]}
+            rotation={[0, Math.PI / 2, 0]}
+            scale={[0.181, 0.024, 0.035]}
+          >
+            <mesh name="Cube052" geometry={nodes.Cube052.geometry} material={materials.wood2} />
+            <mesh name="Cube052_1" geometry={nodes.Cube052_1.geometry} material={materials.metal} />
+          </group>
+        </RigidBody>
+      )}
     </group>
   );
 }
