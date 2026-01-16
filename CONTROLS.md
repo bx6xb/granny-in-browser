@@ -1,11 +1,13 @@
 # First-Person Controls - Haunted House Game
 
 ## Overview
+
 Your game now has a fully functional first-person controller with physics-based movement!
 
 ## Controls
 
 ### Movement
+
 - **W** - Move Forward
 - **A** - Move Left
 - **S** - Move Backward
@@ -13,6 +15,7 @@ Your game now has a fully functional first-person controller with physics-based 
 - **C** - Crouch (hold to stay crouched)
 
 ### Camera
+
 - **Mouse** - Look around (360° rotation)
 - **Click** anywhere to lock the mouse pointer (required for camera control)
 - **ESC** - Release mouse pointer
@@ -20,6 +23,7 @@ Your game now has a fully functional first-person controller with physics-based 
 ## Technical Details
 
 ### Player Configuration
+
 - **Standing Height**: 1.7m above the floor (eye-level camera)
 - **Crouch Height**: 0.9m (adjustable in `Player.tsx` - change `CROUCH_HEIGHT` constant)
 - **Movement Speed**: 5 units/second
@@ -27,23 +31,27 @@ Your game now has a fully functional first-person controller with physics-based 
 - **Mass**: 80kg (for realistic physics)
 
 ### Physics
+
 - Uses Rapier physics engine for realistic collision detection
 - Dynamic capsule collider that shrinks when crouching
 - Crouch to fit through small holes and tight spaces
 - Gravity keeps player grounded
 
 ### Spawn Position
+
 - Player spawns at coordinates defined in `usePlayerState.ts` store
 - Position is set from the `spawn_player` object in your 3D model
 
 ## Files Added/Modified
 
 ### New Files:
+
 1. `src/components/Player.tsx` - First-person player controller
 2. `src/components/GameUI.tsx` - On-screen controls instructions
 3. `CONTROLS.md` - This file
 
 ### Modified Files:
+
 1. `src/App.tsx` - Added Physics wrapper and Player component
 2. `src/components/HauntedHouse.tsx` - Added physics colliders to the house
 
@@ -68,4 +76,5 @@ const CROUCH_HEIGHT = 0.9; // Change this value (in meters)
 - Higher values = taller crouch (less extreme crouch)
 
 ## Testing
+
 Open http://localhost:5173/ in your browser to test the controls!
