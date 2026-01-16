@@ -8,6 +8,7 @@ import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
 import { RigidBody } from '@react-three/rapier';
 import { useHauntedHouse } from '../hooks/useHauntedHouse';
+import { Door } from './Door';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -352,6 +353,188 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
         material={materials.navmesh}
         position={[-13.92, -3.029, -24.248]}
         visible={false}
+      />
+
+      {/* Interactive Doors - outside fixed RigidBody */}
+      <Door
+        doorId="main_door"
+        geometry={nodes.main_door.geometry}
+        material={materials.wood2}
+        position={[9.188, -0.116, -2.992]}
+        rotation={[0, 0, Math.PI]}
+        scale={[1, 1, 0.09]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="room_door001"
+        geometry={nodes.room_door001.geometry}
+        material={materials.wood2}
+        position={[6.782, 4.859, -15.173]}
+        rotation={[0, 0, Math.PI]}
+        scale={[1, 1, 0.09]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="room_door002"
+        geometry={nodes.room_door002.geometry}
+        material={materials.wood2}
+        position={[9.049, 4.859, -15.173]}
+        scale={[1, 1, 0.09]}
+        openDirection={1}
+      />
+      <Door
+        doorId="room_door003"
+        geometry={nodes.room_door003.geometry}
+        material={materials.wood2}
+        position={[3.388, 4.859, -14.872]}
+        rotation={[Math.PI, Math.PI / 2, 0]}
+        scale={[1, 1, 0.09]}
+        openDirection={1}
+      />
+      <Door
+        doorId="room_door004"
+        geometry={nodes.room_door004.geometry}
+        material={materials.wood2}
+        position={[12.691, 4.859, -3.553]}
+        rotation={[-Math.PI, -Math.PI / 2, 0]}
+        scale={[1, 1, 0.09]}
+        openDirection={1}
+      />
+      <Door
+        doorId="room_door005"
+        geometry={nodes.room_door005.geometry}
+        material={materials.wood2}
+        position={[16.134, -2.325, -31.93]}
+        rotation={[0, Math.PI / 2, 0]}
+        scale={[1, 1, 0.09]}
+        openDirection={1}
+      />
+      <Door
+        doorId="room_door_small001"
+        geometry={nodes.room_door_small001.geometry}
+        material={materials.wood2}
+        position={[12.157, 4.859, -2.89]}
+        rotation={[Math.PI, 0, Math.PI]}
+        scale={[1, 1, 0.051]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="room_door_small002"
+        geometry={nodes.room_door_small002.geometry}
+        material={materials.wood2}
+        position={[5.442, -0.116, -14.548]}
+        rotation={[0, -1.571, 0]}
+        scale={[1, 1, 0.051]}
+        openDirection={1}
+      />
+      <Door
+        doorId="barn_door001"
+        geometry={nodes.barn_door001.geometry}
+        material={materials.wood2}
+        position={[-18.561, -1.215, -20.538]}
+        scale={[1, 1, 0.031]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="closet_for_hiding_door001"
+        geometry={nodes.closet_for_hiding_door001.geometry}
+        material={materials['metal 2']}
+        position={[5.233, 4.863, -23.203]}
+        rotation={[0, -Math.PI / 2, 0]}
+        scale={[0.026, 1, 0.595]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="closet_for_hiding_door002"
+        geometry={nodes.closet_for_hiding_door002.geometry}
+        material={materials['metal 2']}
+        position={[-4.494, 4.867, -12.066]}
+        scale={[0.026, 1, 0.595]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="closet_for_hiding_door003"
+        geometry={nodes.closet_for_hiding_door003.geometry}
+        material={materials['metal 2.001']}
+        position={[9.334, -0.115, -11.228]}
+        rotation={[Math.PI, 0, Math.PI]}
+        scale={[0.026, 1, 0.595]}
+        openDirection={1}
+      />
+      <Door
+        doorId="safe_door001"
+        geometry={nodes.safe_door001.geometry}
+        material={materials.safe}
+        position={[0.693, -6.215, -11.754]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="hatch001"
+        geometry={nodes.hatch001.geometry}
+        material={materials['metal 2']}
+        position={[-2.784, 7.833, -12.5]}
+        openDirection={1}
+      />
+      <Door
+        doorId="microwave_door001"
+        geometry={nodes.microwave_door001.geometry}
+        material={materials.plumbing}
+        position={[-4.346, 0.107, -11.632]}
+        rotation={[0, -0.485, 0]}
+        scale={[0.552, 0.276, 0.552]}
+        openDirection={1}
+      />
+      <Door
+        doorId="kitchen_cupboard_door001"
+        geometry={nodes.kitchen_cupboard_door001.geometry}
+        material={materials.wood}
+        position={[-3.197, -1.132, -12.888]}
+        rotation={[0, -Math.PI / 2, 0]}
+        scale={[0.01, 0.089, 0.046]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="kitchen_cupboard_door002"
+        geometry={nodes.kitchen_cupboard_door002.geometry}
+        material={materials.wood}
+        position={[-1.333, -1.132, -12.888]}
+        rotation={[0, -Math.PI / 2, 0]}
+        scale={[0.01, 0.089, 0.046]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="kitchen_cupboard_door003"
+        geometry={nodes.kitchen_cupboard_door003.geometry}
+        material={materials.wood}
+        position={[-1.334, 1.507, -12.888]}
+        rotation={[0, -Math.PI / 2, 0]}
+        scale={[0.01, 0.089, 0.046]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="kitchen_cupboard_door004"
+        geometry={nodes.kitchen_cupboard_door004.geometry}
+        material={materials.wood}
+        position={[-3.195, 1.507, -12.888]}
+        rotation={[0, -Math.PI / 2, 0]}
+        scale={[0.01, 0.089, 0.046]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="kitchen_cupboard_door005"
+        geometry={nodes.kitchen_cupboard_door005.geometry}
+        material={materials.wood}
+        position={[-3.628, -1.129, -9.945]}
+        scale={[0.01, 0.089, 0.046]}
+        openDirection={-1}
+      />
+      <Door
+        doorId="kitchen_cupboard_door006"
+        geometry={nodes.kitchen_cupboard_door006.geometry}
+        material={materials.wood}
+        position={[-3.628, -1.129, -6.276]}
+        scale={[0.01, 0.089, 0.046]}
+        openDirection={-1}
       />
 
       <RigidBody type="fixed" colliders="trimesh">
@@ -883,22 +1066,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             scale={[1, 0.072, 1]}
           />
           <mesh
-            name="main_door"
-            geometry={nodes.main_door.geometry}
-            material={materials.wood2}
-            position={[9.188, -0.116, -2.992]}
-            rotation={[0, 0, Math.PI]}
-            scale={[1, 1, 0.09]}
-          />
-          <mesh
-            name="closet_for_hiding_door003"
-            geometry={nodes.closet_for_hiding_door003.geometry}
-            material={materials['metal 2.001']}
-            position={[9.334, -0.115, -11.228]}
-            rotation={[Math.PI, 0, Math.PI]}
-            scale={[0.026, 1, 0.595]}
-          />
-          <mesh
             name="closet_for_hiding003"
             geometry={nodes.closet_for_hiding003.geometry}
             material={materials['metal 2.001']}
@@ -1205,35 +1372,12 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             position={[1.808, 4.774, -21.72]}
           />
           <mesh
-            name="closet_for_hiding_door001"
-            geometry={nodes.closet_for_hiding_door001.geometry}
-            material={materials['metal 2']}
-            position={[5.233, 4.863, -23.203]}
-            rotation={[0, -Math.PI / 2, 0]}
-            scale={[0.026, 1, 0.595]}
-          />
-          <mesh
             name="closet_for_hiding001"
             geometry={nodes.closet_for_hiding001.geometry}
             material={materials['metal 2']}
             position={[5.825, 4.863, -23.809]}
             rotation={[0, -Math.PI / 2, 0]}
             scale={1.365}
-          />
-          <mesh
-            name="room_door001"
-            geometry={nodes.room_door001.geometry}
-            material={materials.wood2}
-            position={[6.782, 4.859, -15.173]}
-            rotation={[0, 0, Math.PI]}
-            scale={[1, 1, 0.09]}
-          />
-          <mesh
-            name="room_door002"
-            geometry={nodes.room_door002.geometry}
-            material={materials.wood2}
-            position={[9.049, 4.859, -15.173]}
-            scale={[1, 1, 0.09]}
           />
           <group
             name="nightstand_box002"
@@ -1268,34 +1412,11 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             position={[-0.747, 3.742, -16.362]}
           />
           <mesh
-            name="closet_for_hiding_door002"
-            geometry={nodes.closet_for_hiding_door002.geometry}
-            material={materials['metal 2']}
-            position={[-4.494, 4.867, -12.066]}
-            scale={[0.026, 1, 0.595]}
-          />
-          <mesh
             name="closet_for_hiding002"
             geometry={nodes.closet_for_hiding002.geometry}
             material={materials['metal 2']}
             position={[-5.1, 4.867, -12.658]}
             scale={1.365}
-          />
-          <mesh
-            name="room_door003"
-            geometry={nodes.room_door003.geometry}
-            material={materials.wood2}
-            position={[3.388, 4.859, -14.872]}
-            rotation={[Math.PI, Math.PI / 2, 0]}
-            scale={[1, 1, 0.09]}
-          />
-          <mesh
-            name="room_door004"
-            geometry={nodes.room_door004.geometry}
-            material={materials.wood2}
-            position={[12.691, 4.859, -3.553]}
-            rotation={[-Math.PI, -Math.PI / 2, 0]}
-            scale={[1, 1, 0.09]}
           />
           <group
             name="closet_door002"
@@ -1431,14 +1552,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             material={materials.box}
             position={[22.352, 5.989, -23.834]}
           />
-          <mesh
-            name="room_door_small001"
-            geometry={nodes.room_door_small001.geometry}
-            material={materials.wood2}
-            position={[12.157, 4.859, -2.89]}
-            rotation={[Math.PI, 0, Math.PI]}
-            scale={[1, 1, 0.051]}
-          />
           <group name="well001" position={[-16.204, -2.538, -30.298]}>
             <mesh name="Cone002" geometry={nodes.Cone002.geometry} material={materials.well} />
             <mesh name="Cone002_1" geometry={nodes.Cone002_1.geometry} material={materials.wood2} />
@@ -1480,67 +1593,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             material={materials.vase}
             position={[-10.675, 0.083, -28.671]}
             scale={0.885}
-          />
-          <mesh
-            name="barn_door001"
-            geometry={nodes.barn_door001.geometry}
-            material={materials.wood2}
-            position={[-18.561, -1.215, -20.538]}
-            scale={[1, 1, 0.031]}
-          />
-          <mesh
-            name="microwave_door001"
-            geometry={nodes.microwave_door001.geometry}
-            material={materials.plumbing}
-            position={[-4.346, 0.107, -11.632]}
-            rotation={[0, -0.485, 0]}
-            scale={[0.552, 0.276, 0.552]}
-          />
-          <mesh
-            name="kitchen_cupboard_door001"
-            geometry={nodes.kitchen_cupboard_door001.geometry}
-            material={materials.wood}
-            position={[-3.197, -1.132, -12.888]}
-            rotation={[0, -Math.PI / 2, 0]}
-            scale={[0.01, 0.089, 0.046]}
-          />
-          <mesh
-            name="kitchen_cupboard_door002"
-            geometry={nodes.kitchen_cupboard_door002.geometry}
-            material={materials.wood}
-            position={[-1.333, -1.132, -12.888]}
-            rotation={[0, -Math.PI / 2, 0]}
-            scale={[0.01, 0.089, 0.046]}
-          />
-          <mesh
-            name="kitchen_cupboard_door003"
-            geometry={nodes.kitchen_cupboard_door003.geometry}
-            material={materials.wood}
-            position={[-1.334, 1.507, -12.888]}
-            rotation={[0, -Math.PI / 2, 0]}
-            scale={[0.01, 0.089, 0.046]}
-          />
-          <mesh
-            name="kitchen_cupboard_door004"
-            geometry={nodes.kitchen_cupboard_door004.geometry}
-            material={materials.wood}
-            position={[-3.195, 1.507, -12.888]}
-            rotation={[0, -Math.PI / 2, 0]}
-            scale={[0.01, 0.089, 0.046]}
-          />
-          <mesh
-            name="kitchen_cupboard_door005"
-            geometry={nodes.kitchen_cupboard_door005.geometry}
-            material={materials.wood}
-            position={[-3.628, -1.129, -9.945]}
-            scale={[0.01, 0.089, 0.046]}
-          />
-          <mesh
-            name="kitchen_cupboard_door006"
-            geometry={nodes.kitchen_cupboard_door006.geometry}
-            material={materials.wood}
-            position={[-3.628, -1.129, -6.276]}
-            scale={[0.01, 0.089, 0.046]}
           />
           <mesh
             name="closet002"
@@ -1789,30 +1841,10 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             scale={[1, 0.028, 0.868]}
           />
           <mesh
-            name="room_door005"
-            geometry={nodes.room_door005.geometry}
-            material={materials.wood2}
-            position={[16.134, -2.325, -31.93]}
-            rotation={[0, Math.PI / 2, 0]}
-            scale={[1, 1, 0.09]}
-          />
-          <mesh
             name="plank002"
             geometry={nodes.plank002.geometry}
             material={materials.wood2}
             position={[11.714, -6.194, -17.935]}
-          />
-          <mesh
-            name="hatch001"
-            geometry={nodes.hatch001.geometry}
-            material={materials['metal 2']}
-            position={[-2.784, 7.833, -12.5]}
-          />
-          <mesh
-            name="safe_door001"
-            geometry={nodes.safe_door001.geometry}
-            material={materials.safe}
-            position={[0.693, -6.215, -11.754]}
           />
           <group
             name="nightstand_box014"
@@ -1839,14 +1871,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             position={[13.198, 9.254, -18.305]}
             rotation={[0, -Math.PI / 2, 0]}
             scale={[1, 0.028, 0.868]}
-          />
-          <mesh
-            name="room_door_small002"
-            geometry={nodes.room_door_small002.geometry}
-            material={materials.wood2}
-            position={[5.442, -0.116, -14.548]}
-            rotation={[0, -1.571, 0]}
-            scale={[1, 1, 0.051]}
           />
           <mesh
             name="shield"

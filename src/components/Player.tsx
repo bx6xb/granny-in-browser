@@ -5,17 +5,20 @@ import { PointerLockControls } from '@react-three/drei';
 import * as THREE from 'three';
 import type { RapierRigidBody } from '@react-three/rapier';
 import { usePlayerState } from '../store/usePlayerState';
+import { useDoors } from '../store/useDoors';
 
 const PLAYER_HEIGHT = 1.7;
 const CROUCH_HEIGHT = 0.9; // Adjust this value to fit through holes
 const MOVE_SPEED = 5;
 const CROUCH_SPEED = 2.5; // Slower movement when crouching
+const INTERACTION_DISTANCE = 3; // Distance at which player can interact with doors
 
 export function Player() {
   const playerRef = useRef<RapierRigidBody>(null);
   const controlsRef = useRef(null);
-  const { camera } = useThree();
+  const { camera, scene } = useThree();
   const { playerSpawnArray } = usePlayerState();
+  const { toggleDoor, setNearbyDoor } = useDoors();
   const [isCrouching, setIsCrouching] = useState(false);
 
   // Movement state
@@ -47,6 +50,14 @@ export function Player() {
           movement.current.crouch = true;
           setIsCrouching(true);
           break;
+        case 'KeyE': {
+          // Interact with nearby door
+          const nearbyDoorId = useDoors.getState().nearbyDoor;
+          if (nearbyDoorId) {
+            toggleDoor(nearbyDoorId);
+          }
+          break;
+        }
       }
     };
 
@@ -78,7 +89,7 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, [toggleDoor]);
 
   // Track previous crouch state to detect transitions
   const prevCrouchState = useRef(false);
@@ -94,18 +105,53 @@ export function Player() {
     const currentHeight = movement.current.crouch ? CROUCH_HEIGHT : PLAYER_HEIGHT;
     const currentSpeed = movement.current.crouch ? CROUCH_SPEED : MOVE_SPEED;
 
+    // Detect nearby doors using raycasting
+    const playerPosition = player.translation();
+    const raycaster = new THREE.Raycaster();
+    const cameraDirection = new THREE.Vector3();
+    camera.getWorldDirection(cameraDirection);
+
+    raycaster.set(
+      new THREE.Vector3(playerPosition.x, playerPosition.y + currentHeight / 2, playerPosition.z),
+      cameraDirection
+    );
+
+    // Check for doors within interaction distance
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    let foundDoor = false;
+
+    for (const intersect of intersects) {
+      if (intersect.distance <= INTERACTION_DISTANCE) {
+        // Check if object or its parent has door data
+        let obj: THREE.Object3D | null = intersect.object;
+        while (obj) {
+          if (obj.userData?.isDoor && obj.userData?.doorId) {
+            setNearbyDoor(obj.userData.doorId);
+            foundDoor = true;
+            break;
+          }
+          obj = obj.parent;
+        }
+        if (foundDoor) break;
+      }
+    }
+
+    if (!foundDoor) {
+      setNearbyDoor(null);
+    }
+
     // Adjust Y position when transitioning between crouch states to keep feet on ground
     if (movement.current.crouch !== prevCrouchState.current) {
-      const playerPosition = player.translation();
+      const crouchPlayerPosition = player.translation();
       const heightDifference = (PLAYER_HEIGHT - CROUCH_HEIGHT) / 2;
-      
+
       if (movement.current.crouch) {
         // Crouching: lower the player position
         player.setTranslation(
           {
-            x: playerPosition.x,
-            y: playerPosition.y - heightDifference,
-            z: playerPosition.z,
+            x: crouchPlayerPosition.x,
+            y: crouchPlayerPosition.y - heightDifference,
+            z: crouchPlayerPosition.z,
           },
           true
         );
@@ -113,14 +159,14 @@ export function Player() {
         // Standing up: raise the player position
         player.setTranslation(
           {
-            x: playerPosition.x,
-            y: playerPosition.y + heightDifference,
-            z: playerPosition.z,
+            x: crouchPlayerPosition.x,
+            y: crouchPlayerPosition.y + heightDifference,
+            z: crouchPlayerPosition.z,
           },
           true
         );
       }
-      
+
       prevCrouchState.current = movement.current.crouch;
     }
 
@@ -165,8 +211,12 @@ export function Player() {
     );
 
     // Update camera position based on crouch state
-    const playerPosition = player.translation();
-    camera.position.set(playerPosition.x, playerPosition.y + currentHeight, playerPosition.z);
+    const cameraPlayerPosition = player.translation();
+    camera.position.set(
+      cameraPlayerPosition.x,
+      cameraPlayerPosition.y + currentHeight,
+      cameraPlayerPosition.z
+    );
   });
 
   // Get spawn position
