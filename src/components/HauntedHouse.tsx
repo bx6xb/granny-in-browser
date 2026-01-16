@@ -10,6 +10,7 @@ import { RigidBody } from '@react-three/rapier';
 import { useHauntedHouse } from '../hooks/useHauntedHouse';
 import { Door } from './Door';
 import { Drawer } from './Drawer';
+import { Items } from './Items';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -2089,6 +2090,9 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
           />
         </group>
       </RigidBody>
+
+      {/* Items placed on table001 */}
+      <Items position={[30.75, 0.8, -15.36]} />
     </>
   );
 }
