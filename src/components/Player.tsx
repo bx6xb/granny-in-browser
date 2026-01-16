@@ -32,6 +32,11 @@ export function Player() {
     crouch: false,
   });
 
+  // Set initial camera rotation (90 degrees to the right)
+  useEffect(() => {
+    camera.rotation.y = -Math.PI / 2; // 90 degrees to the right
+  }, [camera]);
+
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -106,7 +111,7 @@ export function Player() {
     // Determine current height based on crouch state
     const currentHeight = movement.current.crouch ? CROUCH_HEIGHT : PLAYER_HEIGHT;
     let currentSpeed = movement.current.crouch ? CROUCH_SPEED : MOVE_SPEED;
-    
+
     // Boost speed when climbing (going up) to maintain consistent feel
     if (velocity.y > 0.1) {
       currentSpeed *= 1.4; // 40% boost when going uphill
@@ -233,16 +238,16 @@ export function Player() {
     // Update flashlight to follow camera direction
     if (flashlightRef.current) {
       const flashlight = flashlightRef.current;
-      
+
       // Position flashlight at camera position (slightly offset down and forward)
       const flashlightOffset = new THREE.Vector3(0, -0.2, 0);
       flashlightOffset.applyQuaternion(camera.quaternion);
       flashlight.position.copy(camera.position).add(flashlightOffset);
-      
+
       // Point flashlight in the direction camera is looking
       const lookDirection = new THREE.Vector3();
       camera.getWorldDirection(lookDirection);
-      
+
       // Set target position ahead of the flashlight in look direction
       flashlight.target.position.copy(flashlight.position).add(lookDirection.multiplyScalar(5));
       flashlight.target.updateMatrixWorld();
@@ -255,7 +260,7 @@ export function Player() {
   return (
     <>
       <PointerLockControls ref={controlsRef} />
-      
+
       {/* Player flashlight - optimized spotlight that follows camera direction */}
       <spotLight
         ref={flashlightRef}
@@ -267,7 +272,7 @@ export function Player() {
         castShadow={false} // Disabled for performance
         color="#fff5e6"
       />
-      
+
       <RigidBody
         ref={playerRef}
         position={spawnPosition}
@@ -278,8 +283,8 @@ export function Player() {
         linearDamping={5} // Moderate damping for quick stop without killing speed
       >
         {/* Capsule collider with dynamic height based on crouch state */}
-        <CapsuleCollider 
-          args={[(isCrouching ? CROUCH_HEIGHT : PLAYER_HEIGHT) / 2, 0.3]} 
+        <CapsuleCollider
+          args={[(isCrouching ? CROUCH_HEIGHT : PLAYER_HEIGHT) / 2, 0.3]}
           friction={1.5} // Good grip without too much resistance
           restitution={0} // No bounciness
         />
