@@ -339,6 +339,7 @@ export function Player() {
         colliders={false}
         mass={80}
         linearDamping={5} // Moderate damping for quick stop without killing speed
+        collisionGroups={(0x0001 << 16) | 0x0002} // Player in group 1, only collides with group 0 (static)
       >
         {/* Capsule collider with dynamic height based on crouch state */}
         <CapsuleCollider
