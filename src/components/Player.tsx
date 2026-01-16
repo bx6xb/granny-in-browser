@@ -80,6 +80,9 @@ export function Player() {
     };
   }, []);
 
+  // Track previous crouch state to detect transitions
+  const prevCrouchState = useRef(false);
+
   // Update player movement and camera
   useFrame(() => {
     if (!playerRef.current) return;
@@ -90,6 +93,36 @@ export function Player() {
     // Determine current height based on crouch state
     const currentHeight = movement.current.crouch ? CROUCH_HEIGHT : PLAYER_HEIGHT;
     const currentSpeed = movement.current.crouch ? CROUCH_SPEED : MOVE_SPEED;
+
+    // Adjust Y position when transitioning between crouch states to keep feet on ground
+    if (movement.current.crouch !== prevCrouchState.current) {
+      const playerPosition = player.translation();
+      const heightDifference = (PLAYER_HEIGHT - CROUCH_HEIGHT) / 2;
+      
+      if (movement.current.crouch) {
+        // Crouching: lower the player position
+        player.setTranslation(
+          {
+            x: playerPosition.x,
+            y: playerPosition.y - heightDifference,
+            z: playerPosition.z,
+          },
+          true
+        );
+      } else {
+        // Standing up: raise the player position
+        player.setTranslation(
+          {
+            x: playerPosition.x,
+            y: playerPosition.y + heightDifference,
+            z: playerPosition.z,
+          },
+          true
+        );
+      }
+      
+      prevCrouchState.current = movement.current.crouch;
+    }
 
     // Get camera direction
     const direction = new THREE.Vector3();
