@@ -100,6 +100,8 @@ export function Player() {
 
   // Track previous crouch state to detect transitions
   const prevCrouchState = useRef(false);
+  // Track if player is forced to crouch due to ceiling
+  const forcedCrouch = useRef(false);
 
   // Update player movement and camera
   useFrame(() => {
@@ -108,9 +110,50 @@ export function Player() {
     const player = playerRef.current;
     const velocity = player.linvel();
 
-    // Determine current height based on crouch state
-    const currentHeight = movement.current.crouch ? CROUCH_HEIGHT : PLAYER_HEIGHT;
-    let currentSpeed = movement.current.crouch ? CROUCH_SPEED : MOVE_SPEED;
+    // Check for ceiling clearance before allowing stand up
+    const playerPosition = player.translation();
+    const ceilingRaycaster = new THREE.Raycaster();
+    const upDirection = new THREE.Vector3(0, 1, 0);
+    
+    // Cast ray upward from player position to check for obstacles
+    const rayOrigin = new THREE.Vector3(
+      playerPosition.x, 
+      playerPosition.y + CROUCH_HEIGHT / 2, 
+      playerPosition.z
+    );
+    
+    ceilingRaycaster.set(rayOrigin, upDirection);
+    const ceilingIntersects = ceilingRaycaster.intersectObjects(scene.children, true);
+    
+    // Calculate needed clearance (difference between standing and crouching height + small buffer)
+    const neededClearance = (PLAYER_HEIGHT - CROUCH_HEIGHT) + 0.2;
+    let hasClearance = true;
+    
+    for (const intersect of ceilingIntersects) {
+      if (intersect.distance < neededClearance) {
+        hasClearance = false;
+        break;
+      }
+    }
+    
+    // If player wants to stand up but there's no clearance, force crouch
+    if (!movement.current.crouch && !hasClearance) {
+      forcedCrouch.current = true;
+    } else if (hasClearance) {
+      forcedCrouch.current = false;
+    }
+    
+    // Determine actual crouch state (either manual or forced)
+    const isActuallyCrouching = movement.current.crouch || forcedCrouch.current;
+    
+    // Update visual crouch state for collider
+    if (isCrouching !== isActuallyCrouching) {
+      setIsCrouching(isActuallyCrouching);
+    }
+
+    // Determine current height based on actual crouch state
+    const currentHeight = isActuallyCrouching ? CROUCH_HEIGHT : PLAYER_HEIGHT;
+    let currentSpeed = isActuallyCrouching ? CROUCH_SPEED : MOVE_SPEED;
 
     // Boost speed when climbing (going up) to maintain consistent feel
     if (velocity.y > 0.1) {
@@ -118,7 +161,6 @@ export function Player() {
     }
 
     // Detect nearby doors using raycasting
-    const playerPosition = player.translation();
     const raycaster = new THREE.Raycaster();
     const cameraDirection = new THREE.Vector3();
     camera.getWorldDirection(cameraDirection);
@@ -153,11 +195,11 @@ export function Player() {
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground
-    if (movement.current.crouch !== prevCrouchState.current) {
+    if (isActuallyCrouching !== prevCrouchState.current) {
       const crouchPlayerPosition = player.translation();
       const heightDifference = (PLAYER_HEIGHT - CROUCH_HEIGHT) / 2;
 
-      if (movement.current.crouch) {
+      if (isActuallyCrouching) {
         // Crouching: lower the player position
         player.setTranslation(
           {
@@ -179,7 +221,7 @@ export function Player() {
         );
       }
 
-      prevCrouchState.current = movement.current.crouch;
+      prevCrouchState.current = isActuallyCrouching;
     }
 
     // Get camera direction
