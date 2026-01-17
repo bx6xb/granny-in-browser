@@ -11,6 +11,10 @@ import { useHauntedHouse } from '../hooks/useHauntedHouse';
 import { Door } from './Door';
 import { Drawer } from './Drawer';
 import { Items } from './Items';
+import { useGuillotine } from '../store/useGuillotine';
+import { useItems } from '../store/useItems';
+import { useEffect, useRef, useState } from 'react';
+import { useFrame } from '@react-three/fiber';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -343,8 +347,52 @@ type GLTFResult = GLTF & {
 
 export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/hauntedHouse.glb') as GLTFResult;
+  const itemsModel = useGLTF('/models/items.glb') as any; // Load items model for watermelon
 
   useHauntedHouse(nodes);
+
+  const { watermelonPlaced, bladeDropped, itemRevealed, dropBlade, revealItem } = useGuillotine();
+  const { itemInsideWatermelon, droppedPositions } = useItems();
+  const bladeRef = useRef<THREE.Mesh>(null);
+  const [bladePosition, setBladePosition] = useState(0.083); // Initial Y position
+  const [animating, setAnimating] = useState(false);
+
+  // Start blade animation when watermelon is placed
+  useEffect(() => {
+    if (watermelonPlaced && !bladeDropped) {
+      setAnimating(true);
+      setTimeout(() => {
+        dropBlade();
+      }, 1500); // Blade takes 1.5 seconds to drop
+      
+      // Make watermelon disappear and reveal item after blade drops
+      setTimeout(() => {
+        revealItem();
+        // Set the position for the hidden item to drop
+        const itemDropPosition: [number, number, number] = [-10.7, -0.5, -28.6];
+        useItems.setState((state) => ({
+          droppedPositions: {
+            ...state.droppedPositions,
+            [itemInsideWatermelon]: itemDropPosition
+          }
+        }));
+      }, 1600); // Slightly after blade completes drop
+    }
+  }, [watermelonPlaced, bladeDropped, dropBlade, revealItem, itemInsideWatermelon]);
+
+  // Animate the blade dropping
+  useFrame((state, delta) => {
+    if (animating && !bladeDropped) {
+      setBladePosition((prev) => {
+        const newPos = prev - delta * 1.5; // Drop speed
+        if (newPos <= 0.083 - 1.45) { // Drop 1.45m
+          setAnimating(false);
+          return 0.083 - 1.45;
+        }
+        return newPos;
+      });
+    }
+  });
 
   return (
     <>
@@ -1672,12 +1720,31 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             scale={[0.272, 0.23, 0.272]}
           />
           <mesh
+            ref={bladeRef}
             name="blade001"
             geometry={nodes.blade001.geometry}
             material={materials.vase}
-            position={[-10.675, 0.083, -28.671]}
+            position={[-10.675, bladePosition, -28.671]}
             scale={0.885}
           />
+          {/* Watermelon in guillotine - visible when placed but before blade cuts it */}
+          {watermelonPlaced && !itemRevealed && (
+            <group
+              name="watermelon_in_guillotine"
+              position={[-10.7, -1.6, -28.6]}
+              rotation={[-Math.PI / 4, Math.PI / 2, 0]} // Convert Blender rotation to radians
+              scale={[0.308, 0.427, 0.308]}
+            >
+              <mesh
+                geometry={itemsModel.nodes.Sphere001.geometry}
+                material={itemsModel.materials.watermelon_green}
+              />
+              <mesh
+                geometry={itemsModel.nodes.Sphere001_1.geometry}
+                material={itemsModel.materials.watermelon_black}
+              />
+            </group>
+          )}
           <mesh
             name="closet002"
             geometry={nodes.closet002.geometry}

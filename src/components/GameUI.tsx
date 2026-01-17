@@ -1,11 +1,13 @@
 import { useDoors } from '../store/useDoors';
 import { useDrawers } from '../store/useDrawers';
 import { useItems } from '../store/useItems';
+import { useGuillotine } from '../store/useGuillotine';
 
 export function GameUI() {
   const { nearbyDoor, getDoorState } = useDoors();
   const { nearbyDrawer, openDrawers } = useDrawers();
   const { nearbyItem, heldItem } = useItems();
+  const { nearGuillotine, watermelonPlaced } = useGuillotine();
   const doorState = nearbyDoor ? getDoorState(nearbyDoor) : null;
   const isDrawerOpen = nearbyDrawer ? openDrawers[nearbyDrawer] : false;
 
@@ -60,8 +62,33 @@ export function GameUI() {
         </div>
       </div>
 
+      {/* Guillotine interaction prompt */}
+      {nearGuillotine && heldItem === 'watermelon' && !watermelonPlaced && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: '#ffcc00',
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '15px 25px',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            textAlign: 'center',
+            border: '2px solid rgba(255, 204, 0, 0.5)',
+          }}
+        >
+          🍉 Press [E] to place Watermelon in Guillotine
+        </div>
+      )}
+
       {/* Door interaction prompt */}
-      {nearbyDoor && doorState && !doorState.isRotating && (
+      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && (
         <div
           style={{
             position: 'fixed',
@@ -86,7 +113,7 @@ export function GameUI() {
       )}
 
       {/* Drawer interaction prompt */}
-      {nearbyDrawer && !nearbyDoor && (
+      {nearbyDrawer && !nearbyDoor && !nearGuillotine && (
         <div
           style={{
             position: 'fixed',
@@ -111,7 +138,7 @@ export function GameUI() {
       )}
 
       {/* Item interaction prompt */}
-      {nearbyItem && !nearbyDoor && !nearbyDrawer && !heldItem && (
+      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !heldItem && (
         <div
           style={{
             position: 'fixed',

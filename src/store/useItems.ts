@@ -4,6 +4,7 @@ interface ItemsState {
   nearbyItem: string | null;
   heldItem: string | null;
   droppedPositions: { [key: string]: [number, number, number] };
+  itemInsideWatermelon: string; // The item hidden inside the watermelon (key or card)
   setNearbyItem: (itemName: string | null) => void;
   grabItem: (itemName: string) => void;
   dropItem: (position: [number, number, number]) => void;
@@ -15,6 +16,7 @@ export const useItems = create<ItemsState>((set, get) => ({
   nearbyItem: null,
   heldItem: null,
   droppedPositions: {},
+  itemInsideWatermelon: 'master_key', // Change this to any key or 'card'
   
   setNearbyItem: (itemName) => set({ nearbyItem: itemName }),
   

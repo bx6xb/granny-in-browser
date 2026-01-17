@@ -8,6 +8,7 @@ import { usePlayerState } from '../store/usePlayerState';
 import { useDoors } from '../store/useDoors';
 import { useDrawers } from '../store/useDrawers';
 import { useItems } from '../store/useItems';
+import { useGuillotine } from '../store/useGuillotine';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
@@ -25,6 +26,7 @@ export function Player() {
   const { toggleDoor, setNearbyDoor } = useDoors();
   const { toggleDrawer, setNearbyDrawer } = useDrawers();
   const { setNearbyItem, grabItem, dropItem, heldItem } = useItems();
+  const { setNearGuillotine, placeWatermelon } = useGuillotine();
   const [isCrouching, setIsCrouching] = useState(false);
 
   // Movement state
@@ -62,6 +64,18 @@ export function Player() {
           setIsCrouching(true);
           break;
         case 'KeyE': {
+          // Check if holding watermelon and near guillotine
+          const nearGuillotine = useGuillotine.getState().nearGuillotine;
+          const currentHeldItem = useItems.getState().heldItem;
+          
+          if (nearGuillotine && currentHeldItem === 'watermelon') {
+            // Place watermelon in guillotine
+            placeWatermelon();
+            // Remove watermelon from inventory
+            useItems.getState().dropItem([0, 0, 0]); // Dummy position, won't be used
+            break;
+          }
+          
           // Interact with nearby door or drawer
           const nearbyDoorId = useDoors.getState().nearbyDoor;
           const nearbyDrawerId = useDrawers.getState().nearbyDrawer;
@@ -191,11 +205,12 @@ export function Player() {
 
     raycaster.set(camera.position, cameraDirection);
 
-    // Check for doors, drawers, and items within interaction distance
+    // Check for doors, drawers, items, and guillotine within interaction distance
     const intersects = raycaster.intersectObjects(scene.children, true);
     let foundDoor = false;
     let foundDrawer = false;
     let foundItem = false;
+    let foundGuillotine = false;
 
     // Item names list to check for
     const itemNames = ['padlock_key', 'master_key', 'card', 'safe_key', 'handle', 'watermelon', 'cut', 'hammer'];
@@ -226,9 +241,20 @@ export function Player() {
             foundItem = true;
             break;
           }
+          // Check for guillotine blade - only if holding watermelon
+          if (heldItem === 'watermelon' && obj.name === 'Cube091') {
+            // Check if looking at the watermelon placement position
+            const guillotinePosition = new THREE.Vector3(-10.7, -1.6, -28.6);
+            const distanceToGuillotine = intersect.point.distanceTo(guillotinePosition);
+            if (distanceToGuillotine < 0.5) { // Within 0.5 units of the placement point
+              setNearGuillotine(true);
+              foundGuillotine = true;
+              break;
+            }
+          }
           obj = obj.parent;
         }
-        if (foundDoor || foundDrawer || foundItem) break;
+        if (foundDoor || foundDrawer || foundItem || foundGuillotine) break;
       }
     }
 
@@ -240,6 +266,9 @@ export function Player() {
     }
     if (!foundItem) {
       setNearbyItem(null);
+    }
+    if (!foundGuillotine) {
+      setNearGuillotine(false);
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground
