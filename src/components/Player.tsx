@@ -29,6 +29,91 @@ export function Player() {
   const { setNearGuillotine, placeWatermelon } = useGuillotine();
   const [isCrouching, setIsCrouching] = useState(false);
 
+  // ===== PERFORMANCE: Dedicated array for interactive objects =====
+  const interactiveObjects = useRef<THREE.Object3D[]>([]);
+
+  // Build interactive objects list once on mount or when scene updates
+  useEffect(() => {
+    const buildInteractiveList = () => {
+      const interactives: THREE.Object3D[] = [];
+      const addedIds = new Set<string>(); // Prevent duplicates
+      
+      scene.traverse((obj) => {
+        // Check for doors
+        if (obj.userData?.isDoor && obj.userData?.doorId) {
+          const id = `door_${obj.userData.doorId}`;
+          if (!addedIds.has(id)) {
+            // Add the parent RigidBody or Group that contains the mesh
+            let target = obj;
+            // Find the highest parent with the same doorId
+            while (target.parent && target.parent.userData?.doorId === obj.userData.doorId) {
+              target = target.parent;
+            }
+            interactives.push(target);
+            addedIds.add(id);
+            // Enable Layer 1 on this object and all children
+            target.traverse((child) => child.layers.enable(1));
+          }
+        }
+        
+        // Check for drawers
+        if (obj.userData?.isDrawer && obj.userData?.drawerId) {
+          const id = `drawer_${obj.userData.drawerId}`;
+          if (!addedIds.has(id)) {
+            let target = obj;
+            // Find the highest parent with the same drawerId
+            while (target.parent && target.parent.userData?.drawerId === obj.userData.drawerId) {
+              target = target.parent;
+            }
+            interactives.push(target);
+            addedIds.add(id);
+            target.traverse((child) => child.layers.enable(1));
+          }
+        }
+        
+        // Check for nightstand boxes
+        if (obj.name && obj.name.includes('nightstand_box')) {
+          if (!addedIds.has(obj.name)) {
+            interactives.push(obj);
+            addedIds.add(obj.name);
+            obj.traverse((child) => child.layers.enable(1));
+          }
+        }
+        
+        // Check for items
+        if (obj.name === 'padlock_key' || obj.name === 'master_key' || 
+            obj.name === 'card' || obj.name === 'safe_key' || 
+            obj.name === 'handle' || obj.name === 'watermelon' || 
+            obj.name === 'cut' || obj.name === 'hammer') {
+          if (!addedIds.has(obj.name)) {
+            interactives.push(obj);
+            addedIds.add(obj.name);
+            // Enable Layer 1 on this object and all its children (meshes)
+            obj.traverse((child) => child.layers.enable(1));
+          }
+        }
+        
+        // Check for guillotine
+        if (obj.name === 'Cube091') {
+          if (!addedIds.has('guillotine')) {
+            interactives.push(obj);
+            addedIds.add('guillotine');
+            obj.layers.enable(1);
+          }
+        }
+      });
+      
+      interactiveObjects.current = interactives;
+      console.log(`Built interactive objects list: ${interactives.length} objects`);
+    };
+
+    buildInteractiveList();
+    
+    // Rebuild if scene changes (e.g., items spawned/removed)
+    const rebuildTimeout = setInterval(buildInteractiveList, 1000); // Rebuild every second to catch new items
+    return () => clearInterval(rebuildTimeout);
+  }, [scene]);
+
   // Movement state
   const movement = useRef({
     forward: false,
@@ -40,7 +125,8 @@ export function Player() {
 
   // Set initial camera rotation (90 degrees to the right)
   useEffect(() => {
-    camera.rotation.y = -Math.PI / 2; // 90 degrees to the right
+    const initialRotation = -Math.PI / 2; // 90 degrees to the right
+    camera.rotation.set(camera.rotation.x, initialRotation, camera.rotation.z);
   }, [camera]);
 
   // Handle keyboard input
@@ -134,12 +220,48 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor]);
+  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon]);
 
   // Track previous crouch state to detect transitions
   const prevCrouchState = useRef(false);
   // Track if player is forced to crouch due to ceiling
   const forcedCrouch = useRef(false);
+
+  // ===== PERFORMANCE OPTIMIZATION: Reuse objects instead of creating new ones every frame =====
+  // Raycasters (reused every frame)
+  const ceilingRaycaster = useRef(new THREE.Raycaster());
+  const interactionRaycaster = useRef(new THREE.Raycaster());
+  
+  // Reusable Vector3 objects
+  const upDirection = useRef(new THREE.Vector3(0, 1, 0));
+  const rayOrigin = useRef(new THREE.Vector3());
+  const cameraDirection = useRef(new THREE.Vector3());
+  const direction = useRef(new THREE.Vector3());
+  const right = useRef(new THREE.Vector3());
+  const moveDirection = useRef(new THREE.Vector3());
+  const flashlightOffset = useRef(new THREE.Vector3());
+  const lookDirection = useRef(new THREE.Vector3());
+  const guillotinePosition = useRef(new THREE.Vector3(-10.7, -1.6, -28.6));
+  
+  // Item names as Set for O(1) lookup instead of O(n) array.includes()
+  const itemNamesSet = useRef(new Set(['padlock_key', 'master_key', 'card', 'safe_key', 'handle', 'watermelon', 'cut', 'hammer']));
+  
+  const neededClearance = PLAYER_HEIGHT - CROUCH_HEIGHT + 0.2;
+
+  // ===== STATE GUARDING: Track last IDs to prevent unnecessary React updates =====
+  const lastNearbyDoor = useRef<string | null>(null);
+  const lastNearbyDrawer = useRef<string | null>(null);
+  const lastNearbyItem = useRef<string | null>(null);
+  const lastNearGuillotine = useRef<boolean>(false);
+
+  // Configure raycaster to only check layer 1 (interactive objects)
+  useEffect(() => {
+    interactionRaycaster.current.layers.set(1);
+    ceilingRaycaster.current.layers.set(0); // Default layer for ceiling/walls
+    
+    // Enable Layer 1 on camera so it can render interactive objects
+    camera.layers.enable(1);
+  }, [camera]);
 
   // Update player movement and camera
   useFrame(() => {
@@ -147,37 +269,37 @@ export function Player() {
 
     const player = playerRef.current;
     const velocity = player.linvel();
-
-    // Check for ceiling clearance before allowing stand up
     const playerPosition = player.translation();
-    const ceilingRaycaster = new THREE.Raycaster();
-    const upDirection = new THREE.Vector3(0, 1, 0);
 
-    // Cast ray upward from player position to check for obstacles
-    const rayOrigin = new THREE.Vector3(
-      playerPosition.x,
-      playerPosition.y + CROUCH_HEIGHT / 2,
-      playerPosition.z
-    );
+    // ===== OPTIMIZED CEILING CHECK (only when trying to stand up) =====
+    // Only check ceiling if player is crouched and NOT pressing crouch key (trying to stand)
+    if (!movement.current.crouch && (isCrouching || forcedCrouch.current)) {
+      // Reuse rayOrigin vector
+      rayOrigin.current.set(
+        playerPosition.x,
+        playerPosition.y + CROUCH_HEIGHT / 2,
+        playerPosition.z
+      );
 
-    ceilingRaycaster.set(rayOrigin, upDirection);
-    const ceilingIntersects = ceilingRaycaster.intersectObjects(scene.children, true);
+      ceilingRaycaster.current.set(rayOrigin.current, upDirection.current);
+      const ceilingIntersects = ceilingRaycaster.current.intersectObjects(scene.children, true);
 
-    // Calculate needed clearance (difference between standing and crouching height + small buffer)
-    const neededClearance = PLAYER_HEIGHT - CROUCH_HEIGHT + 0.2;
-    let hasClearance = true;
-
-    for (const intersect of ceilingIntersects) {
-      if (intersect.distance < neededClearance) {
-        hasClearance = false;
-        break;
+      let hasClearance = true;
+      for (let i = 0; i < ceilingIntersects.length; i++) {
+        if (ceilingIntersects[i].distance < neededClearance) {
+          hasClearance = false;
+          break;
+        }
       }
-    }
 
-    // If player wants to stand up but there's no clearance, force crouch
-    if (!movement.current.crouch && !hasClearance) {
-      forcedCrouch.current = true;
-    } else if (hasClearance) {
+      // If player wants to stand up but there's no clearance, force crouch
+      if (!hasClearance) {
+        forcedCrouch.current = true;
+      } else {
+        forcedCrouch.current = false;
+      }
+    } else if (movement.current.crouch) {
+      // Player manually crouching, clear forced crouch
       forcedCrouch.current = false;
     }
 
@@ -198,56 +320,45 @@ export function Player() {
       currentSpeed *= 1.4; // 40% boost when going uphill
     }
 
-    // Detect nearby doors using raycasting
-    const raycaster = new THREE.Raycaster();
-    const cameraDirection = new THREE.Vector3();
-    camera.getWorldDirection(cameraDirection);
+    // ===== OPTIMIZED INTERACTION DETECTION (Layer-based, dedicated array) =====
+    camera.getWorldDirection(cameraDirection.current);
+    interactionRaycaster.current.set(camera.position, cameraDirection.current);
 
-    raycaster.set(camera.position, cameraDirection);
-
-    // Check for doors, drawers, items, and guillotine within interaction distance
-    const intersects = raycaster.intersectObjects(scene.children, true);
-    let foundDoor = false;
-    let foundDrawer = false;
-    let foundItem = false;
+    // Raycast against interactive objects AND their children (recursive: true)
+    const intersects = interactionRaycaster.current.intersectObjects(interactiveObjects.current, true);
+    let foundDoor: string | null = null;
+    let foundDrawer: string | null = null;
+    let foundItem: string | null = null;
     let foundGuillotine = false;
 
-    // Item names list to check for
-    const itemNames = ['padlock_key', 'master_key', 'card', 'safe_key', 'handle', 'watermelon', 'cut', 'hammer'];
-
-    for (const intersect of intersects) {
+    for (let i = 0; i < intersects.length; i++) {
+      const intersect = intersects[i];
       if (intersect.distance <= INTERACTION_DISTANCE) {
         // Check if object or its parent has door or drawer data
         let obj: THREE.Object3D | null = intersect.object;
         while (obj) {
           if (obj.userData?.isDoor && obj.userData?.doorId) {
-            setNearbyDoor(obj.userData.doorId);
-            foundDoor = true;
+            foundDoor = obj.userData.doorId;
             break;
           }
           if (obj.userData?.isDrawer && obj.userData?.drawerId) {
-            setNearbyDrawer(obj.userData.drawerId);
-            foundDrawer = true;
+            foundDrawer = obj.userData.drawerId;
             break;
           }
           if (obj.name && obj.name.includes('nightstand_box')) {
-            setNearbyDrawer(obj.name);
-            foundDrawer = true;
+            foundDrawer = obj.name;
             break;
           }
-          // Check for items - only if not holding an item
-          if (!heldItem && itemNames.includes(obj.name)) {
-            setNearbyItem(obj.name);
-            foundItem = true;
+          // Check for items - only if not holding an item (using Set for faster lookup)
+          if (!heldItem && itemNamesSet.current.has(obj.name)) {
+            foundItem = obj.name;
             break;
           }
           // Check for guillotine blade - only if holding watermelon
           if (heldItem === 'watermelon' && obj.name === 'Cube091') {
             // Check if looking at the watermelon placement position
-            const guillotinePosition = new THREE.Vector3(-10.7, -1.6, -28.6);
-            const distanceToGuillotine = intersect.point.distanceTo(guillotinePosition);
+            const distanceToGuillotine = intersect.point.distanceTo(guillotinePosition.current);
             if (distanceToGuillotine < 0.5) { // Within 0.5 units of the placement point
-              setNearGuillotine(true);
               foundGuillotine = true;
               break;
             }
@@ -258,31 +369,38 @@ export function Player() {
       }
     }
 
-    if (!foundDoor) {
-      setNearbyDoor(null);
+    // ===== STATE GUARDING: Only update React state if values changed =====
+    if (foundDoor !== lastNearbyDoor.current) {
+      setNearbyDoor(foundDoor);
+      lastNearbyDoor.current = foundDoor;
     }
-    if (!foundDrawer) {
-      setNearbyDrawer(null);
+    
+    if (foundDrawer !== lastNearbyDrawer.current) {
+      setNearbyDrawer(foundDrawer);
+      lastNearbyDrawer.current = foundDrawer;
     }
-    if (!foundItem) {
-      setNearbyItem(null);
+    
+    if (foundItem !== lastNearbyItem.current) {
+      setNearbyItem(foundItem);
+      lastNearbyItem.current = foundItem;
     }
-    if (!foundGuillotine) {
-      setNearGuillotine(false);
+    
+    if (foundGuillotine !== lastNearGuillotine.current) {
+      setNearGuillotine(foundGuillotine);
+      lastNearGuillotine.current = foundGuillotine;
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground
     if (isActuallyCrouching !== prevCrouchState.current) {
-      const crouchPlayerPosition = player.translation();
       const heightDifference = (PLAYER_HEIGHT - CROUCH_HEIGHT) / 2;
 
       if (isActuallyCrouching) {
         // Crouching: lower the player position
         player.setTranslation(
           {
-            x: crouchPlayerPosition.x,
-            y: crouchPlayerPosition.y - heightDifference,
-            z: crouchPlayerPosition.z,
+            x: playerPosition.x,
+            y: playerPosition.y - heightDifference,
+            z: playerPosition.z,
           },
           true
         );
@@ -290,9 +408,9 @@ export function Player() {
         // Standing up: raise the player position
         player.setTranslation(
           {
-            x: crouchPlayerPosition.x,
-            y: crouchPlayerPosition.y + heightDifference,
-            z: crouchPlayerPosition.z,
+            x: playerPosition.x,
+            y: playerPosition.y + heightDifference,
+            z: playerPosition.z,
           },
           true
         );
@@ -301,74 +419,71 @@ export function Player() {
       prevCrouchState.current = isActuallyCrouching;
     }
 
-    // Get camera direction
-    const direction = new THREE.Vector3();
-    camera.getWorldDirection(direction);
-    direction.y = 0;
-    direction.normalize();
+    // ===== OPTIMIZED MOVEMENT CALCULATION (reusing vectors) =====
+    camera.getWorldDirection(direction.current);
+    direction.current.y = 0;
+    direction.current.normalize();
 
-    const right = new THREE.Vector3();
-    right.crossVectors(camera.up, direction).normalize();
+    right.current.crossVectors(camera.up, direction.current).normalize();
 
-    // Calculate movement
-    const moveDirection = new THREE.Vector3();
+    // Reset moveDirection
+    moveDirection.current.set(0, 0, 0);
 
     if (movement.current.forward) {
-      moveDirection.add(direction);
+      moveDirection.current.add(direction.current);
     }
     if (movement.current.backward) {
-      moveDirection.sub(direction);
+      moveDirection.current.sub(direction.current);
     }
     if (movement.current.left) {
-      moveDirection.add(right);
+      moveDirection.current.add(right.current);
     }
     if (movement.current.right) {
-      moveDirection.sub(right);
+      moveDirection.current.sub(right.current);
     }
 
-    if (moveDirection.length() > 0) {
-      moveDirection.normalize();
-      moveDirection.multiplyScalar(currentSpeed);
+    const moveLength = moveDirection.current.length();
+    if (moveLength > 0) {
+      moveDirection.current.normalize();
+      moveDirection.current.multiplyScalar(currentSpeed);
     }
 
     // Apply horizontal movement (with instant stop when no input)
     player.setLinvel(
       {
-        x: moveDirection.x,
+        x: moveDirection.current.x,
         y: velocity.y,
-        z: moveDirection.z,
+        z: moveDirection.current.z,
       },
       true
     );
 
     // Apply gentle downward force ONLY when moving and going downward to prevent ramp flying
-    if (moveDirection.length() > 0 && velocity.y < -0.1) {
+    if (moveLength > 0 && velocity.y < -0.1) {
       player.applyImpulse({ x: 0, y: -0.2, z: 0 }, true);
     }
 
     // Update camera position based on crouch state
-    const cameraPlayerPosition = player.translation();
     camera.position.set(
-      cameraPlayerPosition.x,
-      cameraPlayerPosition.y + currentHeight,
-      cameraPlayerPosition.z
+      playerPosition.x,
+      playerPosition.y + currentHeight,
+      playerPosition.z
     );
 
-    // Update flashlight to follow camera direction
+    // ===== OPTIMIZED FLASHLIGHT UPDATE (reusing vectors) =====
     if (flashlightRef.current) {
       const flashlight = flashlightRef.current;
 
       // Position flashlight at camera position (slightly offset down and forward)
-      const flashlightOffset = new THREE.Vector3(0, -0.2, 0);
-      flashlightOffset.applyQuaternion(camera.quaternion);
-      flashlight.position.copy(camera.position).add(flashlightOffset);
+      flashlightOffset.current.set(0, -0.2, 0);
+      flashlightOffset.current.applyQuaternion(camera.quaternion);
+      flashlight.position.copy(camera.position).add(flashlightOffset.current);
 
       // Point flashlight in the direction camera is looking
-      const lookDirection = new THREE.Vector3();
-      camera.getWorldDirection(lookDirection);
+      camera.getWorldDirection(lookDirection.current);
 
       // Set target position ahead of the flashlight in look direction
-      flashlight.target.position.copy(flashlight.position).add(lookDirection.multiplyScalar(5));
+      flashlight.target.position.copy(flashlight.position).add(lookDirection.current.multiplyScalar(5));
       flashlight.target.updateMatrixWorld();
     }
   });

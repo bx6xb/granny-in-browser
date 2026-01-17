@@ -65,6 +65,23 @@ export function Door({
   const doorState = getDoorState(doorId);
   const isRotating = doorState?.isRotating || false;
 
+  // Set userData on mesh ref when it's ready
+  useEffect(() => {
+    if (meshRef.current) {
+      meshRef.current.userData.isDoor = true;
+      meshRef.current.userData.doorId = doorId;
+    }
+    if (groupRef.current) {
+      groupRef.current.userData.isDoor = true;
+      groupRef.current.userData.doorId = doorId;
+      // Also traverse all children
+      groupRef.current.traverse((child) => {
+        child.userData.isDoor = true;
+        child.userData.doorId = doorId;
+      });
+    }
+  }, [doorId]);
+
   // If children are provided, wrap in a group; otherwise render mesh directly
   if (children) {
     return (
