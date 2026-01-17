@@ -13,6 +13,7 @@ import { Drawer } from './Drawer';
 import { Items } from './Items';
 import { useGuillotine } from '../store/useGuillotine';
 import { useItems } from '../store/useItems';
+import { useShields } from '../store/useShields';
 import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 
@@ -353,9 +354,15 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
 
   const { watermelonPlaced, bladeDropped, itemRevealed, dropBlade, revealItem } = useGuillotine();
   const { itemInsideWatermelon, droppedPositions } = useItems();
+  const { activeShieldId, initializeActiveShield } = useShields();
   const bladeRef = useRef<THREE.Mesh>(null);
   const [bladePosition, setBladePosition] = useState(0.083); // Initial Y position
   const [animating, setAnimating] = useState(false);
+
+  // Initialize random shield selection on mount
+  useEffect(() => {
+    initializeActiveShield();
+  }, [initializeActiveShield]);
 
   // Start blade animation when watermelon is placed
   useEffect(() => {
@@ -1967,63 +1974,80 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             rotation={[0, -Math.PI / 2, 0]}
             scale={[1, 0.028, 0.868]}
           />
-          <mesh
-            name="shield"
-            geometry={nodes.shield.geometry}
-            material={materials.shield}
-            position={[6.413, -4.602, -4.425]}
-          />
-          <mesh
-            name="shield_wire"
-            geometry={nodes.shield_wire.geometry}
-            material={materials.wire}
-            position={[6.412, -4.596, -4.436]}
-          />
-          <mesh
-            name="shield_wire_cut"
-            geometry={nodes.shield_wire_cut.geometry}
-            material={materials.wire}
-            position={[6.412, -4.596, -4.436]}
-          />
-          <mesh
-            name="shield002"
-            geometry={nodes.shield002.geometry}
-            material={materials['shield.002']}
-            position={[3.001, 10.944, -16.725]}
-            rotation={[Math.PI, 0, Math.PI]}
-          />
-          <mesh
-            name="shield003"
-            geometry={nodes.shield003.geometry}
-            material={materials['shield.003']}
-            position={[-17.17, -0.065, -16.596]}
-          />
-          <mesh
-            name="shield_wire002"
-            geometry={nodes.shield_wire002.geometry}
-            material={materials['wire.002']}
-            position={[3.002, 10.95, -16.713]}
-            rotation={[Math.PI, 0, Math.PI]}
-          />
-          <mesh
-            name="shield_wire003"
-            geometry={nodes.shield_wire003.geometry}
-            material={materials['wire.003']}
-            position={[-17.171, -0.059, -16.608]}
-          />
-          <mesh
-            name="shield_wire_cut002"
-            geometry={nodes.shield_wire_cut002.geometry}
-            material={materials['wire.002']}
-            position={[3.002, 10.95, -16.713]}
-            rotation={[Math.PI, 0, Math.PI]}
-          />
-          <mesh
-            name="shield_wire_cut003"
-            geometry={nodes.shield_wire_cut003.geometry}
-            material={materials['wire.003']}
-            position={[-17.171, -0.059, -16.608]}
-          />
+          {/* Shield 1 - Only render if active */}
+          {activeShieldId === 1 && (
+            <>
+              <mesh
+                name="shield"
+                geometry={nodes.shield.geometry}
+                material={materials.shield}
+                position={[6.413, -4.602, -4.425]}
+              />
+              <mesh
+                name="shield_wire"
+                geometry={nodes.shield_wire.geometry}
+                material={materials.wire}
+                position={[6.412, -4.596, -4.436]}
+              />
+              <mesh
+                name="shield_wire_cut"
+                geometry={nodes.shield_wire_cut.geometry}
+                material={materials.wire}
+                position={[6.412, -4.596, -4.436]}
+              />
+            </>
+          )}
+          
+          {/* Shield 2 - Only render if active */}
+          {activeShieldId === 2 && (
+            <>
+              <mesh
+                name="shield002"
+                geometry={nodes.shield002.geometry}
+                material={materials['shield.002']}
+                position={[3.001, 10.944, -16.725]}
+                rotation={[Math.PI, 0, Math.PI]}
+              />
+              <mesh
+                name="shield_wire002"
+                geometry={nodes.shield_wire002.geometry}
+                material={materials['wire.002']}
+                position={[3.002, 10.95, -16.713]}
+                rotation={[Math.PI, 0, Math.PI]}
+              />
+              <mesh
+                name="shield_wire_cut002"
+                geometry={nodes.shield_wire_cut002.geometry}
+                material={materials['wire.002']}
+                position={[3.002, 10.95, -16.713]}
+                rotation={[Math.PI, 0, Math.PI]}
+              />
+            </>
+          )}
+          
+          {/* Shield 3 - Only render if active */}
+          {activeShieldId === 3 && (
+            <>
+              <mesh
+                name="shield003"
+                geometry={nodes.shield003.geometry}
+                material={materials['shield.003']}
+                position={[-17.17, -0.065, -16.596]}
+              />
+              <mesh
+                name="shield_wire003"
+                geometry={nodes.shield_wire003.geometry}
+                material={materials['wire.003']}
+                position={[-17.171, -0.059, -16.608]}
+              />
+              <mesh
+                name="shield_wire_cut003"
+                geometry={nodes.shield_wire_cut003.geometry}
+                material={materials['wire.003']}
+                position={[-17.171, -0.059, -16.608]}
+              />
+            </>
+          )}
           <mesh
             name="nightstand008"
             geometry={nodes.nightstand008.geometry}
