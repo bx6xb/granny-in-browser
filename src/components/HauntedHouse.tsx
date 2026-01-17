@@ -1731,8 +1731,8 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
           {watermelonPlaced && !itemRevealed && (
             <group
               name="watermelon_in_guillotine"
-              position={[-10.7, -1.6, -28.6]}
-              rotation={[-Math.PI / 4, Math.PI / 2, 0]} // Convert Blender rotation to radians
+              position={[-10.72, -1.6, -28.6]}
+              rotation={[30, 50, 40]} // Convert Blender rotation to radians
               scale={[0.308, 0.427, 0.308]}
             >
               <mesh
