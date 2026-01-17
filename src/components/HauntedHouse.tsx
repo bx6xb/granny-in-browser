@@ -368,8 +368,8 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
       // Make watermelon disappear and reveal item after blade drops
       setTimeout(() => {
         revealItem();
-        // Set the position for the hidden item to drop
-        const itemDropPosition: [number, number, number] = [-10.7, -0.5, -28.6];
+        // Set the position for the hidden item to drop in front of guillotine
+        const itemDropPosition: [number, number, number] = [-11, -1.55, -28.3];
         useItems.setState((state) => ({
           droppedPositions: {
             ...state.droppedPositions,
