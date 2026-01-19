@@ -5,6 +5,7 @@ import { useGuillotine } from '../store/useGuillotine';
 import { usePlank } from '../store/usePlank';
 import { useTerminal } from '../store/useTerminal';
 import { useEscapeDoor } from '../store/useEscapeDoor';
+import { useWires } from '../store/useWires';
 
 export function GameUI() {
   const { nearbyDoor, getDoorState } = useDoors();
@@ -14,6 +15,7 @@ export function GameUI() {
   const { nearPlank, isChippedOff } = usePlank();
   const { nearTerminal } = useTerminal();
   const { cardSwiped } = useEscapeDoor();
+  const { nearWire, doorWireCut, shieldWireCut } = useWires();
   const doorState = nearbyDoor ? getDoorState(nearbyDoor) : null;
   const isDrawerOpen = nearbyDrawer ? openDrawers[nearbyDrawer] : false;
 
@@ -94,6 +96,34 @@ export function GameUI() {
         </div>
       )}
 
+      {/* Wire cutting prompt */}
+      {nearWire && heldItem === 'cut' && (
+        (nearWire === 'door_wire' && !doorWireCut) || 
+        (nearWire.startsWith('shield_wire') && !shieldWireCut)
+      ) && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: '#00ffff',
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '15px 25px',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            textAlign: 'center',
+            border: '2px solid rgba(0, 255, 255, 0.5)',
+          }}
+        >
+          ✂️ Press [E] to cut a wire
+        </div>
+      )}
+
       {/* Plank interaction prompt */}
       {nearPlank && heldItem === 'hammer' && !isChippedOff && (
         <div
@@ -145,7 +175,7 @@ export function GameUI() {
       )}
 
       {/* Door interaction prompt */}
-      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearTerminal && (
+      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && (
         <div
           style={{
             position: 'fixed',
@@ -170,7 +200,7 @@ export function GameUI() {
       )}
 
       {/* Drawer interaction prompt */}
-      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && !nearTerminal && (
+      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && (
         <div
           style={{
             position: 'fixed',
@@ -195,7 +225,7 @@ export function GameUI() {
       )}
 
       {/* Item interaction prompt */}
-      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !nearTerminal && (
+      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && (
         <div
           style={{
             position: 'fixed',

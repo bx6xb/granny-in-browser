@@ -16,6 +16,7 @@ import { useItems } from '../store/useItems';
 import { useShields } from '../store/useShields';
 import { usePlank } from '../store/usePlank';
 import { useEscapeDoor } from '../store/useEscapeDoor';
+import { useWires } from '../store/useWires';
 import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 
@@ -358,7 +359,8 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   const { itemInsideWatermelon, droppedPositions } = useItems();
   const { activeShieldId, initializeActiveShield } = useShields();
   const { isChippedOff } = usePlank();
-  const { cardSwiped } = useEscapeDoor();
+  const { cardSwiped, wiresCut } = useEscapeDoor();
+  const { doorWireCut, shieldWireCut } = useWires();
   const bladeRef = useRef<THREE.Mesh>(null);
   const [bladePosition, setBladePosition] = useState(0.083); // Initial Y position
   const [animating, setAnimating] = useState(false);
@@ -1987,18 +1989,22 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
                 material={materials.shield}
                 position={[6.413, -4.602, -4.425]}
               />
-              <mesh
-                name="shield_wire"
-                geometry={nodes.shield_wire.geometry}
-                material={materials.wire}
-                position={[6.412, -4.596, -4.436]}
-              />
-              <mesh
-                name="shield_wire_cut"
-                geometry={nodes.shield_wire_cut.geometry}
-                material={materials.wire}
-                position={[6.412, -4.596, -4.436]}
-              />
+              {!shieldWireCut && (
+                <mesh
+                  name="shield_wire"
+                  geometry={nodes.shield_wire.geometry}
+                  material={materials.wire}
+                  position={[6.412, -4.596, -4.436]}
+                />
+              )}
+              {shieldWireCut && (
+                <mesh
+                  name="shield_wire_cut"
+                  geometry={nodes.shield_wire_cut.geometry}
+                  material={materials.wire}
+                  position={[6.412, -4.596, -4.436]}
+                />
+              )}
             </>
           )}
           
@@ -2012,20 +2018,24 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
                 position={[3.001, 10.944, -16.725]}
                 rotation={[Math.PI, 0, Math.PI]}
               />
-              <mesh
-                name="shield_wire002"
-                geometry={nodes.shield_wire002.geometry}
-                material={materials['wire.002']}
-                position={[3.002, 10.95, -16.713]}
-                rotation={[Math.PI, 0, Math.PI]}
-              />
-              <mesh
-                name="shield_wire_cut002"
-                geometry={nodes.shield_wire_cut002.geometry}
-                material={materials['wire.002']}
-                position={[3.002, 10.95, -16.713]}
-                rotation={[Math.PI, 0, Math.PI]}
-              />
+              {!shieldWireCut && (
+                <mesh
+                  name="shield_wire002"
+                  geometry={nodes.shield_wire002.geometry}
+                  material={materials['wire.002']}
+                  position={[3.002, 10.95, -16.713]}
+                  rotation={[Math.PI, 0, Math.PI]}
+                />
+              )}
+              {shieldWireCut && (
+                <mesh
+                  name="shield_wire_cut002"
+                  geometry={nodes.shield_wire_cut002.geometry}
+                  material={materials['wire.002']}
+                  position={[3.002, 10.95, -16.713]}
+                  rotation={[Math.PI, 0, Math.PI]}
+                />
+              )}
             </>
           )}
           
@@ -2038,18 +2048,22 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
                 material={materials['shield.003']}
                 position={[-17.17, -0.065, -16.596]}
               />
-              <mesh
-                name="shield_wire003"
-                geometry={nodes.shield_wire003.geometry}
-                material={materials['wire.003']}
-                position={[-17.171, -0.059, -16.608]}
-              />
-              <mesh
-                name="shield_wire_cut003"
-                geometry={nodes.shield_wire_cut003.geometry}
-                material={materials['wire.003']}
-                position={[-17.171, -0.059, -16.608]}
-              />
+              {!shieldWireCut && (
+                <mesh
+                  name="shield_wire003"
+                  geometry={nodes.shield_wire003.geometry}
+                  material={materials['wire.003']}
+                  position={[-17.171, -0.059, -16.608]}
+                />
+              )}
+              {shieldWireCut && (
+                <mesh
+                  name="shield_wire_cut003"
+                  geometry={nodes.shield_wire_cut003.geometry}
+                  material={materials['wire.003']}
+                  position={[-17.171, -0.059, -16.608]}
+                />
+              )}
             </>
           )}
           <mesh
@@ -2104,24 +2118,36 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
           <mesh
             name="cut_indicator_1"
             geometry={nodes.cut_indicator_1.geometry}
-            material={materials.red_light}
             position={[6.131, 0.145, -3.018]}
             scale={0.075}
-          />
+          >
+            <meshStandardMaterial 
+              color={wiresCut >= 1 ? '#00ff00' : '#ff0000'} 
+              emissive={wiresCut >= 1 ? '#00ff00' : '#ff0000'}
+              emissiveIntensity={1}
+            />
+          </mesh>
           <mesh
             name="cut_indicator_2"
             geometry={nodes.cut_indicator_2.geometry}
-            material={materials.red_light}
             position={[6.131, 0.349, -3.018]}
             scale={0.075}
-          />
-          <mesh
-            name="door_wire"
-            geometry={nodes.door_wire.geometry}
-            material={materials.wire}
-            position={[6.131, 0.574, -2.979]}
-            scale={[0.026, 0.1, 0.034]}
-          />
+          >
+            <meshStandardMaterial 
+              color={wiresCut >= 2 ? '#00ff00' : '#ff0000'} 
+              emissive={wiresCut >= 2 ? '#00ff00' : '#ff0000'}
+              emissiveIntensity={1}
+            />
+          </mesh>
+          {!doorWireCut && (
+            <mesh
+              name="door_wire"
+              geometry={nodes.door_wire.geometry}
+              material={materials.wire}
+              position={[6.131, 0.574, -2.979]}
+              scale={[0.026, 0.1, 0.034]}
+            />
+          )}
           {!isChippedOff && (
             <mesh
               name="wood_plank"
@@ -2160,13 +2186,15 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
               emissiveIntensity={1}
             />
           </mesh>
-          <mesh
-            name="door_wire_cut"
-            geometry={nodes.door_wire_cut.geometry}
-            material={materials.wire}
-            position={[6.131, 0.574, -2.979]}
-            scale={[0.026, 0.1, 0.034]}
-          />
+          {doorWireCut && (
+            <mesh
+              name="door_wire_cut"
+              geometry={nodes.door_wire_cut.geometry}
+              material={materials.wire}
+              position={[6.131, 0.574, -2.979]}
+              scale={[0.026, 0.1, 0.034]}
+            />
+          )}
           <mesh
             name="black_wall"
             geometry={nodes.black_wall.geometry}

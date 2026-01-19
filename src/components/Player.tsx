@@ -12,6 +12,7 @@ import { useGuillotine } from '../store/useGuillotine';
 import { usePlank } from '../store/usePlank';
 import { useTerminal } from '../store/useTerminal';
 import { useEscapeDoor } from '../store/useEscapeDoor';
+import { useWires } from '../store/useWires';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
@@ -32,7 +33,8 @@ export function Player() {
   const { setNearGuillotine, placeWatermelon } = useGuillotine();
   const { setNearPlank, chipOffPlank, isChippedOff } = usePlank();
   const { setNearTerminal } = useTerminal();
-  const { swipeCard } = useEscapeDoor();
+  const { swipeCard, cutWire } = useEscapeDoor();
+  const { setNearWire } = useWires();
   const [isCrouching, setIsCrouching] = useState(false);
 
   // ===== PERFORMANCE: Dedicated array for interactive objects =====
@@ -125,6 +127,16 @@ export function Player() {
             obj.layers.enable(1);
           }
         }
+        
+        // Check for wires
+        if (obj.name === 'door_wire' || obj.name === 'shield_wire' || 
+            obj.name === 'shield_wire002' || obj.name === 'shield_wire003') {
+          if (!addedIds.has(obj.name)) {
+            interactives.push(obj);
+            addedIds.add(obj.name);
+            obj.layers.enable(1);
+          }
+        }
       });
       
       interactiveObjects.current = interactives;
@@ -174,9 +186,26 @@ export function Player() {
           setIsCrouching(true);
           break;
         case 'KeyE': {
+          // Check if holding cut pliers and near wire
+          const nearWire = useWires.getState().nearWire;
+          const currentHeldItem = useItems.getState().heldItem;
+          const wiresState = useWires.getState();
+          
+          if (nearWire && currentHeldItem === 'cut') {
+            // Check if wire is not already cut
+            if (nearWire === 'door_wire' && !wiresState.doorWireCut) {
+              useWires.getState().cutWire('door_wire');
+              cutWire();
+              break;
+            } else if (nearWire.startsWith('shield_wire') && !wiresState.shieldWireCut) {
+              useWires.getState().cutWire(nearWire);
+              cutWire();
+              break;
+            }
+          }
+          
           // Check if holding hammer and near plank
           const nearPlank = usePlank.getState().nearPlank;
-          const currentHeldItem = useItems.getState().heldItem;
           const plankChipped = usePlank.getState().isChippedOff;
           
           if (nearPlank && currentHeldItem === 'hammer' && !plankChipped) {
@@ -270,7 +299,7 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard]);
+  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire]);
 
   // Track previous crouch state to detect transitions
   const prevCrouchState = useRef(false);
@@ -305,6 +334,7 @@ export function Player() {
   const lastNearGuillotine = useRef<boolean>(false);
   const lastNearPlank = useRef<boolean>(false);
   const lastNearTerminal = useRef<boolean>(false);
+  const lastNearWire = useRef<string | null>(null);
 
   // Configure raycaster to only check layer 1 (interactive objects)
   useEffect(() => {
@@ -384,6 +414,7 @@ export function Player() {
     let foundGuillotine = false;
     let foundPlank = false;
     let foundTerminal = false;
+    let foundWire: string | null = null;
 
     for (let i = 0; i < intersects.length; i++) {
       const intersect = intersects[i];
@@ -413,6 +444,18 @@ export function Player() {
             foundTerminal = true;
             break;
           }
+          // Check for wires - only if holding cut pliers
+          if (heldItem === 'cut') {
+            const wiresState = useWires.getState();
+            if (obj.name === 'door_wire' && !wiresState.doorWireCut) {
+              foundWire = 'door_wire';
+              break;
+            } else if ((obj.name === 'shield_wire' || obj.name === 'shield_wire002' || 
+                       obj.name === 'shield_wire003') && !wiresState.shieldWireCut) {
+              foundWire = obj.name;
+              break;
+            }
+          }
           // Check for items (using Set for faster lookup)
           if (itemNamesSet.current.has(obj.name)) {
             foundItem = obj.name;
@@ -429,7 +472,7 @@ export function Player() {
           }
           obj = obj.parent;
         }
-        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal) break;
+        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire) break;
       }
     }
 
@@ -462,6 +505,11 @@ export function Player() {
     if (foundTerminal !== lastNearTerminal.current) {
       setNearTerminal(foundTerminal);
       lastNearTerminal.current = foundTerminal;
+    }
+    
+    if (foundWire !== lastNearWire.current) {
+      setNearWire(foundWire);
+      lastNearWire.current = foundWire;
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground
