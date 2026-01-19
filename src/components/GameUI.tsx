@@ -34,7 +34,7 @@ export function GameUI() {
       safe_key: 'Safe Key',
       handle: 'Handle',
       watermelon: 'Watermelon',
-      cut: 'Cut Pliers',
+      cut_pliers: 'Cut Pliers',
       hammer: 'Hammer',
       wood_plank_item: 'Wood Plank',
     };
