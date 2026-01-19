@@ -24,6 +24,7 @@ export function Drawer({
   const innerGroupRef = useRef<THREE.Group>(null);
   const userDataSet = useRef(false);
   const openDrawers = useDrawers((state) => state.openDrawers);
+  const setDrawerSlideAmount = useDrawers((state) => state.setDrawerSlideAmount);
   const isOpen = openDrawers[drawerId] || false;
 
   useFrame(() => {
@@ -51,6 +52,9 @@ export function Drawer({
     const currentX = innerGroupRef.current.position.x;
     const newX = THREE.MathUtils.lerp(currentX, targetX, 0.1);
     innerGroupRef.current.position.x = newX;
+    
+    // Update slide amount in store for items to track
+    setDrawerSlideAmount(drawerId, newX);
   });
 
   return (
