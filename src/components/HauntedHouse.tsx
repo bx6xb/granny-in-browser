@@ -11,6 +11,7 @@ import { useHauntedHouse } from '../hooks/useHauntedHouse';
 import { Door } from './Door';
 import { Drawer } from './Drawer';
 import { Items } from './Items';
+import { AtticPlanks } from './AtticPlanks';
 import { useGuillotine } from '../store/useGuillotine';
 import { useItems } from '../store/useItems';
 import { useShields } from '../store/useShields';
@@ -1517,30 +1518,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             position={[-1.02, 8.885, -12.485]}
             rotation={[0, Math.PI / 2, 0]}
           />
-          <mesh
-            name="attic_plank_4001"
-            geometry={nodes.attic_plank_4001.geometry}
-            material={materials.walls}
-            position={[7.54, 7.831, -7.811]}
-          />
-          <mesh
-            name="attic_plank_3001"
-            geometry={nodes.attic_plank_3001.geometry}
-            material={materials.walls}
-            position={[9.082, 7.831, -7.73]}
-          />
-          <mesh
-            name="attic_plank_2001"
-            geometry={nodes.attic_plank_2001.geometry}
-            material={materials.walls}
-            position={[8.855, 7.831, -9.159]}
-          />
-          <mesh
-            name="attic_plank_1001"
-            geometry={nodes.attic_plank_1001.geometry}
-            material={materials.walls}
-            position={[7.237, 7.831, -9.409]}
-          />
           <group name="bed001" position={[-6.997, 3.456, -18.061]}>
             <mesh name="Cube243" geometry={nodes.Cube243.geometry} material={materials.wood2} />
             <mesh name="Cube243_1" geometry={nodes.Cube243_1.geometry} material={materials.bed} />
@@ -2281,6 +2258,9 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
 
       {/* Items placed on table001 */}
       <Items />
+      
+      {/* Attic planks with physics */}
+      <AtticPlanks nodes={nodes} materials={materials} />
     </>
   );
 }
