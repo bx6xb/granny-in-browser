@@ -44,7 +44,6 @@ export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
 
   escape: () => {
     set({ hasEscaped: true });
-    console.log('[EscapeDoor] Player has escaped!');
   },
 
   cutWire: () => {
@@ -55,7 +54,6 @@ export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
         wiresCut: newWiresCut,
         isDoorUnlocked: checkUnlocked({ ...state, wiresCut: newWiresCut }),
       };
-      console.log('[EscapeDoor] Wire cut:', newState);
       return newState;
     });
   },
@@ -66,7 +64,6 @@ export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
         boardRemoved: true,
         isDoorUnlocked: checkUnlocked({ ...state, boardRemoved: true }),
       };
-      console.log('[EscapeDoor] Board removed:', newState);
       return newState;
     });
   },
@@ -77,7 +74,6 @@ export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
         lockOpened: true,
         isDoorUnlocked: checkUnlocked({ ...state, lockOpened: true }),
       };
-      console.log('[EscapeDoor] Lock opened:', newState);
       return newState;
     });
   },
@@ -88,7 +84,6 @@ export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
         cardSwiped: true,
         isDoorUnlocked: checkUnlocked({ ...state, cardSwiped: true }),
       };
-      console.log('[EscapeDoor] Card swiped:', newState);
       return newState;
     });
   },

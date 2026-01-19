@@ -20,8 +20,6 @@ interface ItemsState {
 const selectedSeed = (Math.floor(Math.random() * 3) + 1) as 1 | 2 | 3;
 const { itemSlots, watermelonItem } = generateItemSpawns(selectedSeed);
 
-console.log(`Game Seed: ${selectedSeed}`, { itemSlots, watermelonItem });
-
 export const useItems = create<ItemsState>((set, get) => ({
   nearbyItem: null,
   heldItem: null,

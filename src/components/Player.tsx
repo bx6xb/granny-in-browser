@@ -200,7 +200,6 @@ export function Player() {
       });
       
       interactiveObjects.current = interactives;
-      console.log(`Built interactive objects list: ${interactives.length} objects`);
     };
 
     buildInteractiveList();
@@ -284,11 +283,8 @@ export function Player() {
           const nearShaft = useWell.getState().nearShaft;
           const handleSet = useWell.getState().handleSet;
           
-          console.log('[Player] E pressed - nearShaft:', nearShaft, 'heldItem:', currentHeldItem, 'handleSet:', handleSet);
-          
           if (nearShaft && currentHeldItem === 'handle' && !handleSet) {
             // Set handle on well
-            console.log('[Player] Setting handle on well!');
             setHandle();
             // Remove handle from inventory
             useItems.getState().dropItem([0, -100, 0]); // Drop at impossible position (will not appear)
@@ -299,11 +295,7 @@ export function Player() {
           const nearMainDoor = useEscapeDoor.getState().nearMainDoor;
           const isDoorUnlocked = useEscapeDoor.getState().isDoorUnlocked;
           
-          console.log('[Player] E pressed - nearMainDoor:', nearMainDoor, 'heldItem:', currentHeldItem, 'isDoorUnlocked:', isDoorUnlocked);
-          
           if (nearMainDoor && currentHeldItem === 'master_key' && isDoorUnlocked) {
-            // Escape!
-            console.log('[Player] ESCAPING!');
             escape();
             break;
           }
@@ -662,7 +654,6 @@ export function Player() {
           }
           // Check for main door (escape door)
           if (obj.name === 'main_door') {
-            console.log('[Player] Found main door! heldItem:', heldItem);
             // Only mark as found if holding master key
             if (heldItem === 'master_key') {
               foundMainDoor = true;
@@ -763,21 +754,18 @@ export function Player() {
     
     // Update main door proximity
     if (foundMainDoor !== lastNearMainDoor.current) {
-      console.log('[Player] Near main door:', foundMainDoor);
       setNearMainDoor(foundMainDoor);
       lastNearMainDoor.current = foundMainDoor;
     }
     
     // Update well shaft proximity
     if (foundWellShaft !== lastNearShaft.current) {
-      console.log('[Player] Near well shaft:', foundWellShaft);
       setNearShaft(foundWellShaft);
       lastNearShaft.current = foundWellShaft;
     }
     
     // Update well handle proximity
     if (foundWellHandle !== lastNearHandle.current) {
-      console.log('[Player] Near well handle:', foundWellHandle);
       setNearHandle(foundWellHandle);
       lastNearHandle.current = foundWellHandle;
     }

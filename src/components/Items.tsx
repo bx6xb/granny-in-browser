@@ -138,7 +138,6 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           // Detect if item is in the bucket/well
           if (slotName === 'slot_well') {
             containers[itemName] = { type: 'bucket', id: 'bucket001', basePos: pos };
-            console.log(`${itemName} in bucket at`, pos);
           } else {
             // Check if position is inside any drawer bounds
             for (const [minX, maxX, minY, maxY, minZ, maxZ, drawerId] of drawerBounds) {
@@ -146,15 +145,9 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
                   pos[1] >= minY && pos[1] <= maxY &&
                   pos[2] >= minZ && pos[2] <= maxZ) {
                 containers[itemName] = { type: 'drawer', id: drawerId, basePos: pos };
-                console.log(`${itemName} in drawer ${drawerId} at`, pos);
                 break;
               }
             }
-          }
-          
-          // Debug: log cut_pliers position
-          if (itemName === 'cut_pliers') {
-            console.log(`cut_pliers spawn:`, { slotName, pos, container: containers[itemName] });
           }
         } else {
           console.warn(`Empty ${slotName} not found for item ${itemName}`);
@@ -215,11 +208,6 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       const slideZ = Math.sin(rotY) * slideAmount;
       
       const adjustedPos: [number, number, number] = [pos[0] + slideX, pos[1], pos[2] + slideZ];
-      
-      // Debug cut_pliers
-      if (itemName === 'cut_pliers' && slideAmount > 0) {
-        console.log(`cut_pliers adjusted:`, { basePos: pos, slideAmount, rotY, slideX, slideZ, adjustedPos });
-      }
       
       return adjustedPos;
     }
