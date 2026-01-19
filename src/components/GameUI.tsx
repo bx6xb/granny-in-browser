@@ -16,7 +16,7 @@ export function GameUI() {
   const { nearGuillotine, watermelonPlaced } = useGuillotine();
   const { nearPlank, isChippedOff } = usePlank();
   const { nearTerminal } = useTerminal();
-  const { cardSwiped, lockOpened } = useEscapeDoor();
+  const { cardSwiped, lockOpened, isDoorUnlocked, nearMainDoor, hasEscaped } = useEscapeDoor();
   const { nearWire, doorWireCut, shieldWireCut } = useWires();
   const { nearLock } = useLock();
   const { safeOpened } = useSafe();
@@ -41,6 +41,38 @@ export function GameUI() {
 
   return (
     <>
+      {/* Win screen */}
+      {hasEscaped && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.95)',
+            color: 'white',
+            fontFamily: 'monospace',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+            pointerEvents: 'all',
+          }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '30px', fontWeight: 'bold' }}>
+            🎉 YOU ESCAPED! 🎉
+          </div>
+          <div style={{ fontSize: '24px', marginBottom: '20px' }}>
+            Congratulations! You've successfully escaped the Haunted House!
+          </div>
+          <div style={{ fontSize: '16px', opacity: 0.7 }}>
+            Press ESC to unlock mouse
+          </div>
+        </div>
+      )}
+
       <div
         style={{
           position: 'fixed',
@@ -75,8 +107,57 @@ export function GameUI() {
         </div>
       </div>
 
+      {/* Main door escape prompt */}
+      {nearMainDoor && heldItem === 'master_key' && (
+        isDoorUnlocked ? (
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: '#00ff00',
+              fontFamily: 'monospace',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              padding: '20px 30px',
+              borderRadius: '8px',
+              pointerEvents: 'none',
+              zIndex: 1000,
+              textAlign: 'center',
+              border: '3px solid rgba(0, 255, 0, 0.7)',
+            }}
+          >
+            🗝️ Press [E] to ESCAPE!
+          </div>
+        ) : (
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: '#ff4444',
+              fontFamily: 'monospace',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: '15px 25px',
+              borderRadius: '8px',
+              pointerEvents: 'none',
+              zIndex: 1000,
+              textAlign: 'center',
+              border: '2px solid rgba(255, 68, 68, 0.5)',
+            }}
+          >
+            🔒 Door is still locked. Complete all tasks first!
+          </div>
+        )
+      )}
+
       {/* Lock interaction prompt */}
-      {nearLock && heldItem === 'padlock_key' && !lockOpened && (
+      {nearLock && heldItem === 'padlock_key' && !lockOpened && !nearMainDoor && (
         <div
           style={{
             position: 'fixed',
@@ -101,7 +182,7 @@ export function GameUI() {
       )}
 
       {/* Terminal interaction prompt */}
-      {nearTerminal && heldItem === 'card' && !cardSwiped && (
+      {nearTerminal && heldItem === 'card' && !cardSwiped && !nearMainDoor && (
         <div
           style={{
             position: 'fixed',
@@ -126,7 +207,7 @@ export function GameUI() {
       )}
 
       {/* Wire cutting prompt */}
-      {nearWire && heldItem === 'cut' && (
+      {nearWire && heldItem === 'cut' && !nearMainDoor && (
         (nearWire === 'door_wire' && !doorWireCut) || 
         (nearWire.startsWith('shield_wire') && !shieldWireCut)
       ) && (
@@ -154,7 +235,7 @@ export function GameUI() {
       )}
 
       {/* Plank interaction prompt */}
-      {nearPlank && heldItem === 'hammer' && !isChippedOff && (
+      {nearPlank && heldItem === 'hammer' && !isChippedOff && !nearMainDoor && (
         <div
           style={{
             position: 'fixed',
@@ -179,7 +260,7 @@ export function GameUI() {
       )}
 
       {/* Guillotine interaction prompt */}
-      {nearGuillotine && heldItem === 'watermelon' && !watermelonPlaced && (
+      {nearGuillotine && heldItem === 'watermelon' && !watermelonPlaced && !nearMainDoor && (
         <div
           style={{
             position: 'fixed',
@@ -204,7 +285,7 @@ export function GameUI() {
       )}
 
       {/* Door interaction prompt */}
-      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && (
+      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && (
         nearbyDoor === 'safe_door001' ? (
           !safeOpened && heldItem !== 'safe_key' ? (
             <div
@@ -277,7 +358,7 @@ export function GameUI() {
       )}
 
       {/* Drawer interaction prompt */}
-      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && (
+      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && (
         <div
           style={{
             position: 'fixed',
@@ -302,7 +383,7 @@ export function GameUI() {
       )}
 
       {/* Item interaction prompt */}
-      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && (
+      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && (
         <div
           style={{
             position: 'fixed',

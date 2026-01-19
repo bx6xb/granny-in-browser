@@ -35,7 +35,7 @@ export function Player() {
   const { setNearGuillotine, placeWatermelon } = useGuillotine();
   const { setNearPlank, chipOffPlank, isChippedOff } = usePlank();
   const { setNearTerminal } = useTerminal();
-  const { swipeCard, cutWire, openLock } = useEscapeDoor();
+  const { swipeCard, cutWire, openLock, setNearMainDoor, escape, isDoorUnlocked, hasEscaped } = useEscapeDoor();
   const { setNearWire } = useWires();
   const { setNearLock } = useLock();
   const { openSafe } = useSafe();
@@ -150,6 +150,15 @@ export function Player() {
             obj.traverse((child) => child.layers.enable(1));
           }
         }
+        
+        // Check for main door (escape door)
+        if (obj.name === 'main_door') {
+          if (!addedIds.has('main_door')) {
+            interactives.push(obj);
+            addedIds.add('main_door');
+            obj.traverse((child) => child.layers.enable(1));
+          }
+        }
       });
       
       interactiveObjects.current = interactives;
@@ -178,9 +187,22 @@ export function Player() {
     camera.rotation.set(camera.rotation.x, initialRotation, camera.rotation.z);
   }, [camera]);
 
+  // Disable pointer lock controls when escaped
+  useEffect(() => {
+    if (hasEscaped && controlsRef.current) {
+      const controls = controlsRef.current as any;
+      if (controls.unlock) {
+        controls.unlock();
+      }
+    }
+  }, [hasEscaped]);
+
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Disable all input if player has escaped
+      if (hasEscaped) return;
+      
       switch (e.code) {
         case 'KeyW':
           movement.current.forward = true;
@@ -199,9 +221,23 @@ export function Player() {
           setIsCrouching(true);
           break;
         case 'KeyE': {
+          const currentHeldItem = useItems.getState().heldItem;
+          
+          // Check if near main door with master key and all conditions met
+          const nearMainDoor = useEscapeDoor.getState().nearMainDoor;
+          const isDoorUnlocked = useEscapeDoor.getState().isDoorUnlocked;
+          
+          console.log('[Player] E pressed - nearMainDoor:', nearMainDoor, 'heldItem:', currentHeldItem, 'isDoorUnlocked:', isDoorUnlocked);
+          
+          if (nearMainDoor && currentHeldItem === 'master_key' && isDoorUnlocked) {
+            // Escape!
+            console.log('[Player] ESCAPING!');
+            escape();
+            break;
+          }
+          
           // Check if holding padlock key and near lock
           const nearLock = useLock.getState().nearLock;
-          const currentHeldItem = useItems.getState().heldItem;
           const lockOpened = useEscapeDoor.getState().lockOpened;
           
           if (nearLock && currentHeldItem === 'padlock_key' && !lockOpened) {
@@ -305,6 +341,9 @@ export function Player() {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      // Disable all input if player has escaped
+      if (hasEscaped) return;
+      
       switch (e.code) {
         case 'KeyW':
           movement.current.forward = false;
@@ -332,7 +371,7 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock]);
+  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped]);
 
   // Track previous crouch state to detect transitions
   const prevCrouchState = useRef(false);
@@ -369,6 +408,7 @@ export function Player() {
   const lastNearTerminal = useRef<boolean>(false);
   const lastNearWire = useRef<string | null>(null);
   const lastNearLock = useRef<boolean>(false);
+  const lastNearMainDoor = useRef<boolean>(false);
 
   // Configure raycaster to only check layer 1 (interactive objects)
   useEffect(() => {
@@ -382,6 +422,14 @@ export function Player() {
   // Update player movement and camera
   useFrame(() => {
     if (!playerRef.current) return;
+    
+    // Stop game if player has escaped
+    if (hasEscaped) {
+      // Freeze player movement
+      const player = playerRef.current;
+      player.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      return;
+    }
 
     const player = playerRef.current;
     const velocity = player.linvel();
@@ -450,6 +498,7 @@ export function Player() {
     let foundTerminal = false;
     let foundWire: string | null = null;
     let foundLock = false;
+    let foundMainDoor = false;
 
     for (let i = 0; i < intersects.length; i++) {
       const intersect = intersects[i];
@@ -496,6 +545,15 @@ export function Player() {
               break;
             }
           }
+          // Check for main door (escape door)
+          if (obj.name === 'main_door') {
+            console.log('[Player] Found main door! heldItem:', heldItem);
+            // Only mark as found if holding master key
+            if (heldItem === 'master_key') {
+              foundMainDoor = true;
+              break;
+            }
+          }
           // Check for wires - only if holding cut pliers
           if (heldItem === 'cut') {
             const wiresState = useWires.getState();
@@ -524,7 +582,7 @@ export function Player() {
           }
           obj = obj.parent;
         }
-        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock) break;
+        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock || foundMainDoor) break;
       }
     }
 
@@ -567,6 +625,13 @@ export function Player() {
     if (foundLock !== lastNearLock.current) {
       setNearLock(foundLock);
       lastNearLock.current = foundLock;
+    }
+    
+    // Update main door proximity
+    if (foundMainDoor !== lastNearMainDoor.current) {
+      console.log('[Player] Near main door:', foundMainDoor);
+      setNearMainDoor(foundMainDoor);
+      lastNearMainDoor.current = foundMainDoor;
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground
@@ -672,7 +737,7 @@ export function Player() {
 
   return (
     <>
-      <PointerLockControls ref={controlsRef} />
+      <PointerLockControls ref={controlsRef} enabled={!hasEscaped} />
 
       {/* Player flashlight - optimized spotlight that follows camera direction */}
       <spotLight

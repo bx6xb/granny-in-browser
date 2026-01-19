@@ -9,10 +9,14 @@ export interface EscapeDoorStatus {
 
 interface EscapeDoorState extends EscapeDoorStatus {
   isDoorUnlocked: boolean;
+  hasEscaped: boolean;
+  nearMainDoor: boolean;
   cutWire: () => void;
   removeBoard: () => void;
   openLock: () => void;
   swipeCard: () => void;
+  setNearMainDoor: (near: boolean) => void;
+  escape: () => void;
   reset: () => void;
 }
 
@@ -33,6 +37,15 @@ const checkUnlocked = (state: EscapeDoorStatus): boolean => {
 export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
   ...initialState,
   isDoorUnlocked: false,
+  hasEscaped: false,
+  nearMainDoor: false,
+
+  setNearMainDoor: (near) => set({ nearMainDoor: near }),
+
+  escape: () => {
+    set({ hasEscaped: true });
+    console.log('[EscapeDoor] Player has escaped!');
+  },
 
   cutWire: () => {
     set((state) => {
@@ -81,6 +94,6 @@ export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
   },
 
   reset: () => {
-    set({ ...initialState, isDoorUnlocked: false });
+    set({ ...initialState, isDoorUnlocked: false, hasEscaped: false, nearMainDoor: false });
   },
 }));
