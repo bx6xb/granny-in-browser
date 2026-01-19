@@ -566,7 +566,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
         doorId="hatch001"
         geometry={nodes.hatch001.geometry}
         material={materials['metal 2']}
-        position={[-2.784, 7.833, -12.5]}
+        position={[-2.784, 7.832, -12.5]}
         openDirection={1}
       />
       <Door
@@ -796,7 +796,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             name="Cube054"
             geometry={nodes.Cube054.geometry}
             material={materials.walls}
-            position={[-3.27, 8.928, -12.494]}
+            position={[-3.27, 9.2, -12.494]}
           />
           <mesh
             name="Plane009"
@@ -1511,13 +1511,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             rotation={[0, Math.PI / 2, 0]}
             scale={[1, 0.072, 1]}
           />
-          <mesh
-            name="plank001"
-            geometry={nodes.plank001.geometry}
-            material={materials.wood2}
-            position={[-1.02, 8.885, -12.485]}
-            rotation={[0, Math.PI / 2, 0]}
-          />
           <group name="bed001" position={[-6.997, 3.456, -18.061]}>
             <mesh name="Cube243" geometry={nodes.Cube243.geometry} material={materials.wood2} />
             <mesh name="Cube243_1" geometry={nodes.Cube243_1.geometry} material={materials.bed} />
@@ -1942,12 +1935,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             rotation={[0, Math.PI / 2, 0]}
             scale={[1, 0.028, 0.868]}
           />
-          <mesh
-            name="plank002"
-            geometry={nodes.plank002.geometry}
-            material={materials.wood2}
-            position={[11.714, -6.194, -17.935]}
-          />
           <Drawer
             drawerId="nightstand_box014"
             position={[13.791, 9.969, -18.008]}
@@ -2278,6 +2265,40 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
           name="box003"
           geometry={nodes.box003.geometry}
           material={materials.box}
+        />
+      </RigidBody>
+      
+      {/* Planks with physics */}
+      <RigidBody
+        position={[-1.02, 8.885, -12.485]}
+        rotation={[0, Math.PI / 2, 0]}
+        type="dynamic"
+        colliders="hull"
+        mass={15}
+        gravityScale={1}
+        linearDamping={0.5}
+        angularDamping={0.5}
+      >
+        <mesh
+          name="plank001"
+          geometry={nodes.plank001.geometry}
+          material={materials.wood2}
+        />
+      </RigidBody>
+      
+      <RigidBody
+        position={[11.714, -6.194, -17.935]}
+        type="dynamic"
+        colliders="hull"
+        mass={15}
+        gravityScale={1}
+        linearDamping={0.5}
+        angularDamping={0.5}
+      >
+        <mesh
+          name="plank002"
+          geometry={nodes.plank002.geometry}
+          material={materials.wood2}
         />
       </RigidBody>
     </>
