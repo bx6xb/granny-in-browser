@@ -15,6 +15,7 @@ import { useEscapeDoor } from '../store/useEscapeDoor';
 import { useWires } from '../store/useWires';
 import { useLock } from '../store/useLock';
 import { useSafe } from '../store/useSafe';
+import { useWell } from '../store/useWell';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
@@ -39,6 +40,7 @@ export function Player() {
   const { setNearWire } = useWires();
   const { setNearLock } = useLock();
   const { openSafe } = useSafe();
+  const { setNearShaft, setNearHandle, setHandle, startUsingWell, stopUsingWell } = useWell();
   const [isCrouching, setIsCrouching] = useState(false);
 
   // ===== PERFORMANCE: Dedicated array for interactive objects =====
@@ -159,6 +161,32 @@ export function Player() {
             obj.traverse((child) => child.layers.enable(1));
           }
         }
+        
+        // Check for well shaft
+        if (obj.name === 'shaft001' || obj.name === 'Cylinder024' || obj.name === 'Cylinder024_1') {
+          if (!addedIds.has('shaft001')) {
+            // Find the parent group
+            let target = obj;
+            while (target.parent && target.parent.name !== 'shaft001') {
+              target = target.parent;
+            }
+            if (target.parent && target.parent.name === 'shaft001') {
+              target = target.parent;
+            }
+            interactives.push(target);
+            addedIds.add('shaft001');
+            target.traverse((child) => child.layers.enable(1));
+          }
+        }
+        
+        // Check for well handle
+        if (obj.name === 'handle001') {
+          if (!addedIds.has('handle001')) {
+            interactives.push(obj);
+            addedIds.add('handle001');
+            obj.traverse((child) => child.layers.enable(1));
+          }
+        }
       });
       
       interactiveObjects.current = interactives;
@@ -222,6 +250,21 @@ export function Player() {
           break;
         case 'KeyE': {
           const currentHeldItem = useItems.getState().heldItem;
+          
+          // Check if holding handle and near shaft
+          const nearShaft = useWell.getState().nearShaft;
+          const handleSet = useWell.getState().handleSet;
+          
+          console.log('[Player] E pressed - nearShaft:', nearShaft, 'heldItem:', currentHeldItem, 'handleSet:', handleSet);
+          
+          if (nearShaft && currentHeldItem === 'handle' && !handleSet) {
+            // Set handle on well
+            console.log('[Player] Setting handle on well!');
+            setHandle();
+            // Remove handle from inventory
+            useItems.getState().dropItem([0, -100, 0]); // Drop at impossible position (will not appear)
+            break;
+          }
           
           // Check if near main door with master key and all conditions met
           const nearMainDoor = useEscapeDoor.getState().nearMainDoor;
@@ -371,7 +414,37 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped]);
+  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle]);
+  
+  // Handle continuous key press for well usage
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (hasEscaped) return;
+      
+      if (e.code === 'KeyE') {
+        const nearHandle = useWell.getState().nearHandle;
+        const handleSet = useWell.getState().handleSet;
+        
+        if (nearHandle && handleSet) {
+          startUsingWell();
+        }
+      }
+    };
+    
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'KeyE') {
+        stopUsingWell();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [hasEscaped, startUsingWell, stopUsingWell]);
 
   // Track previous crouch state to detect transitions
   const prevCrouchState = useRef(false);
@@ -409,6 +482,8 @@ export function Player() {
   const lastNearWire = useRef<string | null>(null);
   const lastNearLock = useRef<boolean>(false);
   const lastNearMainDoor = useRef<boolean>(false);
+  const lastNearShaft = useRef<boolean>(false);
+  const lastNearHandle = useRef<boolean>(false);
 
   // Configure raycaster to only check layer 1 (interactive objects)
   useEffect(() => {
@@ -499,6 +574,8 @@ export function Player() {
     let foundWire: string | null = null;
     let foundLock = false;
     let foundMainDoor = false;
+    let foundWellShaft = false;
+    let foundWellHandle = false;
 
     for (let i = 0; i < intersects.length; i++) {
       const intersect = intersects[i];
@@ -571,6 +648,22 @@ export function Player() {
             foundItem = obj.name;
             break;
           }
+          // Check for well shaft - only if holding handle and not set yet
+          if (heldItem === 'handle') {
+            const handleSet = useWell.getState().handleSet;
+            if ((obj.name === 'shaft001' || obj.name === 'Cylinder024' || obj.name === 'Cylinder024_1') && !handleSet) {
+              foundWellShaft = true;
+              break;
+            }
+          }
+          // Check for well handle - only after it's been set
+          if (obj.name === 'handle001') {
+            const handleSet = useWell.getState().handleSet;
+            if (handleSet) {
+              foundWellHandle = true;
+              break;
+            }
+          }
           // Check for guillotine blade - only if holding watermelon
           if (heldItem === 'watermelon' && obj.name === 'Cube091') {
             // Check if looking at the watermelon placement position
@@ -582,7 +675,7 @@ export function Player() {
           }
           obj = obj.parent;
         }
-        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock || foundMainDoor) break;
+        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock || foundMainDoor || foundWellShaft || foundWellHandle) break;
       }
     }
 
@@ -632,6 +725,20 @@ export function Player() {
       console.log('[Player] Near main door:', foundMainDoor);
       setNearMainDoor(foundMainDoor);
       lastNearMainDoor.current = foundMainDoor;
+    }
+    
+    // Update well shaft proximity
+    if (foundWellShaft !== lastNearShaft.current) {
+      console.log('[Player] Near well shaft:', foundWellShaft);
+      setNearShaft(foundWellShaft);
+      lastNearShaft.current = foundWellShaft;
+    }
+    
+    // Update well handle proximity
+    if (foundWellHandle !== lastNearHandle.current) {
+      console.log('[Player] Near well handle:', foundWellHandle);
+      setNearHandle(foundWellHandle);
+      lastNearHandle.current = foundWellHandle;
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground

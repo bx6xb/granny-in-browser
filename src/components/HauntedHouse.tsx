@@ -17,6 +17,7 @@ import { useShields } from '../store/useShields';
 import { usePlank } from '../store/usePlank';
 import { useEscapeDoor } from '../store/useEscapeDoor';
 import { useWires } from '../store/useWires';
+import { useWell } from '../store/useWell';
 import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 
@@ -361,6 +362,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   const { isChippedOff } = usePlank();
   const { cardSwiped, wiresCut, lockOpened } = useEscapeDoor();
   const { doorWireCut, shieldWireCut } = useWires();
+  const { handleSet, handleRotation, bucketHeight, updateWellProgress } = useWell();
   const bladeRef = useRef<THREE.Mesh>(null);
   const [bladePosition, setBladePosition] = useState(0.083); // Initial Y position
   const [animating, setAnimating] = useState(false);
@@ -405,6 +407,9 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
         return newPos;
       });
     }
+    
+    // Update well progress
+    updateWellProgress(delta);
   });
 
   return (
@@ -1718,20 +1723,24 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             name="rope001"
             geometry={nodes.rope001.geometry}
             material={materials.rope}
-            position={[-16.202, -3.932, -30.295]}
+            position={[-16.202, -3.932 + bucketHeight / 2, -30.295]}
+            scale={[1, Math.max(0.1, 1 - bucketHeight / 5.5), 1]}
           />
-          <mesh
-            name="handle001"
-            geometry={nodes.handle001.geometry}
-            material={materials.wood2}
-            position={[-14.856, -1.034, -31.254]}
-          />
+          {handleSet && (
+            <mesh
+              name="handle001"
+              geometry={nodes.handle001.geometry}
+              material={materials.wood2}
+              position={[-14.856, -1.034, -31.254]}
+              rotation={[handleRotation, 0, 0]}
+            />
+          )}
           <mesh
             name="bucket001"
             geometry={nodes.bucket001.geometry}
             material={materials.metal}
-            position={[-16.215, -6.603, -30.3]}
-            scale={[0.272, 0.23, 0.272]}
+            position={[-16.2, -6.6 + bucketHeight, -30.295]}
+            scale={[0.545, 0.461, 0.545]}
           />
           <mesh
             ref={bladeRef}

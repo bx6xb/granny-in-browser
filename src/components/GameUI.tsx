@@ -8,6 +8,7 @@ import { useEscapeDoor } from '../store/useEscapeDoor';
 import { useWires } from '../store/useWires';
 import { useLock } from '../store/useLock';
 import { useSafe } from '../store/useSafe';
+import { useWell } from '../store/useWell';
 
 export function GameUI() {
   const { nearbyDoor, getDoorState } = useDoors();
@@ -20,6 +21,7 @@ export function GameUI() {
   const { nearWire, doorWireCut, shieldWireCut } = useWires();
   const { nearLock } = useLock();
   const { safeOpened } = useSafe();
+  const { nearShaft, nearHandle, handleSet, bucketHeight } = useWell();
   const doorState = nearbyDoor ? getDoorState(nearbyDoor) : null;
   const isDrawerOpen = nearbyDrawer ? openDrawers[nearbyDrawer] : false;
 
@@ -156,6 +158,56 @@ export function GameUI() {
         )
       )}
 
+      {/* Well shaft interaction prompt */}
+      {nearShaft && heldItem === 'handle' && !handleSet && !nearMainDoor && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: '#8B4513',
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '15px 25px',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            textAlign: 'center',
+            border: '2px solid rgba(139, 69, 19, 0.5)',
+          }}
+        >
+          Press [E] to set Handle on Well
+        </div>
+      )}
+
+      {/* Well handle interaction prompt */}
+      {nearHandle && handleSet && bucketHeight < 4.7 && !nearMainDoor && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: '#4169E1',
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '15px 25px',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            textAlign: 'center',
+            border: '2px solid rgba(65, 105, 225, 0.5)',
+          }}
+        >
+          Hold [E] to use Well
+        </div>
+      )}
+
       {/* Lock interaction prompt */}
       {nearLock && heldItem === 'padlock_key' && !lockOpened && !nearMainDoor && (
         <div
@@ -285,7 +337,7 @@ export function GameUI() {
       )}
 
       {/* Door interaction prompt */}
-      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && (
+      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
         nearbyDoor === 'safe_door001' ? (
           !safeOpened && heldItem !== 'safe_key' ? (
             <div
@@ -358,7 +410,7 @@ export function GameUI() {
       )}
 
       {/* Drawer interaction prompt */}
-      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && (
+      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
         <div
           style={{
             position: 'fixed',
@@ -383,7 +435,7 @@ export function GameUI() {
       )}
 
       {/* Item interaction prompt */}
-      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && (
+      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
         <div
           style={{
             position: 'fixed',
