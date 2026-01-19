@@ -301,6 +301,7 @@ type GLTFResult = GLTF & {
     cut_indicator_2: THREE.Mesh;
     door_wire: THREE.Mesh;
     wood_plank: THREE.Mesh;
+    wood_plank001: THREE.Mesh;
     Cube038_1: THREE.Mesh;
     Cube038_2: THREE.Mesh;
     Cube038_3: THREE.Mesh;
@@ -2168,6 +2169,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
               scale={[0.273, 0.025, 0.273]}
             />
           )}
+          <mesh name="wood_plank001" geometry={nodes.wood_plank001.geometry} material={materials['wood2.002']} position={[8.106, 7.94, -8.589]} rotation={[-Math.PI, 0, 0]} scale={[0.273, 0.025, 0.273]} />
           {!lockOpened && (
             <group name="door_lock" position={[6.996, 0.675, -3.215]} scale={[0.366, 0.099, 0.037]}>
               <mesh name="Cube038_1" geometry={nodes.Cube038_1.geometry} material={materials.wood2} />
