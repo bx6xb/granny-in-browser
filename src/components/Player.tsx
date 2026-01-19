@@ -855,9 +855,9 @@ export function Player() {
       true
     );
 
-    // Apply gentle downward force ONLY when moving and going downward to prevent ramp flying
-    if (moveLength > 0 && velocity.y < -0.1) {
-      player.applyImpulse({ x: 0, y: -0.2, z: 0 }, true);
+    // Apply downward force when in air to make falling faster
+    if (velocity.y < -0.1) {
+      player.applyImpulse({ x: 0, y: -0.4, z: 0 }, true);
     }
 
     // Update camera position based on crouch state
