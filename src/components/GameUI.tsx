@@ -2,12 +2,14 @@ import { useDoors } from '../store/useDoors';
 import { useDrawers } from '../store/useDrawers';
 import { useItems } from '../store/useItems';
 import { useGuillotine } from '../store/useGuillotine';
+import { usePlank } from '../store/usePlank';
 
 export function GameUI() {
   const { nearbyDoor, getDoorState } = useDoors();
   const { nearbyDrawer, openDrawers } = useDrawers();
   const { nearbyItem, heldItem } = useItems();
   const { nearGuillotine, watermelonPlaced } = useGuillotine();
+  const { nearPlank, isChippedOff } = usePlank();
   const doorState = nearbyDoor ? getDoorState(nearbyDoor) : null;
   const isDrawerOpen = nearbyDrawer ? openDrawers[nearbyDrawer] : false;
 
@@ -22,6 +24,7 @@ export function GameUI() {
       watermelon: 'Watermelon',
       cut: 'Watermelon Slice',
       hammer: 'Hammer',
+      wood_plank_item: 'Wood Plank',
     };
     return nameMap[itemName] || itemName;
   };
@@ -62,6 +65,31 @@ export function GameUI() {
         </div>
       </div>
 
+      {/* Plank interaction prompt */}
+      {nearPlank && heldItem === 'hammer' && !isChippedOff && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: '#ffa500',
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '15px 25px',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            textAlign: 'center',
+            border: '2px solid rgba(255, 165, 0, 0.5)',
+          }}
+        >
+          🔨 Press [E] to chip off Wood Plank
+        </div>
+      )}
+
       {/* Guillotine interaction prompt */}
       {nearGuillotine && heldItem === 'watermelon' && !watermelonPlaced && (
         <div
@@ -88,7 +116,7 @@ export function GameUI() {
       )}
 
       {/* Door interaction prompt */}
-      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && (
+      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && (
         <div
           style={{
             position: 'fixed',
@@ -113,7 +141,7 @@ export function GameUI() {
       )}
 
       {/* Drawer interaction prompt */}
-      {nearbyDrawer && !nearbyDoor && !nearGuillotine && (
+      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && (
         <div
           style={{
             position: 'fixed',
@@ -138,7 +166,7 @@ export function GameUI() {
       )}
 
       {/* Item interaction prompt */}
-      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !heldItem && (
+      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !heldItem && (
         <div
           style={{
             position: 'fixed',

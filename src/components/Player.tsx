@@ -9,6 +9,7 @@ import { useDoors } from '../store/useDoors';
 import { useDrawers } from '../store/useDrawers';
 import { useItems } from '../store/useItems';
 import { useGuillotine } from '../store/useGuillotine';
+import { usePlank } from '../store/usePlank';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
@@ -27,6 +28,7 @@ export function Player() {
   const { toggleDrawer, setNearbyDrawer } = useDrawers();
   const { setNearbyItem, grabItem, dropItem, heldItem } = useItems();
   const { setNearGuillotine, placeWatermelon } = useGuillotine();
+  const { setNearPlank, chipOffPlank, isChippedOff } = usePlank();
   const [isCrouching, setIsCrouching] = useState(false);
 
   // ===== PERFORMANCE: Dedicated array for interactive objects =====
@@ -84,7 +86,7 @@ export function Player() {
         if (obj.name === 'padlock_key' || obj.name === 'master_key' || 
             obj.name === 'card' || obj.name === 'safe_key' || 
             obj.name === 'handle' || obj.name === 'watermelon' || 
-            obj.name === 'cut' || obj.name === 'hammer') {
+            obj.name === 'cut' || obj.name === 'hammer' || obj.name === 'wood_plank_item') {
           if (!addedIds.has(obj.name)) {
             interactives.push(obj);
             addedIds.add(obj.name);
@@ -98,6 +100,15 @@ export function Player() {
           if (!addedIds.has('guillotine')) {
             interactives.push(obj);
             addedIds.add('guillotine');
+            obj.layers.enable(1);
+          }
+        }
+        
+        // Check for wood plank on door (before chipped off)
+        if (obj.name === 'wood_plank') {
+          if (!addedIds.has('wood_plank')) {
+            interactives.push(obj);
+            addedIds.add('wood_plank');
             obj.layers.enable(1);
           }
         }
@@ -150,9 +161,19 @@ export function Player() {
           setIsCrouching(true);
           break;
         case 'KeyE': {
+          // Check if holding hammer and near plank
+          const nearPlank = usePlank.getState().nearPlank;
+          const currentHeldItem = useItems.getState().heldItem;
+          const plankChipped = usePlank.getState().isChippedOff;
+          
+          if (nearPlank && currentHeldItem === 'hammer' && !plankChipped) {
+            // Chip off the plank
+            chipOffPlank();
+            break;
+          }
+          
           // Check if holding watermelon and near guillotine
           const nearGuillotine = useGuillotine.getState().nearGuillotine;
-          const currentHeldItem = useItems.getState().heldItem;
           
           if (nearGuillotine && currentHeldItem === 'watermelon') {
             // Place watermelon in guillotine
@@ -220,7 +241,7 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon]);
+  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank]);
 
   // Track previous crouch state to detect transitions
   const prevCrouchState = useRef(false);
@@ -244,7 +265,7 @@ export function Player() {
   const guillotinePosition = useRef(new THREE.Vector3(-10.7, -1.6, -28.6));
   
   // Item names as Set for O(1) lookup instead of O(n) array.includes()
-  const itemNamesSet = useRef(new Set(['padlock_key', 'master_key', 'card', 'safe_key', 'handle', 'watermelon', 'cut', 'hammer']));
+  const itemNamesSet = useRef(new Set(['padlock_key', 'master_key', 'card', 'safe_key', 'handle', 'watermelon', 'cut', 'hammer', 'wood_plank_item']));
   
   const neededClearance = PLAYER_HEIGHT - CROUCH_HEIGHT + 0.2;
 
@@ -253,6 +274,7 @@ export function Player() {
   const lastNearbyDrawer = useRef<string | null>(null);
   const lastNearbyItem = useRef<string | null>(null);
   const lastNearGuillotine = useRef<boolean>(false);
+  const lastNearPlank = useRef<boolean>(false);
 
   // Configure raycaster to only check layer 1 (interactive objects)
   useEffect(() => {
@@ -330,6 +352,7 @@ export function Player() {
     let foundDrawer: string | null = null;
     let foundItem: string | null = null;
     let foundGuillotine = false;
+    let foundPlank = false;
 
     for (let i = 0; i < intersects.length; i++) {
       const intersect = intersects[i];
@@ -349,6 +372,11 @@ export function Player() {
             foundDrawer = obj.name;
             break;
           }
+          // Check for wood plank on door - only if holding hammer and not chipped off yet
+          if (heldItem === 'hammer' && !isChippedOff && obj.name === 'wood_plank') {
+            foundPlank = true;
+            break;
+          }
           // Check for items - only if not holding an item (using Set for faster lookup)
           if (!heldItem && itemNamesSet.current.has(obj.name)) {
             foundItem = obj.name;
@@ -365,7 +393,7 @@ export function Player() {
           }
           obj = obj.parent;
         }
-        if (foundDoor || foundDrawer || foundItem || foundGuillotine) break;
+        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank) break;
       }
     }
 
@@ -388,6 +416,11 @@ export function Player() {
     if (foundGuillotine !== lastNearGuillotine.current) {
       setNearGuillotine(foundGuillotine);
       lastNearGuillotine.current = foundGuillotine;
+    }
+    
+    if (foundPlank !== lastNearPlank.current) {
+      setNearPlank(foundPlank);
+      lastNearPlank.current = foundPlank;
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground

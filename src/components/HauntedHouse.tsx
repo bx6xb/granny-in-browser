@@ -14,6 +14,7 @@ import { Items } from './Items';
 import { useGuillotine } from '../store/useGuillotine';
 import { useItems } from '../store/useItems';
 import { useShields } from '../store/useShields';
+import { usePlank } from '../store/usePlank';
 import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 
@@ -355,6 +356,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   const { watermelonPlaced, bladeDropped, itemRevealed, dropBlade, revealItem } = useGuillotine();
   const { itemInsideWatermelon, droppedPositions } = useItems();
   const { activeShieldId, initializeActiveShield } = useShields();
+  const { isChippedOff } = usePlank();
   const bladeRef = useRef<THREE.Mesh>(null);
   const [bladePosition, setBladePosition] = useState(0.083); // Initial Y position
   const [animating, setAnimating] = useState(false);
@@ -2118,14 +2120,16 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             position={[6.131, 0.574, -2.979]}
             scale={[0.026, 0.1, 0.034]}
           />
-          <mesh
-            name="wood_plank"
-            geometry={nodes.wood_plank.geometry}
-            material={materials.wood2}
-            position={[8.036, -0.873, -3.118]}
-            rotation={[Math.PI / 2, -0.236, 0]}
-            scale={[0.273, 0.025, 0.273]}
-          />
+          {!isChippedOff && (
+            <mesh
+              name="wood_plank"
+              geometry={nodes.wood_plank.geometry}
+              material={materials.wood2}
+              position={[8.036, -0.873, -3.118]}
+              rotation={[Math.PI / 2, -0.236, 0]}
+              scale={[0.273, 0.025, 0.273]}
+            />
+          )}
           <group name="door_lock" position={[6.996, 0.675, -3.215]} scale={[0.366, 0.099, 0.037]}>
             <mesh name="Cube038_1" geometry={nodes.Cube038_1.geometry} material={materials.wood2} />
             <mesh name="Cube038_2" geometry={nodes.Cube038_2.geometry} material={materials.metal} />

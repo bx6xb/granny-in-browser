@@ -9,6 +9,8 @@ import type { GLTF } from 'three-stdlib';
 import { RigidBody } from '@react-three/rapier';
 import type React from 'react';
 import { useItems } from '../store/useItems';
+import { usePlank } from '../store/usePlank';
+import { useGLTF as useHouseGLTF } from '@react-three/drei';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -43,7 +45,9 @@ type GLTFResult = GLTF & {
 
 export function Items(props: React.JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/items.glb') as unknown as GLTFResult;
+  const houseModel = useHouseGLTF('/models/hauntedHouse.glb') as any;
   const { isItemHeld, getItemPosition } = useItems();
+  const { isChippedOff } = usePlank();
 
   // Collision groups:
   // - Group 0 (0x0001): Static geometry (floors, walls, furniture)
@@ -261,6 +265,31 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
             <mesh name="Cube052" geometry={nodes.Cube052.geometry} material={materials.wood2} />
             <mesh name="Cube052_1" geometry={nodes.Cube052_1.geometry} material={materials.metal} />
           </group>
+        </RigidBody>
+      )}
+      
+      {/* Wood Plank - pickable after chipped off */}
+      {isChippedOff && !isItemHeld('wood_plank_item') && (
+        <RigidBody
+          key={`wood_plank_item-${getItemPosition('wood_plank_item', [8.036, -0.5, -3.118]).join(',')}`}
+          type="dynamic"
+          position={getItemPosition('wood_plank_item', [8.036, -0.5, -3.118])}
+          colliders="cuboid"
+          restitution={0.2}
+          friction={0.8}
+          canSleep={true}
+          ccd={true}
+          collisionGroups={itemCollisionGroup}
+          scale={0.85}
+        >
+          <mesh
+            name="wood_plank_item"
+            geometry={houseModel.nodes.wood_plank.geometry}
+            material={houseModel.materials.wood2}
+            position={[0, 0, 0]}
+            rotation={[Math.PI / 2, -0.236, 0]}
+            scale={[0.273, 0.025, 0.273]}
+          />
         </RigidBody>
       )}
     </group>
