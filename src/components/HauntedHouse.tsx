@@ -1599,10 +1599,17 @@ export function HauntedHouse(props: ThreeElements['group']) {
             rotation={[0, -Math.PI / 2, 0]}
             scale={1.365}
           />
-          <group name="nightstand_box002" position={[-1.69, 4.801, -23.407]} rotation={[0, -Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube255" geometry={nodes.Cube255.geometry} material={materials.wood2} />
-        <mesh name="Cube255_1" geometry={nodes.Cube255_1.geometry} material={materials.metal} />
-      </group>
+          <Door
+        doorId="nightstand_box002"
+        geometry={nodes.Cube255.geometry}
+        material={materials.wood2}
+        position={[-1.69, 4.801, -23.407]}
+        rotation={[0, -Math.PI / 2, 0]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube255_1.geometry} material={materials.metal} />
+      </Door>
       <mesh name="nightstand001" geometry={nodes.nightstand001.geometry} material={materials.wood2} position={[-2.769, 4.136, -23.863]} rotation={[0, -Math.PI / 2, 0]} scale={[1, 0.028, 0.797]} />
             <mesh name="nightstand002" geometry={nodes.nightstand002.geometry} material={materials['wood2.012']} position={[6.886, 1.969, -32.08]} rotation={[0, 1.571, 0]} scale={[1, 0.028, 0.797]} />
       <mesh name="nightstand003" geometry={nodes.nightstand003.geometry} material={materials['wood2.010']} position={[13.418, 4.133, -8.947]} scale={[1, 0.028, 0.797]} />
@@ -1611,66 +1618,170 @@ export function HauntedHouse(props: ThreeElements['group']) {
       <mesh name="nightstand007" geometry={nodes.nightstand007.geometry} material={materials['wood2.006']} position={[24.74, 4.133, -17.603]} rotation={[-Math.PI, 0, -Math.PI]} scale={[1, 0.028, 0.797]} />
       <mesh name="nightstand008" geometry={nodes.nightstand008.geometry} material={materials['wood2.008']} position={[15.026, 4.133, -15.904]} rotation={[0, 1.571, 0]} scale={[1, 0.028, 0.797]} />
       <mesh name="nightstand009" geometry={nodes.nightstand009.geometry} material={materials['wood2.004']} position={[13.205, 9.205, -18.301]} rotation={[0, -Math.PI / 2, 0]} scale={[1, 0.028, 0.797]} />
-      <group name="nightstand_box001" position={[16.106, 4.797, -16.36]} rotation={[Math.PI, -1.571, 0]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube053_1" geometry={nodes.Cube053_1.geometry} material={materials['wood2.009']} />
-        <mesh name="Cube053_2" geometry={nodes.Cube053_2.geometry} material={materials['metal.007']} />
-      </group>
-      <group name="nightstand_box003" position={[-3.849, 4.801, -23.407]} rotation={[Math.PI, Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube015" geometry={nodes.Cube015.geometry} material={materials['wood2.003']} />
-        <mesh name="Cube015_1" geometry={nodes.Cube015_1.geometry} material={materials['metal.002']} />
-      </group>
-      <group name="nightstand_box004" position={[13.874, 4.797, -7.867]} rotation={[Math.PI, 0, 0]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube057_1" geometry={nodes.Cube057_1.geometry} material={materials['wood2.011']} />
-        <mesh name="Cube057_2" geometry={nodes.Cube057_2.geometry} material={materials['metal.009']} />
-      </group>
-      <group name="nightstand_box005" position={[13.874, 4.797, -10.027]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube059" geometry={nodes.Cube059.geometry} material={materials['wood2.010']} />
-        <mesh name="Cube059_1" geometry={nodes.Cube059_1.geometry} material={materials['metal.010']} />
-      </group>
-      <group name="nightstand_box006" position={[13.947, 4.797, -16.36]} rotation={[0, 1.571, 0]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube055" geometry={nodes.Cube055.geometry} material={materials['wood2.008']} />
-        <mesh name="Cube055_1" geometry={nodes.Cube055_1.geometry} material={materials['metal.008']} />
-      </group>
-      <group name="nightstand_box007" position={[7.966, 2.633, -32.536]} rotation={[Math.PI, -1.571, 0]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube068" geometry={nodes.Cube068.geometry} material={materials['wood2.013']} />
-        <mesh name="Cube068_1" geometry={nodes.Cube068_1.geometry} material={materials['metal.011']} />
-      </group>
-      <group name="nightstand_box008" position={[23.409, -0.145, -6.605]} rotation={[0, 0, -Math.PI]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube075_1" geometry={nodes.Cube075_1.geometry} material={materials['wood2.015']} />
-        <mesh name="Cube075_2" geometry={nodes.Cube075_2.geometry} material={materials['metal.013']} />
-      </group>
-      <group name="nightstand_box009" position={[23.409, -0.145, -4.446]} rotation={[-Math.PI, 0, -Math.PI]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube077_1" geometry={nodes.Cube077_1.geometry} material={materials['wood2.014']} />
-        <mesh name="Cube077_2" geometry={nodes.Cube077_2.geometry} material={materials['metal.014']} />
-      </group>
-      <group name="nightstand_box010" position={[-6.932, -0.143, -23.189]} rotation={[Math.PI, Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube079_1" geometry={nodes.Cube079_1.geometry} material={materials['wood2.017']} />
-        <mesh name="Cube079_2" geometry={nodes.Cube079_2.geometry} material={materials['metal.015']} />
-      </group>
-      <group name="nightstand_box011" position={[-4.772, -0.143, -23.189]} rotation={[0, -Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube080_1" geometry={nodes.Cube080_1.geometry} material={materials['wood2.016']} />
-        <mesh name="Cube080_2" geometry={nodes.Cube080_2.geometry} material={materials['metal.016']} />
-      </group>
-      <group name="nightstand_box012" position={[5.806, 2.633, -32.536]} rotation={[0, 1.571, 0]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube070" geometry={nodes.Cube070.geometry} material={materials['wood2.012']} />
-        <mesh name="Cube070_1" geometry={nodes.Cube070_1.geometry} material={materials['metal.012']} />
-      </group>
-      <group name="nightstand_box014" position={[24.283, 4.797, -16.523]} rotation={[-Math.PI, 0, -Math.PI]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube041_1" geometry={nodes.Cube041_1.geometry} material={materials['wood2.006']} />
-        <mesh name="Cube041_2" geometry={nodes.Cube041_2.geometry} material={materials['metal.005']} />
-      </group>
-      <group name="nightstand_box015" position={[24.283, 4.797, -18.683]} rotation={[0, 0, -Math.PI]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube045_1" geometry={nodes.Cube045_1.geometry} material={materials['wood2.007']} />
-        <mesh name="Cube045_2" geometry={nodes.Cube045_2.geometry} material={materials['metal.006']} />
-      </group>
-      <group name="nightstand_box017" position={[12.125, 9.869, -17.845]} rotation={[Math.PI, Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube037_1" geometry={nodes.Cube037_1.geometry} material={materials['wood2.005']} />
-        <mesh name="Cube037_2" geometry={nodes.Cube037_2.geometry} material={materials['metal.003']} />
-      </group>
-      <group name="nightstand_box018" position={[14.285, 9.869, -17.845]} rotation={[0, -Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
-        <mesh name="Cube039_1" geometry={nodes.Cube039_1.geometry} material={materials['wood2.004']} />
-        <mesh name="Cube039_2" geometry={nodes.Cube039_2.geometry} material={materials['metal.004']} />
-      </group>
+      <Door
+        doorId="nightstand_box001"
+        geometry={nodes.Cube053_1.geometry}
+        material={materials['wood2.009']}
+        position={[16.106, 4.797, -16.36]}
+        rotation={[Math.PI, -1.571, 0]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube053_2.geometry} material={materials['metal.007']} />
+      </Door>
+      <Door
+        doorId="nightstand_box003"
+        geometry={nodes.Cube015.geometry}
+        material={materials['wood2.003']}
+        position={[-3.849, 4.801, -23.407]}
+        rotation={[Math.PI, Math.PI / 2, 0]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube015_1.geometry} material={materials['metal.002']} />
+      </Door>
+      <Door
+        doorId="nightstand_box004"
+        geometry={nodes.Cube057_1.geometry}
+        material={materials['wood2.011']}
+        position={[13.874, 4.797, -7.867]}
+        rotation={[Math.PI, 0, 0]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube057_2.geometry} material={materials['metal.009']} />
+      </Door>
+      <Door
+        doorId="nightstand_box005"
+        geometry={nodes.Cube059.geometry}
+        material={materials['wood2.010']}
+        position={[13.874, 4.797, -10.027]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube059_1.geometry} material={materials['metal.010']} />
+      </Door>
+      <Door
+        doorId="nightstand_box006"
+        geometry={nodes.Cube055.geometry}
+        material={materials['wood2.008']}
+        position={[13.947, 4.797, -16.36]}
+        rotation={[0, 1.571, 0]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube055_1.geometry} material={materials['metal.008']} />
+      </Door>
+      <Door
+        doorId="nightstand_box007"
+        geometry={nodes.Cube068.geometry}
+        material={materials['wood2.013']}
+        position={[7.966, 2.633, -32.536]}
+        rotation={[Math.PI, -1.571, 0]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube068_1.geometry} material={materials['metal.011']} />
+      </Door>
+      <Door
+        doorId="nightstand_box008"
+        geometry={nodes.Cube075_1.geometry}
+        material={materials['wood2.015']}
+        position={[23.409, -0.145, -6.605]}
+        rotation={[0, 0, -Math.PI]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={-1}
+      >
+        <mesh geometry={nodes.Cube075_2.geometry} material={materials['metal.013']} />
+      </Door>
+      <Door
+        doorId="nightstand_box009"
+        geometry={nodes.Cube077_1.geometry}
+        material={materials['wood2.014']}
+        position={[23.409, -0.145, -4.446]}
+        rotation={[-Math.PI, 0, -Math.PI]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={-1}
+      >
+        <mesh geometry={nodes.Cube077_2.geometry} material={materials['metal.014']} />
+      </Door>
+      <Door
+        doorId="nightstand_box010"
+        geometry={nodes.Cube079_1.geometry}
+        material={materials['wood2.017']}
+        position={[-6.932, -0.143, -23.189]}
+        rotation={[Math.PI, Math.PI / 2, 0]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube079_2.geometry} material={materials['metal.015']} />
+      </Door>
+      <Door
+        doorId="nightstand_box011"
+        geometry={nodes.Cube080_1.geometry}
+        material={materials['wood2.016']}
+        position={[-4.772, -0.143, -23.189]}
+        rotation={[0, -Math.PI / 2, 0]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube080_2.geometry} material={materials['metal.016']} />
+      </Door>
+      <Door
+        doorId="nightstand_box012"
+        geometry={nodes.Cube070.geometry}
+        material={materials['wood2.012']}
+        position={[5.806, 2.633, -32.536]}
+        rotation={[0, 1.571, 0]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube070_1.geometry} material={materials['metal.012']} />
+      </Door>
+      <Door
+        doorId="nightstand_box014"
+        geometry={nodes.Cube041_1.geometry}
+        material={materials['wood2.006']}
+        position={[24.283, 4.797, -16.523]}
+        rotation={[-Math.PI, 0, -Math.PI]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={-1}
+      >
+        <mesh geometry={nodes.Cube041_2.geometry} material={materials['metal.005']} />
+      </Door>
+      <Door
+        doorId="nightstand_box015"
+        geometry={nodes.Cube045_1.geometry}
+        material={materials['wood2.007']}
+        position={[24.283, 4.797, -18.683]}
+        rotation={[0, 0, -Math.PI]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={-1}
+      >
+        <mesh geometry={nodes.Cube045_2.geometry} material={materials['metal.006']} />
+      </Door>
+      <Door
+        doorId="nightstand_box017"
+        geometry={nodes.Cube037_1.geometry}
+        material={materials['wood2.005']}
+        position={[12.125, 9.869, -17.845]}
+        rotation={[Math.PI, Math.PI / 2, 0]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube037_2.geometry} material={materials['metal.003']} />
+      </Door>
+      <Door
+        doorId="nightstand_box018"
+        geometry={nodes.Cube039_1.geometry}
+        material={materials['wood2.004']}
+        position={[14.285, 9.869, -17.845]}
+        rotation={[0, -Math.PI / 2, 0]}
+        scale={[0.03, 0.037, 0.127]}
+        openDirection={1}
+      >
+        <mesh geometry={nodes.Cube039_2.geometry} material={materials['metal.004']} />
+      </Door>
 
           <mesh
             name="table001"

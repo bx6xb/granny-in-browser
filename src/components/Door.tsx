@@ -92,12 +92,11 @@ export function Door({
         position={position}
         userData={{ isDoor: true, doorId }}
       >
-        <group ref={groupRef} rotation={rotation}>
+        <group ref={groupRef} rotation={rotation} scale={scale}>
           <mesh
             ref={meshRef}
             geometry={geometry}
             material={material}
-            scale={scale}
           />
           {children}
         </group>

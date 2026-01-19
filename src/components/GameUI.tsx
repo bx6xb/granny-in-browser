@@ -1,5 +1,4 @@
 import { useDoors } from '../store/useDoors';
-import { useDrawers } from '../store/useDrawers';
 import { useItems } from '../store/useItems';
 import { useGuillotine } from '../store/useGuillotine';
 import { usePlank } from '../store/usePlank';
@@ -12,7 +11,6 @@ import { useWell } from '../store/useWell';
 
 export function GameUI() {
   const { nearbyDoor, getDoorState } = useDoors();
-  const { nearbyDrawer, openDrawers } = useDrawers();
   const { nearbyItem, heldItem } = useItems();
   const { nearGuillotine, watermelonPlaced } = useGuillotine();
   const { nearPlank, isChippedOff, nearPlankSlot, plankPlaced } = usePlank();
@@ -23,7 +21,6 @@ export function GameUI() {
   const { safeOpened } = useSafe();
   const { nearShaft, nearHandle, handleSet, bucketHeight } = useWell();
   const doorState = nearbyDoor ? getDoorState(nearbyDoor) : null;
-  const isDrawerOpen = nearbyDrawer ? openDrawers[nearbyDrawer] : false;
 
   // Format item names for display
   const formatItemName = (itemName: string): string => {
@@ -100,7 +97,7 @@ export function GameUI() {
         <div>• WASD - Move</div>
         <div>• Mouse - Look around</div>
         <div>• C - Crouch</div>
-        <div>• E - Interact with doors/drawers</div>
+        <div>• E - Interact with doors</div>
         <div>• F - Grab items</div>
         <div>• Space - Drop item</div>
         <div>• ESC - Unlock mouse</div>
@@ -435,33 +432,8 @@ export function GameUI() {
         )
       )}
 
-      {/* Drawer interaction prompt */}
-      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: 'white',
-            fontFamily: 'monospace',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            padding: '15px 25px',
-            borderRadius: '8px',
-            pointerEvents: 'none',
-            zIndex: 1000,
-            textAlign: 'center',
-            border: '2px solid rgba(255, 255, 255, 0.3)',
-          }}
-        >
-          Press [E] to {isDrawerOpen ? 'Close' : 'Open'} Drawer
-        </div>
-      )}
-
       {/* Item interaction prompt */}
-      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
+      {nearbyItem && !nearbyDoor && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
         <div
           style={{
             position: 'fixed',

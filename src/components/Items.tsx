@@ -11,7 +11,6 @@ import React from 'react';
 import { useItems } from '../store/useItems';
 import { usePlank } from '../store/usePlank';
 import { useGLTF as useHouseGLTF } from '@react-three/drei';
-import { useDrawers } from '../store/useDrawers';
 import { useWell } from '../store/useWell';
 import { useFrame } from '@react-three/fiber';
 import { useGuillotine } from '../store/useGuillotine';
@@ -92,38 +91,15 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
   const houseModel = useHouseGLTF('/models/hauntedHouse.glb') as any;
   const { isItemHeld, getItemPosition, itemSlots, setSpawnPosition, itemInsideWatermelon } = useItems();
   const { isChippedOff } = usePlank();
-  const { drawerSlideAmounts } = useDrawers();
   const { bucketHeight } = useWell();
   const { itemRevealed } = useGuillotine();
   const [initialized, setInitialized] = React.useState(false);
-  const [itemContainers, setItemContainers] = React.useState<Record<string, { type: 'drawer' | 'bucket', id: string, basePos: [number, number, number] }>>({});
+  const [itemContainers, setItemContainers] = React.useState<Record<string, { type: 'bucket', id: string, basePos: [number, number, number] }>>({});
 
   // Initialize spawn positions from GLTF empties and detect containers
   React.useEffect(() => {
     if (!initialized && houseModel?.nodes) {
-      const containers: Record<string, { type: 'drawer' | 'bucket', id: string, basePos: [number, number, number] }> = {};
-      
-      // Drawer bounds (position ranges where drawers are located)
-      // Format: [minX, maxX, minY, maxY, minZ, maxZ, drawerId]
-      // Bounds are approximate interior volumes of each drawer
-      const drawerBounds: Array<[number, number, number, number, number, number, string]> = [
-        [-2.5, -2.0, 4.8, 5.0, -24.0, -23.2, 'nightstand_box002'],
-        [-3.7, -3.2, 4.8, 5.0, -24.0, -23.2, 'nightstand_box003'],
-        [13.5, 14.2, 4.8, 5.0, -9.8, -9.3, 'nightstand_box004'],
-        [13.5, 14.2, 4.8, 5.0, -8.6, -8.1, 'nightstand_box005'],
-        [14.2, 14.6, 4.8, 5.0, -16.5, -15.9, 'nightstand_box006'],
-        [15.4, 15.8, 4.8, 5.0, -16.5, -15.9, 'nightstand_box007'],
-        [23.4, 24.0, -0.15, 0.05, -5.2, -4.6, 'nightstand_box008'],
-        [23.4, 24.0, -0.15, 0.05, -6.4, -5.8, 'nightstand_box009'],
-        [-6.6, -6.2, -0.15, 0.05, -23.6, -23.1, 'nightstand_box010'],
-        [-5.5, -5.0, -0.15, 0.05, -23.6, -23.1, 'nightstand_box011'],
-        [6.1, 6.5, 2.6, 2.8, -32.6, -32.1, 'nightstand_box012'],
-        [7.3, 7.7, 2.6, 2.8, -32.6, -32.1, 'nightstand_box013'],
-        [13.6, 14.0, 9.9, 10.1, -18.3, -17.7, 'nightstand_box014'],
-        [12.4, 12.8, 9.9, 10.1, -18.3, -17.7, 'nightstand_box015'],
-        [24.2, 24.7, 4.8, 5.0, -18.5, -17.9, 'nightstand_box001'],
-        [24.2, 24.7, 4.8, 5.0, -17.3, -16.7, 'nightstand_box016'],
-      ];
+      const containers: Record<string, { type: 'bucket', id: string, basePos: [number, number, number] }> = {};
       
       Object.entries(itemSlots).forEach(([itemName, slotName]) => {
         const empty = houseModel.nodes[slotName];
@@ -138,16 +114,6 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           // Detect if item is in the bucket/well
           if (slotName === 'slot_well') {
             containers[itemName] = { type: 'bucket', id: 'bucket001', basePos: pos };
-          } else {
-            // Check if position is inside any drawer bounds
-            for (const [minX, maxX, minY, maxY, minZ, maxZ, drawerId] of drawerBounds) {
-              if (pos[0] >= minX && pos[0] <= maxX &&
-                  pos[1] >= minY && pos[1] <= maxY &&
-                  pos[2] >= minZ && pos[2] <= maxZ) {
-                containers[itemName] = { type: 'drawer', id: drawerId, basePos: pos };
-                break;
-              }
-            }
           }
         } else {
           console.warn(`Empty ${slotName} not found for item ${itemName}`);
@@ -158,26 +124,6 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       setInitialized(true);
     }
   }, [houseModel, itemSlots, setSpawnPosition, initialized]);
-
-  // Drawer metadata: position, rotation, slideDistance
-  const drawerData: Record<string, { position: [number, number, number], rotation: [number, number, number], slideDistance: number }> = React.useMemo(() => ({
-    'nightstand_box002': { position: [-2.273, 4.9, -23.57], rotation: [0, -Math.PI / 2, 0], slideDistance: 14 },
-    'nightstand_box003': { position: [-3.454, 4.9, -23.57], rotation: [0, -Math.PI / 2, 0], slideDistance: 14 },
-    'nightstand_box004': { position: [13.707, 4.894, -9.547], rotation: [0, 0, 0], slideDistance: 14 },
-    'nightstand_box005': { position: [13.707, 4.894, -8.366], rotation: [0, 0, 0], slideDistance: 14 },
-    'nightstand_box006': { position: [14.432, 4.893, -16.197], rotation: [0, Math.PI / 2, 0], slideDistance: 14 },
-    'nightstand_box007': { position: [15.613, 4.893, -16.197], rotation: [0, Math.PI / 2, 0], slideDistance: 14 },
-    'nightstand_box008': { position: [23.576, -0.049, -4.921], rotation: [Math.PI, 0, Math.PI], slideDistance: 14 },
-    'nightstand_box009': { position: [23.576, -0.049, -6.102], rotation: [Math.PI, 0, Math.PI], slideDistance: 14 },
-    'nightstand_box010': { position: [-6.432, -0.049, -23.352], rotation: [0, -Math.PI / 2, 0], slideDistance: 14 },
-    'nightstand_box011': { position: [-5.251, -0.049, -23.352], rotation: [0, -Math.PI / 2, 0], slideDistance: 14 },
-    'nightstand_box012': { position: [6.33, 2.72, -32.363], rotation: [0, Math.PI / 2, 0], slideDistance: 14 },
-    'nightstand_box013': { position: [7.511, 2.72, -32.363], rotation: [0, Math.PI / 2, 0], slideDistance: 14 },
-    'nightstand_box014': { position: [13.791, 9.969, -18.008], rotation: [0, -Math.PI / 2, 0], slideDistance: 14 },
-    'nightstand_box015': { position: [12.61, 9.969, -18.008], rotation: [0, -Math.PI / 2, 0], slideDistance: 14 },
-    'nightstand_box001': { position: [24.446, 4.893, -18.187], rotation: [Math.PI, 0, Math.PI], slideDistance: 14 },
-    'nightstand_box016': { position: [24.446, 4.893, -17.006], rotation: [Math.PI, 0, Math.PI], slideDistance: 14 },
-  }), []);
 
   // Helper to get item position with container offset
   const getContainerAdjustedPosition = React.useCallback((itemName: string, basePos: [number, number, number]): [number, number, number] => {
@@ -191,29 +137,8 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       return [pos[0], pos[1] + bucketHeight, pos[2]];
     }
     
-    if (container.type === 'drawer') {
-      const drawer = drawerData[container.id];
-      if (!drawer) {
-        console.warn(`Drawer data not found for ${container.id}`);
-        return pos;
-      }
-      
-      // Use actual slide amount from store (0 to slideDistance)
-      const slideAmount = drawerSlideAmounts[container.id] || 0;
-      
-      // Calculate slide direction based on drawer's rotation
-      // Drawer slides along its local X axis
-      const rotY = drawer.rotation[1];
-      const slideX = Math.cos(rotY) * slideAmount;
-      const slideZ = Math.sin(rotY) * slideAmount;
-      
-      const adjustedPos: [number, number, number] = [pos[0] + slideX, pos[1], pos[2] + slideZ];
-      
-      return adjustedPos;
-    }
-    
     return pos;
-  }, [getItemPosition, itemContainers, bucketHeight, drawerSlideAmounts, drawerData]);
+  }, [getItemPosition, itemContainers, bucketHeight]);
   
   // Helper to determine if item should be dynamic or kinematic
   const getItemBodyType = React.useCallback((itemName: string): 'dynamic' | 'kinematicPosition' => {
@@ -226,16 +151,8 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       return bucketHeight >= 4.5 ? 'dynamic' : 'kinematicPosition';
     }
     
-    if (container.type === 'drawer') {
-      // Item becomes dynamic when drawer is mostly open (>80% of slideDistance)
-      const drawer = drawerData[container.id];
-      if (!drawer) return 'dynamic';
-      const slideAmount = drawerSlideAmounts[container.id] || 0;
-      return slideAmount > drawer.slideDistance * 0.8 ? 'dynamic' : 'kinematicPosition';
-    }
-    
     return 'dynamic';
-  }, [itemContainers, bucketHeight, drawerSlideAmounts, drawerData]);
+  }, [itemContainers, bucketHeight]);
 
   // Collision groups:
   // - Group 0 (0x0001): Static geometry (floors, walls, furniture)

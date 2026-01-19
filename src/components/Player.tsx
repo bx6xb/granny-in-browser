@@ -6,7 +6,6 @@ import * as THREE from 'three';
 import type { RapierRigidBody } from '@react-three/rapier';
 import { usePlayerState } from '../store/usePlayerState';
 import { useDoors } from '../store/useDoors';
-import { useDrawers } from '../store/useDrawers';
 import { useItems } from '../store/useItems';
 import { useGuillotine } from '../store/useGuillotine';
 import { usePlank } from '../store/usePlank';
@@ -22,7 +21,7 @@ const PLAYER_HEIGHT = 1.7;
 const CROUCH_HEIGHT = 0.9; // Adjust this value to fit through holes
 const MOVE_SPEED = 5;
 const CROUCH_SPEED = 2.5; // Slower movement when crouching
-const INTERACTION_DISTANCE = 3; // Distance at which player can interact with doors/drawers
+const INTERACTION_DISTANCE = 3; // Distance at which player can interact with doors
 
 export function Player() {
   const playerRef = useRef<RapierRigidBody>(null);
@@ -31,12 +30,11 @@ export function Player() {
   const { camera, scene } = useThree();
   const { playerSpawnArray } = usePlayerState();
   const { toggleDoor, setNearbyDoor } = useDoors();
-  const { toggleDrawer, setNearbyDrawer } = useDrawers();
   const { setNearbyItem, grabItem, dropItem, heldItem } = useItems();
   const { setNearGuillotine, placeWatermelon } = useGuillotine();
   const { setNearPlank, chipOffPlank, isChippedOff, setNearPlankSlot, placePlank, plankPlaced } = usePlank();
   const { setNearTerminal } = useTerminal();
-  const { swipeCard, cutWire, openLock, setNearMainDoor, escape, isDoorUnlocked, hasEscaped } = useEscapeDoor();
+  const { swipeCard, cutWire, openLock, setNearMainDoor, escape, hasEscaped } = useEscapeDoor();
   const { setNearWire } = useWires();
   const { setNearLock } = useLock();
   const { openSafe } = useSafe();
@@ -67,30 +65,6 @@ export function Player() {
             addedIds.add(id);
             // Enable Layer 1 on this object and all children
             target.traverse((child) => child.layers.enable(1));
-          }
-        }
-        
-        // Check for drawers
-        if (obj.userData?.isDrawer && obj.userData?.drawerId) {
-          const id = `drawer_${obj.userData.drawerId}`;
-          if (!addedIds.has(id)) {
-            let target = obj;
-            // Find the highest parent with the same drawerId
-            while (target.parent && target.parent.userData?.drawerId === obj.userData.drawerId) {
-              target = target.parent;
-            }
-            interactives.push(target);
-            addedIds.add(id);
-            target.traverse((child) => child.layers.enable(1));
-          }
-        }
-        
-        // Check for nightstand boxes
-        if (obj.name && obj.name.includes('nightstand_box')) {
-          if (!addedIds.has(obj.name)) {
-            interactives.push(obj);
-            addedIds.add(obj.name);
-            obj.traverse((child) => child.layers.enable(1));
           }
         }
         
@@ -361,9 +335,8 @@ export function Player() {
             break;
           }
           
-          // Interact with nearby door or drawer
+          // Interact with nearby door
           const nearbyDoorId = useDoors.getState().nearbyDoor;
-          const nearbyDrawerId = useDrawers.getState().nearbyDrawer;
           if (nearbyDoorId) {
             // Check if it's the safe door and if player has the safe key
             if (nearbyDoorId === 'safe_door001') {
@@ -376,8 +349,6 @@ export function Player() {
             } else {
               toggleDoor(nearbyDoorId);
             }
-          } else if (nearbyDrawerId) {
-            toggleDrawer(nearbyDrawerId);
           }
           break;
         }
@@ -437,7 +408,7 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle, placePlank]);
+  }, [toggleDoor, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle, placePlank]);
   
   // Handle continuous key press for well usage
   useEffect(() => {
@@ -497,7 +468,6 @@ export function Player() {
 
   // ===== STATE GUARDING: Track last IDs to prevent unnecessary React updates =====
   const lastNearbyDoor = useRef<string | null>(null);
-  const lastNearbyDrawer = useRef<string | null>(null);
   const lastNearbyItem = useRef<string | null>(null);
   const lastNearGuillotine = useRef<boolean>(false);
   const lastNearPlank = useRef<boolean>(false);
@@ -590,7 +560,6 @@ export function Player() {
     // Raycast against interactive objects AND their children (recursive: true)
     const intersects = interactionRaycaster.current.intersectObjects(interactiveObjects.current, true);
     let foundDoor: string | null = null;
-    let foundDrawer: string | null = null;
     let foundItem: string | null = null;
     let foundGuillotine = false;
     let foundPlank = false;
@@ -605,7 +574,7 @@ export function Player() {
     for (let i = 0; i < intersects.length; i++) {
       const intersect = intersects[i];
       if (intersect.distance <= INTERACTION_DISTANCE) {
-        // Check if object or its parent has door or drawer data
+        // Check if object or its parent has door data
         let obj: THREE.Object3D | null = intersect.object;
         while (obj) {
           if (obj.userData?.isDoor && obj.userData?.doorId) {
@@ -619,14 +588,6 @@ export function Player() {
             } else {
               foundDoor = doorId;
             }
-            break;
-          }
-          if (obj.userData?.isDrawer && obj.userData?.drawerId) {
-            foundDrawer = obj.userData.drawerId;
-            break;
-          }
-          if (obj.name && obj.name.includes('nightstand_box')) {
-            foundDrawer = obj.name;
             break;
           }
           // Check for wood plank on door - only if holding hammer and not chipped off yet
@@ -707,7 +668,7 @@ export function Player() {
           }
           obj = obj.parent;
         }
-        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock || foundMainDoor || foundWellShaft || foundWellHandle || foundPlankSlot) break;
+        if (foundDoor || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock || foundMainDoor || foundWellShaft || foundWellHandle || foundPlankSlot) break;
       }
     }
 
@@ -715,11 +676,6 @@ export function Player() {
     if (foundDoor !== lastNearbyDoor.current) {
       setNearbyDoor(foundDoor);
       lastNearbyDoor.current = foundDoor;
-    }
-    
-    if (foundDrawer !== lastNearbyDrawer.current) {
-      setNearbyDrawer(foundDrawer);
-      lastNearbyDrawer.current = foundDrawer;
     }
     
     if (foundItem !== lastNearbyItem.current) {
