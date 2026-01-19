@@ -2058,16 +2058,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
               scale={[0.273, 0.025, 0.273]}
             />
           )}
-          {plankPlaced && (
-            <mesh 
-              name="wood_plank001" 
-              geometry={nodes.wood_plank001.geometry} 
-              material={materials.wood2} 
-              position={[8.106, 7.94, -8.589]} 
-              rotation={[-Math.PI, 0, 0]} 
-              scale={[0.273, 0.025, 0.273]} 
-            />
-          )}
           {!plankPlaced && (
             <mesh 
               name="wood_plank_slot" 
@@ -2146,6 +2136,23 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
 
       {/* Items placed on table001 */}
       <Items />
+      
+      {/* Wood plank placed on attic hole - with collision */}
+      {plankPlaced && (
+        <RigidBody
+          position={[8.106, 7.94, -8.589]}
+          rotation={[-Math.PI, 0, 0]}
+          type="fixed"
+          colliders="cuboid"
+        >
+          <mesh 
+            name="wood_plank001" 
+            geometry={nodes.wood_plank001.geometry} 
+            material={materials.wood2} 
+            scale={[0.273, 0.025, 0.273]} 
+          />
+        </RigidBody>
+      )}
       
       {/* Attic planks with physics */}
       <AtticPlanks nodes={nodes} materials={materials} />
