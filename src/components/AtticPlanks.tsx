@@ -114,9 +114,9 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
         linearDamping={0.5}
         angularDamping={0.5}
       >
-        <mesh
+        <mesh 
           name="attic_plank_4001"
-          geometry={nodes.attic_plank_4001.geometry}
+          geometry={nodes.attic_plank_4001.geometry} 
           material={materials.walls}
         />
       </RigidBody>
