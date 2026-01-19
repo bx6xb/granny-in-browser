@@ -18,7 +18,7 @@ export function GameUI() {
   const { nearPlank, isChippedOff, nearPlankSlot, plankPlaced } = usePlank();
   const { nearTerminal } = useTerminal();
   const { cardSwiped, lockOpened, isDoorUnlocked, nearMainDoor, hasEscaped } = useEscapeDoor();
-  const { nearWire, doorWireCut, shieldWireCut } = useWires();
+  const { nearWire, doorWireCut, shieldWireCut, atticWireCut } = useWires();
   const { nearLock } = useLock();
   const { safeOpened } = useSafe();
   const { nearShaft, nearHandle, handleSet, bucketHeight } = useWell();
@@ -261,7 +261,8 @@ export function GameUI() {
       {/* Wire cutting prompt */}
       {nearWire && heldItem === 'cut' && !nearMainDoor && (
         (nearWire === 'door_wire' && !doorWireCut) || 
-        (nearWire.startsWith('shield_wire') && !shieldWireCut)
+        (nearWire.startsWith('shield_wire') && !shieldWireCut) ||
+        (nearWire === 'attic_wire' && !atticWireCut)
       ) && (
         <div
           style={{
@@ -282,7 +283,7 @@ export function GameUI() {
             border: '2px solid rgba(0, 255, 255, 0.5)',
           }}
         >
-          ✂️ Press [E] to cut a wire
+          ✂️ Press [E] to cut wire
         </div>
       )}
 

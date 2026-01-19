@@ -145,7 +145,7 @@ export function Player() {
         
         // Check for wires
         if (obj.name === 'door_wire' || obj.name === 'shield_wire' || 
-            obj.name === 'shield_wire002' || obj.name === 'shield_wire003') {
+            obj.name === 'shield_wire002' || obj.name === 'shield_wire003' || obj.name === 'attic_wire') {
           if (!addedIds.has(obj.name)) {
             interactives.push(obj);
             addedIds.add(obj.name);
@@ -323,6 +323,9 @@ export function Player() {
             } else if (nearWire.startsWith('shield_wire') && !wiresState.shieldWireCut) {
               useWires.getState().cutWire(nearWire);
               cutWire();
+              break;
+            } else if (nearWire === 'attic_wire' && !wiresState.atticWireCut) {
+              useWires.getState().cutWire('attic_wire');
               break;
             }
           }
@@ -668,6 +671,9 @@ export function Player() {
             } else if ((obj.name === 'shield_wire' || obj.name === 'shield_wire002' || 
                        obj.name === 'shield_wire003') && !wiresState.shieldWireCut) {
               foundWire = obj.name;
+              break;
+            } else if (obj.name === 'attic_wire' && !wiresState.atticWireCut) {
+              foundWire = 'attic_wire';
               break;
             }
           }

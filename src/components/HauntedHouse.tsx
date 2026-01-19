@@ -363,11 +363,14 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   const { activeShieldId, initializeActiveShield } = useShields();
   const { isChippedOff, plankPlaced } = usePlank();
   const { cardSwiped, wiresCut, lockOpened } = useEscapeDoor();
-  const { doorWireCut, shieldWireCut } = useWires();
+  const { doorWireCut, shieldWireCut, atticWireCut } = useWires();
   const { handleSet, handleRotation, bucketHeight, updateWellProgress } = useWell();
   const bladeRef = useRef<THREE.Mesh>(null);
   const [bladePosition, setBladePosition] = useState(0.083); // Initial Y position
   const [animating, setAnimating] = useState(false);
+  const plankRef = useRef<THREE.Mesh>(null);
+  const [plankYOffset, setPlankYOffset] = useState(0);
+  const [plankAnimating, setPlankAnimating] = useState(false);
 
   // Initialize random shield selection on mount
   useEffect(() => {
@@ -397,7 +400,14 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
     }
   }, [watermelonPlaced, bladeDropped, dropBlade, revealItem, itemInsideWatermelon]);
 
-  // Animate the blade dropping
+  // Start plank animation when attic wire is cut
+  useEffect(() => {
+    if (atticWireCut && !plankAnimating) {
+      setPlankAnimating(true);
+    }
+  }, [atticWireCut, plankAnimating]);
+
+  // Animate the blade dropping and plank moving
   useFrame((state, delta) => {
     if (animating && !bladeDropped) {
       setBladePosition((prev) => {
@@ -407,6 +417,18 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
           return 0.083 - 1.45;
         }
         return newPos;
+      });
+    }
+    
+    // Animate plank moving up
+    if (plankAnimating && plankYOffset < 0.7) {
+      setPlankYOffset((prev) => {
+        const newOffset = prev + delta * 0.5; // Move speed
+        if (newOffset >= 0.7) {
+          setPlankAnimating(false);
+          return 0.7;
+        }
+        return newOffset;
       });
     }
     
@@ -751,10 +773,11 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             position={[7.216, 13.027, -10.751]}
           />
           <mesh
+            ref={plankRef}
             name="Plane008"
             geometry={nodes.Plane008.geometry}
             material={materials.wood2}
-            position={[15.934, 10.743, -8.192]}
+            position={[15.934, 10.743 + plankYOffset, -8.192]}
           />
           <mesh
             name="Cube052"
@@ -792,8 +815,12 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             material={materials.walls}
             position={[12.188, 10.666, -5.132]}
           />
-          <mesh name="attic_wire" geometry={nodes.attic_wire.geometry} material={materials.wire} position={[15.883, 10.13, -8.211]} />
-          <mesh name="attic_wire_cut" geometry={nodes.attic_wire_cut.geometry} material={materials['wire.001']} position={[15.883, 10.13, -8.211]} />
+          {!atticWireCut && (
+            <mesh name="attic_wire" geometry={nodes.attic_wire.geometry} material={materials.wire} position={[15.883, 10.13, -8.211]} />
+          )}
+          {atticWireCut && (
+            <mesh name="attic_wire_cut" geometry={nodes.attic_wire_cut.geometry} material={materials.wire} position={[15.883, 10.13, -8.211]} />
+          )}
           <group name="Window001" position={[1.531, 5.801, -24.407]}>
             <mesh name="Cube011_1" geometry={nodes.Cube011_1.geometry} material={materials.wood2} />
             <mesh
