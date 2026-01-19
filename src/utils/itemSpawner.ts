@@ -33,7 +33,7 @@ const SEEDS: Record<number, Seed> = {
 };
 
 // Slot ranges
-const SLOT_LG_RANGE = { start: 10, end: 131 }; // slot_lg.010 to slot_lg.131
+const SLOT_LG_RANGE = { start: 10, end: 99 }; // slot_lg.010 to slot_lg.099
 const SLOT_SM_RANGE = { start: 1, end: 3 }; // slot_sm.001 to slot_sm.003
 
 // Item constraints
