@@ -1534,12 +1534,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             scale={[0.099, 0.518, 0.099]}
           />
           <mesh
-            name="vase001"
-            geometry={nodes.vase001.geometry}
-            material={materials.vase}
-            position={[1.808, 4.774, -21.72]}
-          />
-          <mesh
             name="closet_for_hiding001"
             geometry={nodes.closet_for_hiding001.geometry}
             material={materials['metal 2']}

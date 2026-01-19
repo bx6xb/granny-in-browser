@@ -98,7 +98,8 @@ export function Player() {
         if (obj.name === 'padlock_key' || obj.name === 'master_key' || 
             obj.name === 'card' || obj.name === 'safe_key' || 
             obj.name === 'handle' || obj.name === 'watermelon' || 
-            obj.name === 'cut' || obj.name === 'hammer' || obj.name === 'wood_plank_item') {
+            obj.name === 'cut' || obj.name === 'hammer' || obj.name === 'wood_plank_item' || 
+            obj.name === 'vase') {
           if (!addedIds.has(obj.name)) {
             interactives.push(obj);
             addedIds.add(obj.name);
@@ -498,7 +499,7 @@ export function Player() {
   const guillotinePosition = useRef(new THREE.Vector3(-10.7, -1.6, -28.6));
   
   // Item names as Set for O(1) lookup instead of O(n) array.includes()
-  const itemNamesSet = useRef(new Set(['padlock_key', 'master_key', 'card', 'safe_key', 'handle', 'watermelon', 'cut', 'hammer', 'wood_plank_item']));
+  const itemNamesSet = useRef(new Set(['padlock_key', 'master_key', 'card', 'safe_key', 'handle', 'watermelon', 'cut', 'hammer', 'wood_plank_item', 'vase']));
   
   const neededClearance = PLAYER_HEIGHT - CROUCH_HEIGHT + 0.2;
 

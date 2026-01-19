@@ -292,6 +292,29 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           />
         </RigidBody>
       )}
+      
+      {/* Vase - pickable decorative item */}
+      {!isItemHeld('vase') && (
+        <RigidBody
+          key={`vase-${getItemPosition('vase', [1.808, 4.774, -21.72]).join(',')}`}
+          type="dynamic"
+          position={getItemPosition('vase', [1.808, 4.774, -21.72])}
+          colliders="cuboid"
+          restitution={0.3}
+          friction={0.8}
+          canSleep={true}
+          ccd={true}
+          collisionGroups={itemCollisionGroup}
+          scale={0.9}
+        >
+          <mesh
+            name="vase"
+            geometry={houseModel.nodes.vase001.geometry}
+            material={houseModel.materials.vase}
+            position={[0, 0, 0]}
+          />
+        </RigidBody>
+      )}
     </group>
   );
 }
