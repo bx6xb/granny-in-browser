@@ -2187,7 +2187,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
       </RigidBody>
 
       {/* Items placed on table001 */}
-      <Items position={[30.75, 0.8, -15.36]} />
+      <Items />
     </>
   );
 }

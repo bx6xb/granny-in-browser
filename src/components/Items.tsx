@@ -62,9 +62,9 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       {/* Padlock Key - small key with CCD */}
       {!isItemHeld('padlock_key') && (
         <RigidBody
-          key={`padlock_key-${getItemPosition('padlock_key', [-32.494, 3.712, -1]).join(',')}`}
+          key={`padlock_key-${getItemPosition('padlock_key', [-1.744, 4.512, -16.36]).join(',')}`}
           type="dynamic"
-          position={getItemPosition('padlock_key', [-32.494, 3.712, -1])}
+          position={getItemPosition('padlock_key', [-1.744, 4.512, -16.36])}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -87,9 +87,9 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       {/* Master Key - small key with CCD */}
       {!isItemHeld('master_key') && (
         <RigidBody
-          key={`master_key-${getItemPosition('master_key', [-32.494, 3.712, -1.237]).join(',')}`}
+          key={`master_key-${getItemPosition('master_key', [-1.744, 4.512, -16.597]).join(',')}`}
           type="dynamic"
-          position={getItemPosition('master_key', [-32.494, 3.712, -1.237])}
+          position={getItemPosition('master_key', [-1.744, 4.512, -16.597])}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -112,9 +112,9 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       {/* Card - thin flat object with CCD */}
       {!isItemHeld('card') && (
         <RigidBody
-          key={`card-${getItemPosition('card', [-31.094, 4.549, -1.511]).join(',')}`}
+          key={`card-${getItemPosition('card', [-0.344, 5.349, -16.871]).join(',')}`}
           type="dynamic"
-          position={getItemPosition('card', [-31.094, 4.549, -1.511])}
+          position={getItemPosition('card', [-0.344, 5.349, -16.871])}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -133,9 +133,9 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       {/* Safe Key - small key with CCD */}
       {!isItemHeld('safe_key') && (
         <RigidBody
-          key={`safe_key-${getItemPosition('safe_key', [-32.494, 3.712, -1.597]).join(',')}`}
+          key={`safe_key-${getItemPosition('safe_key', [-1.744, 4.512, -16.957]).join(',')}`}
           type="dynamic"
-          position={getItemPosition('safe_key', [-32.494, 3.712, -1.597])}
+          position={getItemPosition('safe_key', [-1.744, 4.512, -16.957])}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -158,9 +158,9 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       {/* Handle - cylindrical object */}
       {!isItemHeld('handle') && (
         <RigidBody
-          key={`handle-${getItemPosition('handle', [-31.146, 4.548, -2.027]).join(',')}`}
+          key={`handle-${getItemPosition('handle', [-0.396, 5.348, -17.387]).join(',')}`}
           type="dynamic"
-          position={getItemPosition('handle', [-31.146, 4.548, -2.027])}
+          position={getItemPosition('handle', [-0.396, 5.348, -17.387])}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -181,9 +181,9 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       {/* Watermelon - round object, use ball collider */}
       {!isItemHeld('watermelon') && (
         <RigidBody
-          key={`watermelon-${getItemPosition('watermelon', [-30.856, 4.175, -0.522]).join(',')}`}
+          key={`watermelon-${getItemPosition('watermelon', [-0.106, 4.975, -15.882]).join(',')}`}
           type="dynamic"
-          position={getItemPosition('watermelon', [-30.856, 4.175, -0.522])}
+          position={getItemPosition('watermelon', [-0.106, 4.975, -15.882])}
           colliders="ball"
           restitution={0.2}
           friction={0.8}
@@ -215,9 +215,9 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       {/* Watermelon Cut - small piece */}
       {!isItemHeld('cut') && (
         <RigidBody
-          key={`cut-${getItemPosition('cut', [-30.185, 4.064, -1.667]).join(',')}`}
+          key={`cut-${getItemPosition('cut', [0.565, 4.864, -17.027]).join(',')}`}
           type="dynamic"
-          position={getItemPosition('cut', [-30.185, 4.064, -1.667])}
+          position={getItemPosition('cut', [0.565, 4.864, -17.027])}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -245,9 +245,9 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       {/* Hammer - long object, use cuboid */}
       {!isItemHeld('hammer') && (
         <RigidBody
-          key={`hammer-${getItemPosition('hammer', [-31.461, 4.302, -0.994]).join(',')}`}
+          key={`hammer-${getItemPosition('hammer', [-0.711, 5.102, -16.354]).join(',')}`}
           type="dynamic"
-          position={getItemPosition('hammer', [-31.461, 4.302, -0.994])}
+          position={getItemPosition('hammer', [-0.711, 5.102, -16.354])}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}

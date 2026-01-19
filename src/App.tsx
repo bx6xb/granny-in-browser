@@ -5,7 +5,6 @@ import { Physics } from '@react-three/rapier';
 import { HauntedHouse } from './components/HauntedHouse';
 import { Granny } from './components/Granny';
 import { Player } from './components/Player';
-import { Items } from './components/Items';
 import { GameUI } from './components/GameUI';
 
 export default function App() {
@@ -38,7 +37,6 @@ export default function App() {
         <Physics gravity={[0, -9.81, 0]}>
           <Suspense fallback={null}>
             <HauntedHouse scale={1} />
-            <Items />
             <Granny />
             <Player />
           </Suspense>
