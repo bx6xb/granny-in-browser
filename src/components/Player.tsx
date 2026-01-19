@@ -13,6 +13,7 @@ import { usePlank } from '../store/usePlank';
 import { useTerminal } from '../store/useTerminal';
 import { useEscapeDoor } from '../store/useEscapeDoor';
 import { useWires } from '../store/useWires';
+import { useLock } from '../store/useLock';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
@@ -33,8 +34,9 @@ export function Player() {
   const { setNearGuillotine, placeWatermelon } = useGuillotine();
   const { setNearPlank, chipOffPlank, isChippedOff } = usePlank();
   const { setNearTerminal } = useTerminal();
-  const { swipeCard, cutWire } = useEscapeDoor();
+  const { swipeCard, cutWire, openLock } = useEscapeDoor();
   const { setNearWire } = useWires();
+  const { setNearLock } = useLock();
   const [isCrouching, setIsCrouching] = useState(false);
 
   // ===== PERFORMANCE: Dedicated array for interactive objects =====
@@ -137,6 +139,15 @@ export function Player() {
             obj.layers.enable(1);
           }
         }
+        
+        // Check for door lock
+        if (obj.name === 'door_lock') {
+          if (!addedIds.has('door_lock')) {
+            interactives.push(obj);
+            addedIds.add('door_lock');
+            obj.traverse((child) => child.layers.enable(1));
+          }
+        }
       });
       
       interactiveObjects.current = interactives;
@@ -186,9 +197,19 @@ export function Player() {
           setIsCrouching(true);
           break;
         case 'KeyE': {
+          // Check if holding padlock key and near lock
+          const nearLock = useLock.getState().nearLock;
+          const currentHeldItem = useItems.getState().heldItem;
+          const lockOpened = useEscapeDoor.getState().lockOpened;
+          
+          if (nearLock && currentHeldItem === 'padlock_key' && !lockOpened) {
+            // Open the lock
+            openLock();
+            break;
+          }
+          
           // Check if holding cut pliers and near wire
           const nearWire = useWires.getState().nearWire;
-          const currentHeldItem = useItems.getState().heldItem;
           const wiresState = useWires.getState();
           
           if (nearWire && currentHeldItem === 'cut') {
@@ -299,7 +320,7 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire]);
+  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock]);
 
   // Track previous crouch state to detect transitions
   const prevCrouchState = useRef(false);
@@ -335,6 +356,7 @@ export function Player() {
   const lastNearPlank = useRef<boolean>(false);
   const lastNearTerminal = useRef<boolean>(false);
   const lastNearWire = useRef<string | null>(null);
+  const lastNearLock = useRef<boolean>(false);
 
   // Configure raycaster to only check layer 1 (interactive objects)
   useEffect(() => {
@@ -415,6 +437,7 @@ export function Player() {
     let foundPlank = false;
     let foundTerminal = false;
     let foundWire: string | null = null;
+    let foundLock = false;
 
     for (let i = 0; i < intersects.length; i++) {
       const intersect = intersects[i];
@@ -444,6 +467,14 @@ export function Player() {
             foundTerminal = true;
             break;
           }
+          // Check for door lock - only if holding padlock key
+          if (heldItem === 'padlock_key') {
+            const lockOpened = useEscapeDoor.getState().lockOpened;
+            if (obj.name === 'door_lock' && !lockOpened) {
+              foundLock = true;
+              break;
+            }
+          }
           // Check for wires - only if holding cut pliers
           if (heldItem === 'cut') {
             const wiresState = useWires.getState();
@@ -472,7 +503,7 @@ export function Player() {
           }
           obj = obj.parent;
         }
-        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire) break;
+        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock) break;
       }
     }
 
@@ -510,6 +541,11 @@ export function Player() {
     if (foundWire !== lastNearWire.current) {
       setNearWire(foundWire);
       lastNearWire.current = foundWire;
+    }
+    
+    if (foundLock !== lastNearLock.current) {
+      setNearLock(foundLock);
+      lastNearLock.current = foundLock;
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground

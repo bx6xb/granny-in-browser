@@ -6,6 +6,7 @@ import { usePlank } from '../store/usePlank';
 import { useTerminal } from '../store/useTerminal';
 import { useEscapeDoor } from '../store/useEscapeDoor';
 import { useWires } from '../store/useWires';
+import { useLock } from '../store/useLock';
 
 export function GameUI() {
   const { nearbyDoor, getDoorState } = useDoors();
@@ -14,8 +15,9 @@ export function GameUI() {
   const { nearGuillotine, watermelonPlaced } = useGuillotine();
   const { nearPlank, isChippedOff } = usePlank();
   const { nearTerminal } = useTerminal();
-  const { cardSwiped } = useEscapeDoor();
+  const { cardSwiped, lockOpened } = useEscapeDoor();
   const { nearWire, doorWireCut, shieldWireCut } = useWires();
+  const { nearLock } = useLock();
   const doorState = nearbyDoor ? getDoorState(nearbyDoor) : null;
   const isDrawerOpen = nearbyDrawer ? openDrawers[nearbyDrawer] : false;
 
@@ -70,6 +72,31 @@ export function GameUI() {
           💡 Use your flashlight to see in the dark
         </div>
       </div>
+
+      {/* Lock interaction prompt */}
+      {nearLock && heldItem === 'padlock_key' && !lockOpened && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: '#ffaa00',
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '15px 25px',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            textAlign: 'center',
+            border: '2px solid rgba(255, 170, 0, 0.5)',
+          }}
+        >
+          🔑 Press [E] to open the Lock
+        </div>
+      )}
 
       {/* Terminal interaction prompt */}
       {nearTerminal && heldItem === 'card' && !cardSwiped && (
@@ -175,7 +202,7 @@ export function GameUI() {
       )}
 
       {/* Door interaction prompt */}
-      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && (
+      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && (
         <div
           style={{
             position: 'fixed',
@@ -200,7 +227,7 @@ export function GameUI() {
       )}
 
       {/* Drawer interaction prompt */}
-      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && (
+      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && (
         <div
           style={{
             position: 'fixed',
@@ -225,7 +252,7 @@ export function GameUI() {
       )}
 
       {/* Item interaction prompt */}
-      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && (
+      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && (
         <div
           style={{
             position: 'fixed',

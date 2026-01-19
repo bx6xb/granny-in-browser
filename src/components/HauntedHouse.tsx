@@ -359,7 +359,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   const { itemInsideWatermelon, droppedPositions } = useItems();
   const { activeShieldId, initializeActiveShield } = useShields();
   const { isChippedOff } = usePlank();
-  const { cardSwiped, wiresCut } = useEscapeDoor();
+  const { cardSwiped, wiresCut, lockOpened } = useEscapeDoor();
   const { doorWireCut, shieldWireCut } = useWires();
   const bladeRef = useRef<THREE.Mesh>(null);
   const [bladePosition, setBladePosition] = useState(0.083); // Initial Y position
@@ -2158,15 +2158,17 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
               scale={[0.273, 0.025, 0.273]}
             />
           )}
-          <group name="door_lock" position={[6.996, 0.675, -3.215]} scale={[0.366, 0.099, 0.037]}>
-            <mesh name="Cube038_1" geometry={nodes.Cube038_1.geometry} material={materials.wood2} />
-            <mesh name="Cube038_2" geometry={nodes.Cube038_2.geometry} material={materials.metal} />
-            <mesh
-              name="Cube038_3"
-              geometry={nodes.Cube038_3.geometry}
-              material={materials['metal 2']}
-            />
-          </group>
+          {!lockOpened && (
+            <group name="door_lock" position={[6.996, 0.675, -3.215]} scale={[0.366, 0.099, 0.037]}>
+              <mesh name="Cube038_1" geometry={nodes.Cube038_1.geometry} material={materials.wood2} />
+              <mesh name="Cube038_2" geometry={nodes.Cube038_2.geometry} material={materials.metal} />
+              <mesh
+                name="Cube038_3"
+                geometry={nodes.Cube038_3.geometry}
+                material={materials['metal 2']}
+              />
+            </group>
+          )}
           <mesh
             name="terminal"
             geometry={nodes.terminal.geometry}
