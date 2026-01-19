@@ -15,6 +15,7 @@ import { useGuillotine } from '../store/useGuillotine';
 import { useItems } from '../store/useItems';
 import { useShields } from '../store/useShields';
 import { usePlank } from '../store/usePlank';
+import { useEscapeDoor } from '../store/useEscapeDoor';
 import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 
@@ -357,6 +358,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   const { itemInsideWatermelon, droppedPositions } = useItems();
   const { activeShieldId, initializeActiveShield } = useShields();
   const { isChippedOff } = usePlank();
+  const { cardSwiped } = useEscapeDoor();
   const bladeRef = useRef<THREE.Mesh>(null);
   const [bladePosition, setBladePosition] = useState(0.083); // Initial Y position
   const [animating, setAnimating] = useState(false);
@@ -2149,10 +2151,15 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
           <mesh
             name="terminal_indicator"
             geometry={nodes.terminal_indicator.geometry}
-            material={materials.red_light}
             position={[9.875, 0.573, -3.066]}
             scale={0.056}
-          />
+          >
+            <meshStandardMaterial 
+              color={cardSwiped ? '#00ff00' : '#ff0000'} 
+              emissive={cardSwiped ? '#00ff00' : '#ff0000'}
+              emissiveIntensity={1}
+            />
+          </mesh>
           <mesh
             name="door_wire_cut"
             geometry={nodes.door_wire_cut.geometry}

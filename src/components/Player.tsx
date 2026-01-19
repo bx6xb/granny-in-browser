@@ -10,6 +10,8 @@ import { useDrawers } from '../store/useDrawers';
 import { useItems } from '../store/useItems';
 import { useGuillotine } from '../store/useGuillotine';
 import { usePlank } from '../store/usePlank';
+import { useTerminal } from '../store/useTerminal';
+import { useEscapeDoor } from '../store/useEscapeDoor';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
@@ -29,6 +31,8 @@ export function Player() {
   const { setNearbyItem, grabItem, dropItem, heldItem } = useItems();
   const { setNearGuillotine, placeWatermelon } = useGuillotine();
   const { setNearPlank, chipOffPlank, isChippedOff } = usePlank();
+  const { setNearTerminal } = useTerminal();
+  const { swipeCard } = useEscapeDoor();
   const [isCrouching, setIsCrouching] = useState(false);
 
   // ===== PERFORMANCE: Dedicated array for interactive objects =====
@@ -112,6 +116,15 @@ export function Player() {
             obj.layers.enable(1);
           }
         }
+        
+        // Check for terminal
+        if (obj.name === 'terminal') {
+          if (!addedIds.has('terminal')) {
+            interactives.push(obj);
+            addedIds.add('terminal');
+            obj.layers.enable(1);
+          }
+        }
       });
       
       interactiveObjects.current = interactives;
@@ -169,6 +182,16 @@ export function Player() {
           if (nearPlank && currentHeldItem === 'hammer' && !plankChipped) {
             // Chip off the plank
             chipOffPlank();
+            break;
+          }
+          
+          // Check if holding card and near terminal
+          const nearTerminal = useTerminal.getState().nearTerminal;
+          const cardSwiped = useEscapeDoor.getState().cardSwiped;
+          
+          if (nearTerminal && currentHeldItem === 'card' && !cardSwiped) {
+            // Swipe card in terminal
+            swipeCard();
             break;
           }
           
@@ -247,7 +270,7 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank]);
+  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard]);
 
   // Track previous crouch state to detect transitions
   const prevCrouchState = useRef(false);
@@ -281,6 +304,7 @@ export function Player() {
   const lastNearbyItem = useRef<string | null>(null);
   const lastNearGuillotine = useRef<boolean>(false);
   const lastNearPlank = useRef<boolean>(false);
+  const lastNearTerminal = useRef<boolean>(false);
 
   // Configure raycaster to only check layer 1 (interactive objects)
   useEffect(() => {
@@ -359,6 +383,7 @@ export function Player() {
     let foundItem: string | null = null;
     let foundGuillotine = false;
     let foundPlank = false;
+    let foundTerminal = false;
 
     for (let i = 0; i < intersects.length; i++) {
       const intersect = intersects[i];
@@ -383,6 +408,11 @@ export function Player() {
             foundPlank = true;
             break;
           }
+          // Check for terminal - only if holding card
+          if (heldItem === 'card' && obj.name === 'terminal') {
+            foundTerminal = true;
+            break;
+          }
           // Check for items (using Set for faster lookup)
           if (itemNamesSet.current.has(obj.name)) {
             foundItem = obj.name;
@@ -399,7 +429,7 @@ export function Player() {
           }
           obj = obj.parent;
         }
-        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank) break;
+        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal) break;
       }
     }
 
@@ -427,6 +457,11 @@ export function Player() {
     if (foundPlank !== lastNearPlank.current) {
       setNearPlank(foundPlank);
       lastNearPlank.current = foundPlank;
+    }
+    
+    if (foundTerminal !== lastNearTerminal.current) {
+      setNearTerminal(foundTerminal);
+      lastNearTerminal.current = foundTerminal;
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground
