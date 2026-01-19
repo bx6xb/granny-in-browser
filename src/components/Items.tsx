@@ -14,6 +14,7 @@ import { useGLTF as useHouseGLTF } from '@react-three/drei';
 import { useDrawers } from '../store/useDrawers';
 import { useWell } from '../store/useWell';
 import { useFrame } from '@react-three/fiber';
+import { useGuillotine } from '../store/useGuillotine';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -89,10 +90,11 @@ function ContainerItem({
 export function Items(props: React.JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/items.glb') as unknown as GLTFResult;
   const houseModel = useHouseGLTF('/models/hauntedHouse.glb') as any;
-  const { isItemHeld, getItemPosition, itemSlots, setSpawnPosition } = useItems();
+  const { isItemHeld, getItemPosition, itemSlots, setSpawnPosition, itemInsideWatermelon } = useItems();
   const { isChippedOff } = usePlank();
   const { drawerSlideAmounts } = useDrawers();
   const { bucketHeight } = useWell();
+  const { itemRevealed } = useGuillotine();
   const [initialized, setInitialized] = React.useState(false);
   const [itemContainers, setItemContainers] = React.useState<Record<string, { type: 'drawer' | 'bucket', id: string, basePos: [number, number, number] }>>({});
 
@@ -258,7 +260,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
   return (
     <group {...props} dispose={null}>
       {/* Padlock Key - small key with CCD */}
-      {!isItemHeld('padlock_key') && (
+      {!isItemHeld('padlock_key') && (itemInsideWatermelon !== 'padlock_key' || itemRevealed) && (
         <ContainerItem
           key={`padlock_key-${getItemBodyType('padlock_key')}-${itemContainers['padlock_key']?.id || 'none'}`}
           itemName="padlock_key"
@@ -310,7 +312,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       )}
 
       {/* Card - thin flat object with CCD */}
-      {!isItemHeld('card') && (
+      {!isItemHeld('card') && (itemInsideWatermelon !== 'card' || itemRevealed) && (
         <ContainerItem
           key={`card-${getItemBodyType('card')}-${itemContainers['card']?.id || 'none'}`}
           itemName="card"
@@ -332,7 +334,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       )}
 
       {/* Safe Key - small key with CCD */}
-      {!isItemHeld('safe_key') && (
+      {!isItemHeld('safe_key') && (itemInsideWatermelon !== 'safe_key' || itemRevealed) && (
         <ContainerItem
           key={`safe_key-${getItemBodyType('safe_key')}-${itemContainers['safe_key']?.id || 'none'}`}
           itemName="safe_key"
