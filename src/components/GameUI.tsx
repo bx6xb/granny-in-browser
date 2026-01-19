@@ -7,6 +7,7 @@ import { useTerminal } from '../store/useTerminal';
 import { useEscapeDoor } from '../store/useEscapeDoor';
 import { useWires } from '../store/useWires';
 import { useLock } from '../store/useLock';
+import { useSafe } from '../store/useSafe';
 
 export function GameUI() {
   const { nearbyDoor, getDoorState } = useDoors();
@@ -18,6 +19,7 @@ export function GameUI() {
   const { cardSwiped, lockOpened } = useEscapeDoor();
   const { nearWire, doorWireCut, shieldWireCut } = useWires();
   const { nearLock } = useLock();
+  const { safeOpened } = useSafe();
   const doorState = nearbyDoor ? getDoorState(nearbyDoor) : null;
   const isDrawerOpen = nearbyDrawer ? openDrawers[nearbyDrawer] : false;
 
@@ -203,27 +205,75 @@ export function GameUI() {
 
       {/* Door interaction prompt */}
       {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: 'white',
-            fontFamily: 'monospace',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            padding: '15px 25px',
-            borderRadius: '8px',
-            pointerEvents: 'none',
-            zIndex: 1000,
-            textAlign: 'center',
-            border: '2px solid rgba(255, 255, 255, 0.3)',
-          }}
-        >
-          Press [E] to {doorState.isOpen ? 'Close' : 'Open'} Door
-        </div>
+        nearbyDoor === 'safe_door001' ? (
+          !safeOpened && heldItem !== 'safe_key' ? (
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                color: '#ff4444',
+                fontFamily: 'monospace',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: '15px 25px',
+                borderRadius: '8px',
+                pointerEvents: 'none',
+                zIndex: 1000,
+                textAlign: 'center',
+                border: '2px solid rgba(255, 68, 68, 0.5)',
+              }}
+            >
+              🔒 You need Safe Key to open
+            </div>
+          ) : !safeOpened && heldItem === 'safe_key' ? (
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                color: 'white',
+                fontFamily: 'monospace',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: '15px 25px',
+                borderRadius: '8px',
+                pointerEvents: 'none',
+                zIndex: 1000,
+                textAlign: 'center',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+              }}
+            >
+              Press [E] to Open Safe Door
+            </div>
+          ) : null
+        ) : (
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: 'white',
+              fontFamily: 'monospace',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: '15px 25px',
+              borderRadius: '8px',
+              pointerEvents: 'none',
+              zIndex: 1000,
+              textAlign: 'center',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+            }}
+          >
+            Press [E] to {doorState.isOpen ? 'Close' : 'Open'} Door
+          </div>
+        )
       )}
 
       {/* Drawer interaction prompt */}

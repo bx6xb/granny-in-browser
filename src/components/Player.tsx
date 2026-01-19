@@ -14,6 +14,7 @@ import { useTerminal } from '../store/useTerminal';
 import { useEscapeDoor } from '../store/useEscapeDoor';
 import { useWires } from '../store/useWires';
 import { useLock } from '../store/useLock';
+import { useSafe } from '../store/useSafe';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
@@ -37,6 +38,7 @@ export function Player() {
   const { swipeCard, cutWire, openLock } = useEscapeDoor();
   const { setNearWire } = useWires();
   const { setNearLock } = useLock();
+  const { openSafe } = useSafe();
   const [isCrouching, setIsCrouching] = useState(false);
 
   // ===== PERFORMANCE: Dedicated array for interactive objects =====
@@ -260,7 +262,17 @@ export function Player() {
           const nearbyDoorId = useDoors.getState().nearbyDoor;
           const nearbyDrawerId = useDrawers.getState().nearbyDrawer;
           if (nearbyDoorId) {
-            toggleDoor(nearbyDoorId);
+            // Check if it's the safe door and if player has the safe key
+            if (nearbyDoorId === 'safe_door001') {
+              const currentHeldItem = useItems.getState().heldItem;
+              const safeOpened = useSafe.getState().safeOpened;
+              if (currentHeldItem === 'safe_key' && !safeOpened) {
+                toggleDoor(nearbyDoorId);
+                openSafe();
+              }
+            } else {
+              toggleDoor(nearbyDoorId);
+            }
           } else if (nearbyDrawerId) {
             toggleDrawer(nearbyDrawerId);
           }
@@ -446,7 +458,16 @@ export function Player() {
         let obj: THREE.Object3D | null = intersect.object;
         while (obj) {
           if (obj.userData?.isDoor && obj.userData?.doorId) {
-            foundDoor = obj.userData.doorId;
+            const doorId = obj.userData.doorId;
+            // Don't detect safe door as nearby if it's already been opened
+            if (doorId === 'safe_door001') {
+              const safeOpened = useSafe.getState().safeOpened;
+              if (!safeOpened) {
+                foundDoor = doorId;
+              }
+            } else {
+              foundDoor = doorId;
+            }
             break;
           }
           if (obj.userData?.isDrawer && obj.userData?.drawerId) {
