@@ -33,9 +33,8 @@ const SEEDS: Record<number, Seed> = {
 };
 
 // Slot ranges
-const SLOT_LG_RANGE = { start: 10, end: 76 }; // slot_lg.010 to slot_lg.076
-const SLOT_MD_RANGE = { start: 1, end: 64 }; // slot_md.001 to slot_md.064
-const SLOT_SM_RANGE = { start: 1, end: 20 }; // slot_sm.001 to slot_sm.020
+const SLOT_LG_RANGE = { start: 10, end: 131 }; // slot_lg.010 to slot_lg.131
+const SLOT_SM_RANGE = { start: 1, end: 3 }; // slot_sm.001 to slot_sm.003
 
 // Item constraints
 const SMALL_ITEMS: ItemName[] = ['card', 'safe_key', 'master_key', 'padlock_key', 'cut_pliers'];
@@ -82,9 +81,6 @@ export function generateItemSpawns(seedNumber: 1 | 2 | 3 = 1): {
   
   for (let i = SLOT_LG_RANGE.start; i <= SLOT_LG_RANGE.end; i++) {
     availableSlots.push({ name: getSlotName('lg', i), type: 'lg' });
-  }
-  for (let i = SLOT_MD_RANGE.start; i <= SLOT_MD_RANGE.end; i++) {
-    availableSlots.push({ name: getSlotName('md', i), type: 'md' });
   }
   for (let i = SLOT_SM_RANGE.start; i <= SLOT_SM_RANGE.end; i++) {
     availableSlots.push({ name: getSlotName('sm', i), type: 'sm' });

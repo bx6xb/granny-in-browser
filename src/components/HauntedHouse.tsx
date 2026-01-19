@@ -9,7 +9,6 @@ import type { GLTF } from 'three-stdlib';
 import { RigidBody } from '@react-three/rapier';
 import { useHauntedHouse } from '../hooks/useHauntedHouse';
 import { Door } from './Door';
-import { Drawer } from './Drawer';
 import { Items } from './Items';
 import { AtticPlanks } from './AtticPlanks';
 import { useGuillotine } from '../store/useGuillotine';
@@ -20,7 +19,7 @@ import { useEscapeDoor } from '../store/useEscapeDoor';
 import { useWires } from '../store/useWires';
 import { useWell } from '../store/useWell';
 import { useEffect, useRef, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, type ThreeElements } from '@react-three/fiber';
 import type { RapierRigidBody } from '@react-three/rapier';
 
 type GLTFResult = GLTF & {
@@ -295,6 +294,7 @@ type GLTFResult = GLTF & {
     shield_wire_cut002: THREE.Mesh;
     shield_wire_cut003: THREE.Mesh;
     nightstand008: THREE.Mesh;
+    nightstand009: THREE.Mesh;
     Cube006_1: THREE.Mesh;
     Cube006_2: THREE.Mesh;
     Cube007_1: THREE.Mesh;
@@ -314,6 +314,36 @@ type GLTFResult = GLTF & {
     black_wall: THREE.Mesh;
     black_wall_2: THREE.Mesh;
     black_wall_3: THREE.Mesh;
+    Cube053_1: THREE.Mesh;
+    Cube053_2: THREE.Mesh;
+    Cube015: THREE.Mesh;
+    Cube015_1: THREE.Mesh;
+    Cube057_1: THREE.Mesh;
+    Cube057_2: THREE.Mesh;
+    Cube059: THREE.Mesh;
+    Cube059_1: THREE.Mesh;
+    Cube055: THREE.Mesh;
+    Cube055_1: THREE.Mesh;
+    Cube068: THREE.Mesh;
+    Cube068_1: THREE.Mesh;
+    Cube075_1: THREE.Mesh;
+    Cube075_2: THREE.Mesh;
+    Cube077_1: THREE.Mesh;
+    Cube077_2: THREE.Mesh;
+    Cube079_1: THREE.Mesh;
+    Cube079_2: THREE.Mesh;
+    Cube080_1: THREE.Mesh;
+    Cube080_2: THREE.Mesh;
+    Cube070: THREE.Mesh;
+    Cube070_1: THREE.Mesh;
+    Cube041_1: THREE.Mesh;
+    Cube041_2: THREE.Mesh;
+    Cube045_1: THREE.Mesh;
+    Cube045_2: THREE.Mesh;
+    Cube037_1: THREE.Mesh;
+    Cube037_2: THREE.Mesh;
+    Cube039_1: THREE.Mesh;
+    Cube039_2: THREE.Mesh;
   };
   materials: {
     navmesh: THREE.MeshStandardMaterial;
@@ -350,18 +380,49 @@ type GLTFResult = GLTF & {
     red_light: THREE.MeshStandardMaterial;
     black: THREE.MeshStandardMaterial;
     ['black.001']: THREE.MeshStandardMaterial;
+    ['wood2.003']: THREE.MeshStandardMaterial;
+    ['wood2.004']: THREE.MeshStandardMaterial;
+    ['wood2.005']: THREE.MeshStandardMaterial;
+    ['wood2.006']: THREE.MeshStandardMaterial;
+    ['wood2.007']: THREE.MeshStandardMaterial;
+    ['wood2.008']: THREE.MeshStandardMaterial;
+    ['wood2.009']: THREE.MeshStandardMaterial;
+    ['wood2.010']: THREE.MeshStandardMaterial;
+    ['wood2.011']: THREE.MeshStandardMaterial;
+    ['wood2.012']: THREE.MeshStandardMaterial;
+    ['wood2.013']: THREE.MeshStandardMaterial;
+    ['wood2.014']: THREE.MeshStandardMaterial;
+    ['wood2.015']: THREE.MeshStandardMaterial;
+    ['wood2.016']: THREE.MeshStandardMaterial;
+    ['wood2.017']: THREE.MeshStandardMaterial;
+    ['metal.002']: THREE.MeshStandardMaterial;
+    ['metal.003']: THREE.MeshStandardMaterial;
+    ['metal.004']: THREE.MeshStandardMaterial;
+    ['metal.005']: THREE.MeshStandardMaterial;
+    ['metal.006']: THREE.MeshStandardMaterial;
+    ['metal.007']: THREE.MeshStandardMaterial;
+    ['metal.008']: THREE.MeshStandardMaterial;
+    ['metal.009']: THREE.MeshStandardMaterial;
+    ['metal.010']: THREE.MeshStandardMaterial;
+    ['metal.011']: THREE.MeshStandardMaterial;
+    ['metal.012']: THREE.MeshStandardMaterial;
+    ['metal.013']: THREE.MeshStandardMaterial;
+    ['metal.014']: THREE.MeshStandardMaterial;
+    ['metal.015']: THREE.MeshStandardMaterial;
+    ['metal.016']: THREE.MeshStandardMaterial;
   };
-  animations: GLTFAction[];
+  animations: THREE.AnimationClip[];
 };
 
-export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
-  const { nodes, materials , scene } = useGLTF('/models/hauntedHouse.glb') as GLTFResult;
+export function HauntedHouse(props: ThreeElements['group']) {
+  const { nodes, materials } = useGLTF('/models/hauntedHouse.glb') as unknown as GLTFResult;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const itemsModel = useGLTF('/models/items.glb') as any; // Load items model for watermelon
 
   useHauntedHouse(nodes);
 
   const { watermelonPlaced, bladeDropped, itemRevealed, dropBlade, revealItem } = useGuillotine();
-  const { itemInsideWatermelon, droppedPositions } = useItems();
+  const { itemInsideWatermelon } = useItems();
   const { activeShieldId, initializeActiveShield } = useShields();
   const { isChippedOff, plankPlaced } = usePlank();
   const { cardSwiped, wiresCut, lockOpened } = useEscapeDoor();
@@ -377,6 +438,8 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   const [hatchFallen, setHatchFallen] = useState(false);
   const [hatchVisible, setHatchVisible] = useState(true);
   const hatchFallTimeRef = useRef<number>(0);
+  const animationStartedRef = useRef(false);
+  const plankAnimationStartedRef = useRef(false);
 
   // Initialize random shield selection on mount
   useEffect(() => {
@@ -385,8 +448,9 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
 
   // Start blade animation when watermelon is placed
   useEffect(() => {
-    if (watermelonPlaced && !bladeDropped) {
-      setAnimating(true);
+    if (watermelonPlaced && !bladeDropped && !animationStartedRef.current) {
+      animationStartedRef.current = true;
+      requestAnimationFrame(() => setAnimating(true));
       setTimeout(() => {
         dropBlade();
       }, 1500); // Blade takes 1.5 seconds to drop
@@ -408,13 +472,14 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
 
   // Start plank animation when attic wire is cut
   useEffect(() => {
-    if (atticWireCut && !plankAnimating) {
-      setPlankAnimating(true);
+    if (atticWireCut && !plankAnimating && !plankAnimationStartedRef.current) {
+      plankAnimationStartedRef.current = true;
+      requestAnimationFrame(() => setPlankAnimating(true));
     }
   }, [atticWireCut, plankAnimating]);
 
   // Animate the blade dropping and plank moving
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (animating && !bladeDropped) {
       setBladePosition((prev) => {
         const newPos = prev - delta * 1.5; // Drop speed
@@ -1534,32 +1599,79 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             rotation={[0, -Math.PI / 2, 0]}
             scale={1.365}
           />
-          <Drawer
-            drawerId="nightstand_box002"
-            position={[-2.273, 4.9, -23.57]}
-            rotation={[0, -Math.PI / 2, 0]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube255" geometry={nodes.Cube255.geometry} material={materials.wood2} />
-            <mesh name="Cube255_1" geometry={nodes.Cube255_1.geometry} material={materials.metal} />
-          </Drawer>
-          <Drawer
-            drawerId="nightstand_box003"
-            position={[-3.454, 4.9, -23.57]}
-            rotation={[0, -Math.PI / 2, 0]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube256" geometry={nodes.Cube256.geometry} material={materials.wood2} />
-            <mesh name="Cube256_1" geometry={nodes.Cube256_1.geometry} material={materials.metal} />
-          </Drawer>
-          <mesh
-            name="nightstand001"
-            geometry={nodes.nightstand001.geometry}
-            material={materials.wood2}
-            position={[-2.866, 4.186, -23.866]}
-            rotation={[0, -Math.PI / 2, 0]}
-            scale={[1, 0.028, 0.868]}
-          />
+          <group name="nightstand_box002" position={[-1.69, 4.801, -23.407]} rotation={[0, -Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube255" geometry={nodes.Cube255.geometry} material={materials.wood2} />
+        <mesh name="Cube255_1" geometry={nodes.Cube255_1.geometry} material={materials.metal} />
+      </group>
+      <mesh name="nightstand001" geometry={nodes.nightstand001.geometry} material={materials.wood2} position={[-2.769, 4.136, -23.863]} rotation={[0, -Math.PI / 2, 0]} scale={[1, 0.028, 0.797]} />
+            <mesh name="nightstand002" geometry={nodes.nightstand002.geometry} material={materials['wood2.012']} position={[6.886, 1.969, -32.08]} rotation={[0, 1.571, 0]} scale={[1, 0.028, 0.797]} />
+      <mesh name="nightstand003" geometry={nodes.nightstand003.geometry} material={materials['wood2.010']} position={[13.418, 4.133, -8.947]} scale={[1, 0.028, 0.797]} />
+      <mesh name="nightstand004" geometry={nodes.nightstand004.geometry} material={materials['wood2.016']} position={[-5.852, -0.807, -23.645]} rotation={[0, -Math.PI / 2, 0]} scale={[1, 0.028, 0.797]} />
+      <mesh name="nightstand006" geometry={nodes.nightstand006.geometry} material={materials['wood2.014']} position={[23.866, -0.81, -5.525]} rotation={[-Math.PI, 0, -Math.PI]} scale={[1, 0.028, 0.797]} />
+      <mesh name="nightstand007" geometry={nodes.nightstand007.geometry} material={materials['wood2.006']} position={[24.74, 4.133, -17.603]} rotation={[-Math.PI, 0, -Math.PI]} scale={[1, 0.028, 0.797]} />
+      <mesh name="nightstand008" geometry={nodes.nightstand008.geometry} material={materials['wood2.008']} position={[15.026, 4.133, -15.904]} rotation={[0, 1.571, 0]} scale={[1, 0.028, 0.797]} />
+      <mesh name="nightstand009" geometry={nodes.nightstand009.geometry} material={materials['wood2.004']} position={[13.205, 9.205, -18.301]} rotation={[0, -Math.PI / 2, 0]} scale={[1, 0.028, 0.797]} />
+      <group name="nightstand_box001" position={[16.106, 4.797, -16.36]} rotation={[Math.PI, -1.571, 0]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube053_1" geometry={nodes.Cube053_1.geometry} material={materials['wood2.009']} />
+        <mesh name="Cube053_2" geometry={nodes.Cube053_2.geometry} material={materials['metal.007']} />
+      </group>
+      <group name="nightstand_box003" position={[-3.849, 4.801, -23.407]} rotation={[Math.PI, Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube015" geometry={nodes.Cube015.geometry} material={materials['wood2.003']} />
+        <mesh name="Cube015_1" geometry={nodes.Cube015_1.geometry} material={materials['metal.002']} />
+      </group>
+      <group name="nightstand_box004" position={[13.874, 4.797, -7.867]} rotation={[Math.PI, 0, 0]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube057_1" geometry={nodes.Cube057_1.geometry} material={materials['wood2.011']} />
+        <mesh name="Cube057_2" geometry={nodes.Cube057_2.geometry} material={materials['metal.009']} />
+      </group>
+      <group name="nightstand_box005" position={[13.874, 4.797, -10.027]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube059" geometry={nodes.Cube059.geometry} material={materials['wood2.010']} />
+        <mesh name="Cube059_1" geometry={nodes.Cube059_1.geometry} material={materials['metal.010']} />
+      </group>
+      <group name="nightstand_box006" position={[13.947, 4.797, -16.36]} rotation={[0, 1.571, 0]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube055" geometry={nodes.Cube055.geometry} material={materials['wood2.008']} />
+        <mesh name="Cube055_1" geometry={nodes.Cube055_1.geometry} material={materials['metal.008']} />
+      </group>
+      <group name="nightstand_box007" position={[7.966, 2.633, -32.536]} rotation={[Math.PI, -1.571, 0]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube068" geometry={nodes.Cube068.geometry} material={materials['wood2.013']} />
+        <mesh name="Cube068_1" geometry={nodes.Cube068_1.geometry} material={materials['metal.011']} />
+      </group>
+      <group name="nightstand_box008" position={[23.409, -0.145, -6.605]} rotation={[0, 0, -Math.PI]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube075_1" geometry={nodes.Cube075_1.geometry} material={materials['wood2.015']} />
+        <mesh name="Cube075_2" geometry={nodes.Cube075_2.geometry} material={materials['metal.013']} />
+      </group>
+      <group name="nightstand_box009" position={[23.409, -0.145, -4.446]} rotation={[-Math.PI, 0, -Math.PI]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube077_1" geometry={nodes.Cube077_1.geometry} material={materials['wood2.014']} />
+        <mesh name="Cube077_2" geometry={nodes.Cube077_2.geometry} material={materials['metal.014']} />
+      </group>
+      <group name="nightstand_box010" position={[-6.932, -0.143, -23.189]} rotation={[Math.PI, Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube079_1" geometry={nodes.Cube079_1.geometry} material={materials['wood2.017']} />
+        <mesh name="Cube079_2" geometry={nodes.Cube079_2.geometry} material={materials['metal.015']} />
+      </group>
+      <group name="nightstand_box011" position={[-4.772, -0.143, -23.189]} rotation={[0, -Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube080_1" geometry={nodes.Cube080_1.geometry} material={materials['wood2.016']} />
+        <mesh name="Cube080_2" geometry={nodes.Cube080_2.geometry} material={materials['metal.016']} />
+      </group>
+      <group name="nightstand_box012" position={[5.806, 2.633, -32.536]} rotation={[0, 1.571, 0]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube070" geometry={nodes.Cube070.geometry} material={materials['wood2.012']} />
+        <mesh name="Cube070_1" geometry={nodes.Cube070_1.geometry} material={materials['metal.012']} />
+      </group>
+      <group name="nightstand_box014" position={[24.283, 4.797, -16.523]} rotation={[-Math.PI, 0, -Math.PI]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube041_1" geometry={nodes.Cube041_1.geometry} material={materials['wood2.006']} />
+        <mesh name="Cube041_2" geometry={nodes.Cube041_2.geometry} material={materials['metal.005']} />
+      </group>
+      <group name="nightstand_box015" position={[24.283, 4.797, -18.683]} rotation={[0, 0, -Math.PI]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube045_1" geometry={nodes.Cube045_1.geometry} material={materials['wood2.007']} />
+        <mesh name="Cube045_2" geometry={nodes.Cube045_2.geometry} material={materials['metal.006']} />
+      </group>
+      <group name="nightstand_box017" position={[12.125, 9.869, -17.845]} rotation={[Math.PI, Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube037_1" geometry={nodes.Cube037_1.geometry} material={materials['wood2.005']} />
+        <mesh name="Cube037_2" geometry={nodes.Cube037_2.geometry} material={materials['metal.003']} />
+      </group>
+      <group name="nightstand_box018" position={[14.285, 9.869, -17.845]} rotation={[0, -Math.PI / 2, 0]} scale={[0.03, 0.037, 0.127]}>
+        <mesh name="Cube039_1" geometry={nodes.Cube039_1.geometry} material={materials['wood2.004']} />
+        <mesh name="Cube039_2" geometry={nodes.Cube039_2.geometry} material={materials['metal.004']} />
+      </group>
+
           <mesh
             name="table001"
             geometry={nodes.table001.geometry}
@@ -1596,29 +1708,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             material={materials.wood2}
             position={[18.694, 3.743, -13.758]}
           />
-          <Drawer
-            drawerId="nightstand_box004"
-            position={[13.707, 4.894, -9.547]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube269" geometry={nodes.Cube269.geometry} material={materials.wood2} />
-            <mesh name="Cube269_1" geometry={nodes.Cube269_1.geometry} material={materials.metal} />
-          </Drawer>
-          <Drawer
-            drawerId="nightstand_box005"
-            position={[13.707, 4.894, -8.366]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube270" geometry={nodes.Cube270.geometry} material={materials.wood2} />
-            <mesh name="Cube270_1" geometry={nodes.Cube270_1.geometry} material={materials.metal} />
-          </Drawer>
-          <mesh
-            name="nightstand002"
-            geometry={nodes.nightstand002.geometry}
-            material={materials.wood2}
-            position={[13.41, 4.18, -8.954]}
-            scale={[1, 0.028, 0.868]}
-          />
+
           <group name="bed003" position={[11.064, 3.456, -22.577]} rotation={[0, -Math.PI / 2, 0]}>
             <mesh name="Cube272" geometry={nodes.Cube272.geometry} material={materials.wood2} />
             <mesh name="Cube272_1" geometry={nodes.Cube272_1.geometry} material={materials.bed} />
@@ -1628,32 +1718,9 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
               material={materials['bed 2']}
             />
           </group>
-          <Drawer
-            drawerId="nightstand_box006"
-            position={[14.432, 4.893, -16.197]}
-            rotation={[0, Math.PI / 2, 0]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube273" geometry={nodes.Cube273.geometry} material={materials.wood2} />
-            <mesh name="Cube273_1" geometry={nodes.Cube273_1.geometry} material={materials.metal} />
-          </Drawer>
-          <Drawer
-            drawerId="nightstand_box007"
-            position={[15.613, 4.893, -16.197]}
-            rotation={[0, Math.PI / 2, 0]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube274" geometry={nodes.Cube274.geometry} material={materials.wood2} />
-            <mesh name="Cube274_1" geometry={nodes.Cube274_1.geometry} material={materials.metal} />
-          </Drawer>
-          <mesh
-            name="nightstand003"
-            geometry={nodes.nightstand003.geometry}
-            material={materials.wood2}
-            position={[15.025, 4.178, -15.9]}
-            rotation={[0, Math.PI / 2, 0]}
-            scale={[1, 0.028, 0.868]}
-          />
+
+
+
           <group name="well001" position={[-16.204, -2.538, -30.298]} rotation={[0, -0.617, 0]}>
             <mesh name="Cone002" geometry={nodes.Cone002.geometry} material={materials.well} />
             <mesh name="Cone002_1" geometry={nodes.Cone002_1.geometry} material={materials.wood2} />
@@ -1739,58 +1806,10 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             material={materials.wood2}
             position={[20.952, -1.224, -13.71]}
           />
-          <Drawer
-            drawerId="nightstand_box008"
-            position={[23.576, -0.049, -4.921]}
-            rotation={[Math.PI, 0, Math.PI]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube299" geometry={nodes.Cube299.geometry} material={materials.wood2} />
-            <mesh name="Cube299_1" geometry={nodes.Cube299_1.geometry} material={materials.metal} />
-          </Drawer>
-          <Drawer
-            drawerId="nightstand_box009"
-            position={[23.576, -0.049, -6.102]}
-            rotation={[Math.PI, 0, Math.PI]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube300" geometry={nodes.Cube300.geometry} material={materials.wood2} />
-            <mesh name="Cube300_1" geometry={nodes.Cube300_1.geometry} material={materials.metal} />
-          </Drawer>
-          <mesh
-            name="nightstand004"
-            geometry={nodes.nightstand004.geometry}
-            material={materials.wood2}
-            position={[23.873, -0.764, -5.514]}
-            rotation={[Math.PI, 0, Math.PI]}
-            scale={[1, 0.028, 0.868]}
-          />
-          <mesh
-            name="nightstand005"
-            geometry={nodes.nightstand005.geometry}
-            material={materials.wood2}
-            position={[-5.844, -0.764, -23.649]}
-            rotation={[0, -1.571, 0]}
-            scale={[1, 0.028, 0.868]}
-          />
-          <Drawer
-            drawerId="nightstand_box010"
-            position={[-6.432, -0.049, -23.352]}
-            rotation={[0, -1.571, 0]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube303" geometry={nodes.Cube303.geometry} material={materials.wood2} />
-            <mesh name="Cube303_1" geometry={nodes.Cube303_1.geometry} material={materials.metal} />
-          </Drawer>
-          <Drawer
-            drawerId="nightstand_box011"
-            position={[-5.251, -0.049, -23.352]}
-            rotation={[0, -1.571, 0]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube304" geometry={nodes.Cube304.geometry} material={materials.wood2} />
-            <mesh name="Cube304_1" geometry={nodes.Cube304_1.geometry} material={materials.metal} />
-          </Drawer>
+
+
+
+
           <mesh
             name="closet004"
             geometry={nodes.closet004.geometry}
@@ -1821,58 +1840,8 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             position={[20.181, 3.756, -28.601]}
             rotation={[0, Math.PI / 2, 0]}
           />
-          <Drawer
-            drawerId="nightstand_box012"
-            position={[6.33, 2.72, -32.363]}
-            rotation={[0, Math.PI / 2, 0]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube319" geometry={nodes.Cube319.geometry} material={materials.wood2} />
-            <mesh name="Cube319_1" geometry={nodes.Cube319_1.geometry} material={materials.metal} />
-          </Drawer>
-          <Drawer
-            drawerId="nightstand_box013"
-            position={[7.511, 2.72, -32.363]}
-            rotation={[0, Math.PI / 2, 0]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube320" geometry={nodes.Cube320.geometry} material={materials.wood2} />
-            <mesh name="Cube320_1" geometry={nodes.Cube320_1.geometry} material={materials.metal} />
-          </Drawer>
-          <mesh
-            name="nightstand006"
-            geometry={nodes.nightstand006.geometry}
-            material={materials.wood2}
-            position={[6.923, 2.005, -32.066]}
-            rotation={[0, Math.PI / 2, 0]}
-            scale={[1, 0.028, 0.868]}
-          />
-          <Drawer
-            drawerId="nightstand_box014"
-            position={[13.791, 9.969, -18.008]}
-            rotation={[0, -Math.PI / 2, 0]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube326" geometry={nodes.Cube326.geometry} material={materials.wood2} />
-            <mesh name="Cube326_1" geometry={nodes.Cube326_1.geometry} material={materials.metal} />
-          </Drawer>
-          <Drawer
-            drawerId="nightstand_box015"
-            position={[12.61, 9.969, -18.008]}
-            rotation={[0, -Math.PI / 2, 0]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh name="Cube327" geometry={nodes.Cube327.geometry} material={materials.wood2} />
-            <mesh name="Cube327_1" geometry={nodes.Cube327_1.geometry} material={materials.metal} />
-          </Drawer>
-          <mesh
-            name="nightstand007"
-            geometry={nodes.nightstand007.geometry}
-            material={materials.wood2}
-            position={[13.198, 9.254, -18.305]}
-            rotation={[0, -Math.PI / 2, 0]}
-            scale={[1, 0.028, 0.868]}
-          />
+
+
           {/* Shield 1 - Only render if active */}
           {activeShieldId === 1 && (
             <>
@@ -1959,48 +1928,9 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
               )}
             </>
           )}
-          <mesh
-            name="nightstand008"
-            geometry={nodes.nightstand008.geometry}
-            material={materials['wood2.001']}
-            position={[24.743, 4.178, -17.599]}
-            rotation={[Math.PI, 0, Math.PI]}
-            scale={[1, 0.028, 0.868]}
-          />
-          <Drawer
-            drawerId="nightstand_box001"
-            position={[24.446, 4.893, -18.187]}
-            rotation={[Math.PI, 0, Math.PI]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh
-              name="Cube006_1"
-              geometry={nodes.Cube006_1.geometry}
-              material={materials['wood2.001']}
-            />
-            <mesh
-              name="Cube006_2"
-              geometry={nodes.Cube006_2.geometry}
-              material={materials['metal.001']}
-            />
-          </Drawer>
-          <Drawer
-            drawerId="nightstand_box016"
-            position={[24.446, 4.893, -17.006]}
-            rotation={[Math.PI, 0, Math.PI]}
-            scale={[0.03, 0.037, 0.138]}
-          >
-            <mesh
-              name="Cube007_1"
-              geometry={nodes.Cube007_1.geometry}
-              material={materials['wood2.001']}
-            />
-            <mesh
-              name="Cube007_2"
-              geometry={nodes.Cube007_2.geometry}
-              material={materials['metal.001']}
-            />
-          </Drawer>
+
+
+
           <mesh
             name="cut_indicators"
             geometry={nodes.cut_indicators.geometry}
