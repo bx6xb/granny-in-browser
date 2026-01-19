@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
 import { RigidBody } from '@react-three/rapier';
-import type React from 'react';
+import React from 'react';
 import { useItems } from '../store/useItems';
 import { usePlank } from '../store/usePlank';
 import { useGLTF as useHouseGLTF } from '@react-three/drei';
@@ -46,8 +46,29 @@ type GLTFResult = GLTF & {
 export function Items(props: React.JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/items.glb') as unknown as GLTFResult;
   const houseModel = useHouseGLTF('/models/hauntedHouse.glb') as any;
-  const { isItemHeld, getItemPosition } = useItems();
+  const { isItemHeld, getItemPosition, itemSlots, setSpawnPosition } = useItems();
   const { isChippedOff } = usePlank();
+  const [initialized, setInitialized] = React.useState(false);
+
+  // Initialize spawn positions from GLTF empties
+  React.useEffect(() => {
+    if (!initialized && houseModel?.nodes) {
+      Object.entries(itemSlots).forEach(([itemName, slotName]) => {
+        const empty = houseModel.nodes[slotName];
+        if (empty?.position) {
+          const pos: [number, number, number] = [
+            empty.position.x,
+            empty.position.y,
+            empty.position.z,
+          ];
+          setSpawnPosition(itemName, pos);
+        } else {
+          console.warn(`Empty ${slotName} not found for item ${itemName}`);
+        }
+      });
+      setInitialized(true);
+    }
+  }, [houseModel, itemSlots, setSpawnPosition, initialized]);
 
   // Collision groups:
   // - Group 0 (0x0001): Static geometry (floors, walls, furniture)
@@ -212,12 +233,12 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
         </RigidBody>
       )}
 
-      {/* Watermelon Cut - small piece */}
-      {!isItemHeld('cut') && (
+      {/* Cut Pliers */}
+      {!isItemHeld('cut_pliers') && (
         <RigidBody
-          key={`cut-${getItemPosition('cut', [0.565, 4.864, -17.027]).join(',')}`}
+          key={`cut_pliers-${getItemPosition('cut_pliers', [0.565, 4.864, -17.027]).join(',')}`}
           type="dynamic"
-          position={getItemPosition('cut', [0.565, 4.864, -17.027])}
+          position={getItemPosition('cut_pliers', [0.565, 4.864, -17.027])}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -227,7 +248,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           scale={0.8}
         >
           <group
-            name="cut"
+            name="cut_pliers"
             position={[0, 0, 0]}
             rotation={[-Math.PI, -0.268, 0]}
             scale={[0.017, 0.008, 0.024]}

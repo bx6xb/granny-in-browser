@@ -355,7 +355,7 @@ type GLTFResult = GLTF & {
 };
 
 export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
-  const { nodes, materials } = useGLTF('/models/hauntedHouse.glb') as GLTFResult;
+  const { nodes, materials , scene } = useGLTF('/models/hauntedHouse.glb') as GLTFResult;
   const itemsModel = useGLTF('/models/items.glb') as any; // Load items model for watermelon
 
   useHauntedHouse(nodes);

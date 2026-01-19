@@ -322,7 +322,7 @@ export function Player() {
           const nearWire = useWires.getState().nearWire;
           const wiresState = useWires.getState();
           
-          if (nearWire && currentHeldItem === 'cut') {
+          if (nearWire && currentHeldItem === 'cut_pliers') {
             // Check if wire is not already cut
             if (nearWire === 'door_wire' && !wiresState.doorWireCut) {
               useWires.getState().cutWire('door_wire');
@@ -499,7 +499,7 @@ export function Player() {
   const guillotinePosition = useRef(new THREE.Vector3(-10.7, -1.6, -28.6));
   
   // Item names as Set for O(1) lookup instead of O(n) array.includes()
-  const itemNamesSet = useRef(new Set(['padlock_key', 'master_key', 'card', 'safe_key', 'handle', 'watermelon', 'cut', 'hammer', 'wood_plank_item', 'vase']));
+  const itemNamesSet = useRef(new Set(['padlock_key', 'master_key', 'card', 'safe_key', 'handle', 'watermelon', 'cut_pliers', 'hammer', 'wood_plank_item', 'vase']));
   
   const neededClearance = PLAYER_HEIGHT - CROUCH_HEIGHT + 0.2;
 
@@ -670,7 +670,7 @@ export function Player() {
             }
           }
           // Check for wires - only if holding cut pliers
-          if (heldItem === 'cut') {
+          if (heldItem === 'cut_pliers') {
             const wiresState = useWires.getState();
             if (obj.name === 'door_wire' && !wiresState.doorWireCut) {
               foundWire = 'door_wire';

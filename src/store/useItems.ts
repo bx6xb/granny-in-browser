@@ -1,22 +1,34 @@
 import { create } from 'zustand';
+import { generateItemSpawns } from '../utils/itemSpawner';
 
 interface ItemsState {
   nearbyItem: string | null;
   heldItem: string | null;
   droppedPositions: { [key: string]: [number, number, number] };
-  itemInsideWatermelon: string; // The item hidden inside the watermelon (key or card)
+  itemInsideWatermelon: string;
+  itemSlots: { [key: string]: string };
+  spawnPositions: { [key: string]: [number, number, number] | null };
   setNearbyItem: (itemName: string | null) => void;
   grabItem: (itemName: string) => void;
   dropItem: (position: [number, number, number]) => void;
   isItemHeld: (itemName: string) => boolean;
   getItemPosition: (itemName: string, defaultPosition: [number, number, number]) => [number, number, number];
+  setSpawnPosition: (itemName: string, position: [number, number, number]) => void;
 }
+
+// Select random seed (1, 2, or 3)
+const selectedSeed = (Math.floor(Math.random() * 3) + 1) as 1 | 2 | 3;
+const { itemSlots, watermelonItem } = generateItemSpawns(selectedSeed);
+
+console.log(`Game Seed: ${selectedSeed}`, { itemSlots, watermelonItem });
 
 export const useItems = create<ItemsState>((set, get) => ({
   nearbyItem: null,
   heldItem: null,
   droppedPositions: {},
-  itemInsideWatermelon: 'master_key', // Change this to any key or 'card'
+  itemInsideWatermelon: watermelonItem,
+  itemSlots,
+  spawnPositions: {},
   
   setNearbyItem: (itemName) => set({ nearbyItem: itemName }),
   
@@ -59,7 +71,16 @@ export const useItems = create<ItemsState>((set, get) => ({
   },
   
   getItemPosition: (itemName, defaultPosition) => {
-    const { droppedPositions } = get();
-    return droppedPositions[itemName] || defaultPosition;
+    const { droppedPositions, spawnPositions } = get();
+    return droppedPositions[itemName] || spawnPositions[itemName] || defaultPosition;
+  },
+
+  setSpawnPosition: (itemName, position) => {
+    set((state) => ({
+      spawnPositions: {
+        ...state.spawnPositions,
+        [itemName]: position,
+      },
+    }));
   },
 }));

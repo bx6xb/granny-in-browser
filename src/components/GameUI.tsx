@@ -259,7 +259,7 @@ export function GameUI() {
       )}
 
       {/* Wire cutting prompt */}
-      {nearWire && heldItem === 'cut' && !nearMainDoor && (
+      {nearWire && heldItem === 'cut_pliers' && !nearMainDoor && (
         (nearWire === 'door_wire' && !doorWireCut) || 
         (nearWire.startsWith('shield_wire') && !shieldWireCut) ||
         (nearWire === 'attic_wire' && !atticWireCut)
