@@ -2082,6 +2082,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
               scale={[0.026, 0.1, 0.034]}
             />
           )}
+          {/* Wood plank on main door - no physics when attached */}
           {!isChippedOff && (
             <mesh
               name="wood_plank"

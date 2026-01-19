@@ -384,9 +384,9 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       {/* Wood Plank - pickable after chipped off */}
       {isChippedOff && !isItemHeld('wood_plank_item') && (
         <RigidBody
-          key={`wood_plank_item-${getItemPosition('wood_plank_item', [8.036, -0.5, -3.118]).join(',')}`}
+          key={`wood_plank_item-${getItemPosition('wood_plank_item', [8.036, -0.873, -3.118]).join(',')}`}
           type="dynamic"
-          position={getItemPosition('wood_plank_item', [8.036, -0.5, -3.118])}
+          position={getItemPosition('wood_plank_item', [8.036, -0.873, -3.118])}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -394,6 +394,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           ccd={true}
           collisionGroups={itemCollisionGroup}
           scale={0.85}
+          linearVelocity={[0, -0.5, -2]}
         >
           <mesh
             name="wood_plank_item"
