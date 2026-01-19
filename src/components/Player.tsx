@@ -34,7 +34,7 @@ export function Player() {
   const { toggleDrawer, setNearbyDrawer } = useDrawers();
   const { setNearbyItem, grabItem, dropItem, heldItem } = useItems();
   const { setNearGuillotine, placeWatermelon } = useGuillotine();
-  const { setNearPlank, chipOffPlank, isChippedOff } = usePlank();
+  const { setNearPlank, chipOffPlank, isChippedOff, setNearPlankSlot, placePlank, plankPlaced } = usePlank();
   const { setNearTerminal } = useTerminal();
   const { swipeCard, cutWire, openLock, setNearMainDoor, escape, isDoorUnlocked, hasEscaped } = useEscapeDoor();
   const { setNearWire } = useWires();
@@ -121,6 +121,15 @@ export function Player() {
           if (!addedIds.has('wood_plank')) {
             interactives.push(obj);
             addedIds.add('wood_plank');
+            obj.layers.enable(1);
+          }
+        }
+        
+        // Check for wood plank slot (to place plank)
+        if (obj.name === 'wood_plank_slot') {
+          if (!addedIds.has('wood_plank_slot')) {
+            interactives.push(obj);
+            addedIds.add('wood_plank_slot');
             obj.layers.enable(1);
           }
         }
@@ -250,6 +259,18 @@ export function Player() {
           break;
         case 'KeyE': {
           const currentHeldItem = useItems.getState().heldItem;
+          
+          // Check if holding plank and near plank slot
+          const nearPlankSlot = usePlank.getState().nearPlankSlot;
+          const plankPlaced = usePlank.getState().plankPlaced;
+          
+          if (nearPlankSlot && currentHeldItem === 'wood_plank_item' && !plankPlaced) {
+            // Place plank
+            placePlank();
+            // Remove plank from inventory
+            useItems.getState().dropItem([0, -100, 0]); // Drop at impossible position (will not appear)
+            break;
+          }
           
           // Check if holding handle and near shaft
           const nearShaft = useWell.getState().nearShaft;
@@ -414,7 +435,7 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle]);
+  }, [toggleDoor, toggleDrawer, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle, placePlank]);
   
   // Handle continuous key press for well usage
   useEffect(() => {
@@ -484,6 +505,7 @@ export function Player() {
   const lastNearMainDoor = useRef<boolean>(false);
   const lastNearShaft = useRef<boolean>(false);
   const lastNearHandle = useRef<boolean>(false);
+  const lastNearPlankSlot = useRef<boolean>(false);
 
   // Configure raycaster to only check layer 1 (interactive objects)
   useEffect(() => {
@@ -576,6 +598,7 @@ export function Player() {
     let foundMainDoor = false;
     let foundWellShaft = false;
     let foundWellHandle = false;
+    let foundPlankSlot = false;
 
     for (let i = 0; i < intersects.length; i++) {
       const intersect = intersects[i];
@@ -607,6 +630,11 @@ export function Player() {
           // Check for wood plank on door - only if holding hammer and not chipped off yet
           if (heldItem === 'hammer' && !isChippedOff && obj.name === 'wood_plank') {
             foundPlank = true;
+            break;
+          }
+          // Check for wood plank slot - only if holding plank item and not placed yet
+          if (heldItem === 'wood_plank_item' && !plankPlaced && obj.name === 'wood_plank_slot') {
+            foundPlankSlot = true;
             break;
           }
           // Check for terminal - only if holding card
@@ -675,7 +703,7 @@ export function Player() {
           }
           obj = obj.parent;
         }
-        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock || foundMainDoor || foundWellShaft || foundWellHandle) break;
+        if (foundDoor || foundDrawer || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock || foundMainDoor || foundWellShaft || foundWellHandle || foundPlankSlot) break;
       }
     }
 
@@ -739,6 +767,12 @@ export function Player() {
       console.log('[Player] Near well handle:', foundWellHandle);
       setNearHandle(foundWellHandle);
       lastNearHandle.current = foundWellHandle;
+    }
+    
+    // Update plank slot proximity
+    if (foundPlankSlot !== lastNearPlankSlot.current) {
+      setNearPlankSlot(foundPlankSlot);
+      lastNearPlankSlot.current = foundPlankSlot;
     }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground

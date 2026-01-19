@@ -15,7 +15,7 @@ export function GameUI() {
   const { nearbyDrawer, openDrawers } = useDrawers();
   const { nearbyItem, heldItem } = useItems();
   const { nearGuillotine, watermelonPlaced } = useGuillotine();
-  const { nearPlank, isChippedOff } = usePlank();
+  const { nearPlank, isChippedOff, nearPlankSlot, plankPlaced } = usePlank();
   const { nearTerminal } = useTerminal();
   const { cardSwiped, lockOpened, isDoorUnlocked, nearMainDoor, hasEscaped } = useEscapeDoor();
   const { nearWire, doorWireCut, shieldWireCut } = useWires();
@@ -286,7 +286,7 @@ export function GameUI() {
         </div>
       )}
 
-      {/* Plank interaction prompt */}
+      {/* Plank chipping prompt */}
       {nearPlank && heldItem === 'hammer' && !isChippedOff && !nearMainDoor && (
         <div
           style={{
@@ -308,6 +308,31 @@ export function GameUI() {
           }}
         >
           🔨 Press [E] to chip off Wood Plank
+        </div>
+      )}
+
+      {/* Plank placement prompt */}
+      {nearPlankSlot && heldItem === 'wood_plank_item' && !plankPlaced && !nearMainDoor && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: '#8B4513',
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '15px 25px',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            textAlign: 'center',
+            border: '2px solid rgba(139, 69, 19, 0.5)',
+          }}
+        >
+          Press [E] to set plank here
         </div>
       )}
 
@@ -337,7 +362,7 @@ export function GameUI() {
       )}
 
       {/* Door interaction prompt */}
-      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
+      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
         nearbyDoor === 'safe_door001' ? (
           !safeOpened && heldItem !== 'safe_key' ? (
             <div
@@ -410,7 +435,7 @@ export function GameUI() {
       )}
 
       {/* Drawer interaction prompt */}
-      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
+      {nearbyDrawer && !nearbyDoor && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
         <div
           style={{
             position: 'fixed',
@@ -435,7 +460,7 @@ export function GameUI() {
       )}
 
       {/* Item interaction prompt */}
-      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
+      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
         <div
           style={{
             position: 'fixed',

@@ -360,7 +360,7 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   const { watermelonPlaced, bladeDropped, itemRevealed, dropBlade, revealItem } = useGuillotine();
   const { itemInsideWatermelon, droppedPositions } = useItems();
   const { activeShieldId, initializeActiveShield } = useShields();
-  const { isChippedOff } = usePlank();
+  const { isChippedOff, plankPlaced } = usePlank();
   const { cardSwiped, wiresCut, lockOpened } = useEscapeDoor();
   const { doorWireCut, shieldWireCut } = useWires();
   const { handleSet, handleRotation, bucketHeight, updateWellProgress } = useWell();
@@ -2169,7 +2169,27 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
               scale={[0.273, 0.025, 0.273]}
             />
           )}
-          <mesh name="wood_plank001" geometry={nodes.wood_plank001.geometry} material={materials['wood2.002']} position={[8.106, 7.94, -8.589]} rotation={[-Math.PI, 0, 0]} scale={[0.273, 0.025, 0.273]} />
+          {plankPlaced && (
+            <mesh 
+              name="wood_plank001" 
+              geometry={nodes.wood_plank001.geometry} 
+              material={materials.wood2} 
+              position={[8.106, 7.94, -8.589]} 
+              rotation={[-Math.PI, 0, 0]} 
+              scale={[0.273, 0.025, 0.273]} 
+            />
+          )}
+          {!plankPlaced && (
+            <mesh 
+              name="wood_plank_slot" 
+              geometry={nodes.wood_plank001.geometry} 
+              material={materials.wood2} 
+              position={[8.106, 7.94, -8.589]} 
+              rotation={[-Math.PI, 0, 0]} 
+              scale={[0.8, 0.3, 0.8]} 
+              visible={false}
+            />
+          )}
           {!lockOpened && (
             <group name="door_lock" position={[6.996, 0.675, -3.215]} scale={[0.366, 0.099, 0.037]}>
               <mesh name="Cube038_1" geometry={nodes.Cube038_1.geometry} material={materials.wood2} />
