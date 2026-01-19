@@ -62,11 +62,19 @@ function ContainerItem({
 }) {
   const rbRef = React.useRef<RapierRigidBody>(null);
   const lastBodyType = React.useRef(bodyType);
+  const lastPosition = React.useRef<[number, number, number]>(position);
 
   useFrame(() => {
     if (rbRef.current && bodyType === 'kinematicPosition') {
-      // Update kinematic body position every frame
-      rbRef.current.setTranslation({ x: position[0], y: position[1], z: position[2] }, true);
+      // Always update kinematic position to follow container
+      const [x, y, z] = position;
+      rbRef.current.setNextKinematicTranslation({ x, y, z });
+      
+      // Also reset any accumulated velocities to prevent drift
+      rbRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      rbRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      
+      lastPosition.current = [x, y, z];
     }
   });
 
@@ -133,7 +141,8 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
     if (!container) return pos;
     
     if (container.type === 'bucket') {
-      // Bucket moves up along Y axis
+      // Bucket moves up along Y axis - add extra offset to keep item inside bucket
+      // The bucket bottom is at -6.604, so item should be slightly above bucket floor
       return [pos[0], pos[1] + bucketHeight, pos[2]];
     }
     
@@ -147,12 +156,12 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
     if (!container) return 'dynamic';
     
     if (container.type === 'bucket') {
-      // Item becomes dynamic when bucket is fully raised
-      return bucketHeight >= 4.5 ? 'dynamic' : 'kinematicPosition';
+      // Item stays kinematic in bucket (never becomes dynamic while in bucket)
+      return 'kinematicPosition';
     }
     
     return 'dynamic';
-  }, [itemContainers, bucketHeight]);
+  }, [itemContainers]);
 
   // Collision groups:
   // - Group 0 (0x0001): Static geometry (floors, walls, furniture)

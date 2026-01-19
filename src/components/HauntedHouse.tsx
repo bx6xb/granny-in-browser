@@ -21,6 +21,7 @@ import { useWell } from '../store/useWell';
 import { useEffect, useRef, useState } from 'react';
 import { useFrame, type ThreeElements } from '@react-three/fiber';
 import type { RapierRigidBody } from '@react-three/rapier';
+import type * as RAPIER from '@dimforge/rapier3d-compat';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -440,6 +441,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const hatchFallTimeRef = useRef<number>(0);
   const animationStartedRef = useRef(false);
   const plankAnimationStartedRef = useRef(false);
+  const bucketRef = useRef<RapierRigidBody>(null);
 
   // Initialize random shield selection on mount
   useEffect(() => {
@@ -513,6 +515,15 @@ export function HauntedHouse(props: ThreeElements['group']) {
     
     // Update well progress
     updateWellProgress(delta);
+    
+    // Update bucket position
+    if (bucketRef.current) {
+      bucketRef.current.setNextKinematicTranslation({ 
+        x: -16.202, 
+        y: -6.604 + bucketHeight, 
+        z: -30.295 
+      });
+    }
   });
 
   return (
@@ -1856,14 +1867,21 @@ export function HauntedHouse(props: ThreeElements['group']) {
               rotation={[handleRotation, -0.615, 0]}
             />
           )}
-          <mesh
-            name="bucket001"
-            geometry={nodes.bucket001.geometry}
-            material={materials.metal}
-            rotation={[0, 0.396, 0]}
+          <RigidBody
+            ref={bucketRef}
+            type="kinematicPosition"
             position={[-16.202, -6.604 + bucketHeight, -30.295]}
-            scale={[0.545, 0.461, 0.545]}
-          />
+            rotation={[0, 0.396, 0]}
+            colliders="trimesh"
+            friction={1.0}
+          >
+            <mesh
+              name="bucket001"
+              geometry={nodes.bucket001.geometry}
+              material={materials.metal}
+              scale={[0.545, 0.461, 0.545]}
+            />
+          </RigidBody>
           <mesh
             ref={bladeRef}
             name="blade001"
