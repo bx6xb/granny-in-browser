@@ -1687,24 +1687,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             rotation={[0, Math.PI / 2, 0]}
             scale={[1, 0.028, 0.868]}
           />
-          <mesh
-            name="box001"
-            geometry={nodes.box001.geometry}
-            material={materials.box}
-            position={[22.352, 3.464, -23.834]}
-          />
-          <mesh
-            name="box002"
-            geometry={nodes.box002.geometry}
-            material={materials.box}
-            position={[22.352, 4.725, -23.834]}
-          />
-          <mesh
-            name="box003"
-            geometry={nodes.box003.geometry}
-            material={materials.box}
-            position={[22.352, 5.989, -23.834]}
-          />
           <group name="well001" position={[-16.204, -2.538, -30.298]}>
             <mesh name="Cone002" geometry={nodes.Cone002.geometry} material={materials.well} />
             <mesh name="Cone002_1" geometry={nodes.Cone002_1.geometry} material={materials.wood2} />
@@ -2261,6 +2243,43 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
       
       {/* Attic planks with physics */}
       <AtticPlanks nodes={nodes} materials={materials} />
+      
+      {/* Boxes with physics */}
+      <RigidBody
+        position={[22.352, 3.464, -23.834]}
+        type="dynamic"
+        colliders="cuboid"
+      >
+        <mesh
+          name="box001"
+          geometry={nodes.box001.geometry}
+          material={materials.box}
+        />
+      </RigidBody>
+      
+      <RigidBody
+        position={[22.352, 4.725, -23.834]}
+        type="dynamic"
+        colliders="cuboid"
+      >
+        <mesh
+          name="box002"
+          geometry={nodes.box002.geometry}
+          material={materials.box}
+        />
+      </RigidBody>
+      
+      <RigidBody
+        position={[22.352, 5.989, -23.834]}
+        type="dynamic"
+        colliders="cuboid"
+      >
+        <mesh
+          name="box003"
+          geometry={nodes.box003.geometry}
+          material={materials.box}
+        />
+      </RigidBody>
     </>
   );
 }
