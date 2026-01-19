@@ -75,3 +75,18 @@ button:focus-visible {
   left: auto !important;
   bottom: auto !important;
 }
+
+/* Crosshair - centered dot */
+.crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+}
