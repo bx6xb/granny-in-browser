@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useEscapeDoor } from './useEscapeDoor';
 
 interface PlankState {
   isChippedOff: boolean;
@@ -11,5 +12,8 @@ export const usePlank = create<PlankState>((set) => ({
   isChippedOff: false,
   nearPlank: false,
   setNearPlank: (near) => set({ nearPlank: near }),
-  chipOffPlank: () => set({ isChippedOff: true }),
+  chipOffPlank: () => {
+    set({ isChippedOff: true });
+    useEscapeDoor.getState().removeBoard();
+  },
 }));

@@ -38,32 +38,46 @@ export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
     set((state) => {
       if (state.wiresCut >= 2) return state;
       const newWiresCut = state.wiresCut + 1;
-      return {
+      const newState = {
         wiresCut: newWiresCut,
         isDoorUnlocked: checkUnlocked({ ...state, wiresCut: newWiresCut }),
       };
+      console.log('[EscapeDoor] Wire cut:', newState);
+      return newState;
     });
   },
 
   removeBoard: () => {
-    set((state) => ({
-      boardRemoved: true,
-      isDoorUnlocked: checkUnlocked({ ...state, boardRemoved: true }),
-    }));
+    set((state) => {
+      const newState = {
+        boardRemoved: true,
+        isDoorUnlocked: checkUnlocked({ ...state, boardRemoved: true }),
+      };
+      console.log('[EscapeDoor] Board removed:', newState);
+      return newState;
+    });
   },
 
   openLock: () => {
-    set((state) => ({
-      lockOpened: true,
-      isDoorUnlocked: checkUnlocked({ ...state, lockOpened: true }),
-    }));
+    set((state) => {
+      const newState = {
+        lockOpened: true,
+        isDoorUnlocked: checkUnlocked({ ...state, lockOpened: true }),
+      };
+      console.log('[EscapeDoor] Lock opened:', newState);
+      return newState;
+    });
   },
 
   swipeCard: () => {
-    set((state) => ({
-      cardSwiped: true,
-      isDoorUnlocked: checkUnlocked({ ...state, cardSwiped: true }),
-    }));
+    set((state) => {
+      const newState = {
+        cardSwiped: true,
+        isDoorUnlocked: checkUnlocked({ ...state, cardSwiped: true }),
+      };
+      console.log('[EscapeDoor] Card swiped:', newState);
+      return newState;
+    });
   },
 
   reset: () => {
