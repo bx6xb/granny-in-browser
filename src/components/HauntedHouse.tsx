@@ -38,7 +38,8 @@ type GLTFResult = GLTF & {
     Plane009: THREE.Mesh;
     Cube050: THREE.Mesh;
     Cube056: THREE.Mesh;
-    Cylinder013: THREE.Mesh;
+    attic_wire: THREE.Mesh;
+    attic_wire_cut: THREE.Mesh;
     Cube011_1: THREE.Mesh;
     Cube011_2: THREE.Mesh;
     Cube010: THREE.Mesh;
@@ -791,12 +792,8 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             material={materials.walls}
             position={[12.188, 10.666, -5.132]}
           />
-          <mesh
-            name="Cylinder013"
-            geometry={nodes.Cylinder013.geometry}
-            material={materials.wire}
-            position={[15.883, 10.13, -8.211]}
-          />
+          <mesh name="attic_wire" geometry={nodes.attic_wire.geometry} material={materials.wire} position={[15.883, 10.13, -8.211]} />
+          <mesh name="attic_wire_cut" geometry={nodes.attic_wire_cut.geometry} material={materials['wire.001']} position={[15.883, 10.13, -8.211]} />
           <group name="Window001" position={[1.531, 5.801, -24.407]}>
             <mesh name="Cube011_1" geometry={nodes.Cube011_1.geometry} material={materials.wood2} />
             <mesh
