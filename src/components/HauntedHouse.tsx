@@ -21,6 +21,7 @@ import { useWires } from '../store/useWires';
 import { useWell } from '../store/useWell';
 import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
+import type { RapierRigidBody } from '@react-three/rapier';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -372,6 +373,10 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
   const plankRef = useRef<THREE.Mesh>(null);
   const [plankYOffset, setPlankYOffset] = useState(0);
   const [plankAnimating, setPlankAnimating] = useState(false);
+  const hatchRef = useRef<RapierRigidBody>(null);
+  const [hatchFallen, setHatchFallen] = useState(false);
+  const [hatchVisible, setHatchVisible] = useState(true);
+  const hatchFallTimeRef = useRef<number>(0);
 
   // Initialize random shield selection on mount
   useEffect(() => {
@@ -431,6 +436,14 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
         }
         return newOffset;
       });
+    }
+    
+    // Handle hatch falling and disappearing
+    if (hatchFallen && hatchVisible) {
+      hatchFallTimeRef.current += delta;
+      if (hatchFallTimeRef.current >= 6) {
+        setHatchVisible(false);
+      }
     }
     
     // Update well progress
@@ -561,13 +574,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
         material={materials.safe}
         position={[0.693, -6.215, -11.754]}
         openDirection={-1}
-      />
-      <Door
-        doorId="hatch001"
-        geometry={nodes.hatch001.geometry}
-        material={materials['metal 2']}
-        position={[-2.784, 7.832, -12.5]}
-        openDirection={1}
       />
       <Door
         doorId="microwave_door001"
@@ -2267,6 +2273,31 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
           material={materials.box}
         />
       </RigidBody>
+      
+      {/* Hatch with physics - falls when stepped on */}
+      {hatchVisible && (
+        <RigidBody
+          ref={hatchRef}
+          position={[-2.784, 7.832, -12.5]}
+          type={hatchFallen ? "dynamic" : "fixed"}
+          colliders="cuboid"
+          mass={20}
+          gravityScale={1}
+          linearDamping={0.3}
+          angularDamping={0.3}
+          onCollisionEnter={(e) => {
+            if (!hatchFallen && e.other.rigidBodyObject?.name === 'player') {
+              setHatchFallen(true);
+            }
+          }}
+        >
+          <mesh
+            name="hatch001"
+            geometry={nodes.hatch001.geometry}
+            material={materials['metal 2']}
+          />
+        </RigidBody>
+      )}
       
       {/* Planks with physics */}
       <RigidBody

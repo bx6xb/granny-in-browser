@@ -900,6 +900,7 @@ export function Player() {
 
       <RigidBody
         ref={playerRef}
+        name="player"
         position={spawnPosition}
         enabledRotations={[false, false, false]}
         lockRotations
