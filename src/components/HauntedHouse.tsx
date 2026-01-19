@@ -1527,13 +1527,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             />
           </group>
           <mesh
-            name="vase_table001"
-            geometry={nodes.vase_table001.geometry}
-            material={materials.wood2}
-            position={[1.791, 4.087, -21.712]}
-            scale={[0.099, 0.518, 0.099]}
-          />
-          <mesh
             name="closet_for_hiding001"
             geometry={nodes.closet_for_hiding001.geometry}
             material={materials['metal 2']}
@@ -1633,18 +1626,6 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
             position={[13.41, 4.18, -8.954]}
             scale={[1, 0.028, 0.868]}
           />
-          <group name="lamp001" position={[9.185, 4.362, -18.753]}>
-            <mesh
-              name="Cylinder023"
-              geometry={nodes.Cylinder023.geometry}
-              material={materials.lamp}
-            />
-            <mesh
-              name="Cylinder023_1"
-              geometry={nodes.Cylinder023_1.geometry}
-              material={materials.lamp2}
-            />
-          </group>
           <group name="bed003" position={[11.064, 3.456, -22.577]} rotation={[0, -Math.PI / 2, 0]}>
             <mesh name="Cube272" geometry={nodes.Cube272.geometry} material={materials.wood2} />
             <mesh name="Cube272_1" geometry={nodes.Cube272_1.geometry} material={materials.bed} />
@@ -2325,6 +2306,48 @@ export function HauntedHouse(props: JSX.IntrinsicElements['group']) {
           geometry={nodes.plank002.geometry}
           material={materials.wood2}
         />
+      </RigidBody>
+      
+      {/* Vase table with physics */}
+      <RigidBody
+        position={[1.791, 4.087, -21.712]}
+        type="dynamic"
+        colliders="cuboid"
+        mass={2}
+        gravityScale={1}
+        linearDamping={0.5}
+        angularDamping={0.5}
+      >
+        <mesh
+          name="vase_table001"
+          geometry={nodes.vase_table001.geometry}
+          material={materials.wood2}
+          scale={[0.099, 0.518, 0.099]}
+        />
+      </RigidBody>
+      
+      {/* Lamp with physics */}
+      <RigidBody
+        position={[9.185, 4.362, -18.753]}
+        type="dynamic"
+        colliders="hull"
+        mass={3}
+        gravityScale={1}
+        linearDamping={0.5}
+        angularDamping={0.5}
+      >
+        <group name="lamp001">
+          <mesh
+            name="Cylinder023"
+            geometry={nodes.Cylinder023.geometry}
+            material={materials.lamp}
+          />
+          <mesh
+            name="Cylinder023_1"
+            geometry={nodes.Cylinder023_1.geometry}
+            material={materials.lamp2}
+          />
+        </group>
       </RigidBody>
     </>
   );
