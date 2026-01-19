@@ -196,7 +196,13 @@ export function Player() {
         case 'KeyF': {
           // Grab nearby item
           const nearbyItemName = useItems.getState().nearbyItem;
-          if (nearbyItemName && !useItems.getState().heldItem) {
+          const currentHeldItem = useItems.getState().heldItem;
+          if (nearbyItemName) {
+            // If holding an item, drop it first at player position
+            if (currentHeldItem && playerRef.current) {
+              const pos = playerRef.current.translation();
+              dropItem([pos.x, pos.y - 0.5, pos.z]);
+            }
             grabItem(nearbyItemName);
           }
           break;
@@ -377,8 +383,8 @@ export function Player() {
             foundPlank = true;
             break;
           }
-          // Check for items - only if not holding an item (using Set for faster lookup)
-          if (!heldItem && itemNamesSet.current.has(obj.name)) {
+          // Check for items (using Set for faster lookup)
+          if (itemNamesSet.current.has(obj.name)) {
             foundItem = obj.name;
             break;
           }

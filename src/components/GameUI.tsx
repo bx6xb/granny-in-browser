@@ -166,14 +166,14 @@ export function GameUI() {
       )}
 
       {/* Item interaction prompt */}
-      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && !heldItem && (
+      {nearbyItem && !nearbyDoor && !nearbyDrawer && !nearGuillotine && !nearPlank && (
         <div
           style={{
             position: 'fixed',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            color: 'white',
+            color: heldItem ? '#ffaa00' : 'white',
             fontFamily: 'monospace',
             fontSize: '18px',
             fontWeight: 'bold',
@@ -183,10 +183,10 @@ export function GameUI() {
             pointerEvents: 'none',
             zIndex: 1000,
             textAlign: 'center',
-            border: '2px solid rgba(255, 255, 255, 0.3)',
+            border: heldItem ? '2px solid rgba(255, 170, 0, 0.5)' : '2px solid rgba(255, 255, 255, 0.3)',
           }}
         >
-          Press [F] to grab {formatItemName(nearbyItem)}
+          Press [F] to {heldItem ? 'swap with' : 'grab'} {formatItemName(nearbyItem)}
         </div>
       )}
 

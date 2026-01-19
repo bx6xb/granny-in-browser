@@ -21,9 +21,19 @@ export const useItems = create<ItemsState>((set, get) => ({
   setNearbyItem: (itemName) => set({ nearbyItem: itemName }),
   
   grabItem: (itemName) => {
-    const { heldItem } = get();
-    // Only grab if not already holding an item
-    if (!heldItem) {
+    const { heldItem, droppedPositions } = get();
+    // If already holding an item, drop it first
+    if (heldItem) {
+      // Store the old item as dropped at origin (will be repositioned by Player)
+      set({ 
+        heldItem: itemName,
+        nearbyItem: null,
+        droppedPositions: {
+          ...droppedPositions,
+          [heldItem]: [0, -100, 0] // Temporary position, will be updated by Player
+        }
+      });
+    } else {
       set({ 
         heldItem: itemName,
         nearbyItem: null 
