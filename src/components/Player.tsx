@@ -218,6 +218,9 @@ export function Player() {
     crouch: false,
   });
 
+  // Track if C key is pressed to prevent continuous toggling
+  const crouchKeyHeld = useRef(false);
+
   // Set initial camera rotation (90 degrees to the right)
   useEffect(() => {
     const initialRotation = -Math.PI / 2; // 90 degrees to the right
@@ -254,8 +257,12 @@ export function Player() {
           movement.current.right = true;
           break;
         case 'KeyC':
-          movement.current.crouch = true;
-          setIsCrouching(true);
+          // Toggle crouch only on first press, not while holding
+          if (!crouchKeyHeld.current) {
+            movement.current.crouch = !movement.current.crouch;
+            setIsCrouching(!isCrouching);
+            crouchKeyHeld.current = true;
+          }
           break;
         case 'KeyE': {
           const currentHeldItem = useItems.getState().heldItem;
@@ -425,8 +432,7 @@ export function Player() {
           movement.current.right = false;
           break;
         case 'KeyC':
-          movement.current.crouch = false;
-          setIsCrouching(false);
+          crouchKeyHeld.current = false;
           break;
       }
     };
