@@ -2390,16 +2390,8 @@ export function HauntedHouse(props: ThreeElements['group']) {
         </group>
       </RigidBody>
       
-      {/* Chairs with physics */}
-      <RigidBody
-        position={[18.692, 3.788, -12.527]}
-        type="dynamic"
-        colliders="hull"
-        mass={5}
-        gravityScale={1}
-        linearDamping={0.5}
-        angularDamping={0.5}
-      >
+      {/* Chairs */}
+      <RigidBody position={[18.692, 3.788, -12.527]} type="fixed" colliders="hull">
         <mesh
           name="chair001"
           geometry={nodes.chair001.geometry}
@@ -2408,15 +2400,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         />
       </RigidBody>
       
-      <RigidBody
-        position={[20.877, -1.174, -12.329]}
-        type="dynamic"
-        colliders="hull"
-        mass={5}
-        gravityScale={1}
-        linearDamping={0.5}
-        angularDamping={0.5}
-      >
+      <RigidBody position={[20.877, -1.174, -12.329]} type="fixed" colliders="hull">
         <mesh
           name="chair002"
           geometry={nodes.chair002.geometry}
@@ -2425,16 +2409,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         />
       </RigidBody>
       
-      <RigidBody
-        position={[15.722, -1.174, -17.182]}
-        rotation={[0, -0.198, 0]}
-        type="dynamic"
-        colliders="hull"
-        mass={5}
-        gravityScale={1}
-        linearDamping={0.5}
-        angularDamping={0.5}
-      >
+      <RigidBody position={[15.722, -1.174, -17.182]} rotation={[0, -0.198, 0]} type="fixed" colliders="hull">
         <mesh
           name="chair003"
           geometry={nodes.chair003.geometry}
@@ -2443,16 +2418,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         />
       </RigidBody>
       
-      <RigidBody
-        position={[19.63, -1.174, -17.182]}
-        rotation={[0, 0.29, 0]}
-        type="dynamic"
-        colliders="hull"
-        mass={5}
-        gravityScale={1}
-        linearDamping={0.5}
-        angularDamping={0.5}
-      >
+      <RigidBody position={[19.63, -1.174, -17.182]} rotation={[0, 0.29, 0]} type="fixed" colliders="hull">
         <mesh
           name="chair004"
           geometry={nodes.chair004.geometry}
@@ -2461,16 +2427,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         />
       </RigidBody>
       
-      <RigidBody
-        position={[22.904, -1.174, -19.653]}
-        rotation={[-Math.PI, 1.565, -Math.PI]}
-        type="dynamic"
-        colliders="hull"
-        mass={5}
-        gravityScale={1}
-        linearDamping={0.5}
-        angularDamping={0.5}
-      >
+      <RigidBody position={[22.904, -1.174, -19.653]} rotation={[-Math.PI, 1.565, -Math.PI]} type="fixed" colliders="hull">
         <mesh
           name="chair005"
           geometry={nodes.chair005.geometry}
@@ -2479,16 +2436,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         />
       </RigidBody>
       
-      <RigidBody
-        position={[19.63, -1.174, -22.073]}
-        rotation={[-Math.PI, 0.269, -Math.PI]}
-        type="dynamic"
-        colliders="hull"
-        mass={5}
-        gravityScale={1}
-        linearDamping={0.5}
-        angularDamping={0.5}
-      >
+      <RigidBody position={[19.63, -1.174, -22.073]} rotation={[-Math.PI, 0.269, -Math.PI]} type="fixed" colliders="hull">
         <mesh
           name="chair006"
           geometry={nodes.chair006.geometry}
@@ -2497,16 +2445,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         />
       </RigidBody>
       
-      <RigidBody
-        position={[15.89, -1.174, -22.125]}
-        rotation={[Math.PI, -0.112, Math.PI]}
-        type="dynamic"
-        colliders="hull"
-        mass={5}
-        gravityScale={1}
-        linearDamping={0.5}
-        angularDamping={0.5}
-      >
+      <RigidBody position={[15.89, -1.174, -22.125]} rotation={[Math.PI, -0.112, Math.PI]} type="fixed" colliders="hull">
         <mesh
           name="chair007"
           geometry={nodes.chair007.geometry}
@@ -2515,16 +2454,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         />
       </RigidBody>
       
-      <RigidBody
-        position={[12.085, -1.174, -19.615]}
-        rotation={[0, -1.57, 0]}
-        type="dynamic"
-        colliders="hull"
-        mass={5}
-        gravityScale={1}
-        linearDamping={0.5}
-        angularDamping={0.5}
-      >
+      <RigidBody position={[12.085, -1.174, -19.615]} rotation={[0, -1.57, 0]} type="fixed" colliders="hull">
         <mesh
           name="chair008"
           geometry={nodes.chair008.geometry}
