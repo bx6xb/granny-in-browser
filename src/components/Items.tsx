@@ -149,7 +149,7 @@ function ContainerItem({
 export function Items(props: React.JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/items.glb') as unknown as GLTFResult;
   const houseModel = useHouseGLTF('/models/hauntedHouse.glb') as any;
-  const { isItemHeld, getItemPosition, itemSlots, setSpawnPosition, itemInsideWatermelon } = useItems();
+  const { isItemHeld, getItemPosition, itemSlots, setSpawnPosition, itemInsideWatermelon, droppedPositions } = useItems();
   const { isChippedOff } = usePlank();
   const { bucketHeight } = useWell();
   const { itemRevealed } = useGuillotine();
@@ -207,6 +207,9 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
     const pos = getItemPosition(itemName, basePos);
     const container = itemContainers[itemName];
     
+    // If item has been dropped, don't apply container offset
+    if (droppedPositions[itemName]) return pos;
+    
     if (!container) return pos;
     
     if (container.type === 'bucket') {
@@ -216,11 +219,14 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
     }
     
     return pos;
-  }, [getItemPosition, itemContainers, bucketHeight]);
+  }, [getItemPosition, itemContainers, bucketHeight, droppedPositions]);
   
   // Helper to determine if item should be dynamic or kinematic
   const getItemBodyType = React.useCallback((itemName: string): 'dynamic' | 'kinematicPosition' => {
     const container = itemContainers[itemName];
+    
+    // If item has been dropped, always use dynamic
+    if (droppedPositions[itemName]) return 'dynamic';
     
     if (!container) return 'dynamic';
     
@@ -230,7 +236,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
     }
     
     return 'dynamic';
-  }, [itemContainers]);
+  }, [itemContainers, droppedPositions]);
 
   // Track first frame for items to avoid playing sound on spawn
   useFrame(() => {
