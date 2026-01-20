@@ -442,11 +442,43 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const animationStartedRef = useRef(false);
   const plankAnimationStartedRef = useRef(false);
   const bucketRef = useRef<RapierRigidBody>(null);
+  
+  const box1SoundPlayed = useRef(false);
+  const box2SoundPlayed = useRef(false);
+  const box3SoundPlayed = useRef(false);
+  const plank1SoundPlayed = useRef(false);
+  const plank2SoundPlayed = useRef(false);
+  const soundGracePeriod = useRef(true);
 
   // Initialize random shield selection on mount
   useEffect(() => {
     initializeActiveShield();
   }, [initializeActiveShield]);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      soundGracePeriod.current = false;
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  const playBoxSound = (boxRef: React.MutableRefObject<boolean>) => {
+    if (!boxRef.current && !soundGracePeriod.current) {
+      const audio = new Audio('/sounds/box.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(err => console.warn('Box sound play failed:', err));
+      boxRef.current = true;
+    }
+  };
+  
+  const playPlankSound = (plankRef: React.MutableRefObject<boolean>) => {
+    if (!plankRef.current && !soundGracePeriod.current) {
+      const audio = new Audio('/sounds/plank.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(err => console.warn('Plank sound play failed:', err));
+      plankRef.current = true;
+    }
+  };
 
   // Start blade animation when watermelon is placed
   useEffect(() => {
@@ -2215,6 +2247,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         position={[22.352, 3.464, -23.834]}
         type="dynamic"
         colliders="cuboid"
+        onCollisionEnter={() => playBoxSound(box1SoundPlayed)}
       >
         <mesh
           name="box001"
@@ -2227,6 +2260,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         position={[22.352, 4.725, -23.834]}
         type="dynamic"
         colliders="cuboid"
+        onCollisionEnter={() => playBoxSound(box2SoundPlayed)}
       >
         <mesh
           name="box002"
@@ -2239,6 +2273,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         position={[22.352, 5.989, -23.834]}
         type="dynamic"
         colliders="cuboid"
+        onCollisionEnter={() => playBoxSound(box3SoundPlayed)}
       >
         <mesh
           name="box003"
@@ -2282,6 +2317,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         gravityScale={1}
         linearDamping={0.5}
         angularDamping={0.5}
+        onCollisionEnter={() => playPlankSound(plank1SoundPlayed)}
       >
         <mesh
           name="plank001"
@@ -2298,6 +2334,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         gravityScale={1}
         linearDamping={0.5}
         angularDamping={0.5}
+        onCollisionEnter={() => playPlankSound(plank2SoundPlayed)}
       >
         <mesh
           name="plank002"
