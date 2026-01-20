@@ -6,7 +6,7 @@ Command: npx gltfjsx@6.5.3 public/models/hauntedHouse.glb --types --keepnames -o
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
-import { RigidBody, CapsuleCollider, CuboidCollider } from '@react-three/rapier';
+import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { useHauntedHouse } from '../hooks/useHauntedHouse';
 import { Door } from './Door';
 import { Items } from './Items';
@@ -468,11 +468,11 @@ export function HauntedHouse(props: ThreeElements['group']) {
     if (atticTriggerActivated.current) return;
     atticTriggerActivated.current = true;
     
-    // Wait briefly, then trigger next day and respawn
+    // Wait 1 second before showing black screen and respawning
     setTimeout(() => {
       nextDay();
       
-      // Reset player position after short delay
+      // Reset player position immediately after showing day message
       setTimeout(() => {
         if (playerSpawnArray) {
           playerBody.setTranslation({ x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] }, true);
@@ -480,8 +480,8 @@ export function HauntedHouse(props: ThreeElements['group']) {
           playerBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
         }
         atticTriggerActivated.current = false;
-      }, 500);
-    }, 100);
+      }, 100);
+    }, 1000);
   };
   
   const playBoxSound = (lastSoundRef: React.MutableRefObject<number>) => {
@@ -2485,7 +2485,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
       
       {/* Attic trigger - sensor that triggers day transition when player falls through */}
       <RigidBody
-        position={[8.114, 7.44, -8.506]}
+        position={[8.114, 7.319, -8.506]}
         type="fixed"
         sensor
         colliders={false}
@@ -2500,7 +2500,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         <CuboidCollider args={[2, 0.5, 2]} sensor />
         <mesh
           geometry={nodes.attic_trigger.geometry}
-          scale={[1.77, 0.12, 1.77]}
+          scale={[1.77, 0.051, 1.77]}
           visible={false}
         />
       </RigidBody>
