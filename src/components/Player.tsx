@@ -607,7 +607,7 @@ export function Player() {
     const playerPosition = player.translation();
 
     // Check if player fell through the attic (Y position below -5)
-    if (playerPosition.y < -5 && !isDying) {
+    if (playerPosition.y < -10 && !isDying) {
       setIsDying(true);
       
       // Wait 1 second, then trigger next day and respawn
