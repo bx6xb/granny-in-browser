@@ -41,6 +41,13 @@ export function Player() {
   const { setNearShaft, setNearHandle, setHandle, startUsingWell, stopUsingWell } = useWell();
   const [isCrouching, setIsCrouching] = useState(false);
 
+  // Exit pointer lock when player escapes
+  useEffect(() => {
+    if (hasEscaped && document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+  }, [hasEscaped]);
+
   // ===== PERFORMANCE: Dedicated array for interactive objects =====
   const interactiveObjects = useRef<THREE.Object3D[]>([]);
 

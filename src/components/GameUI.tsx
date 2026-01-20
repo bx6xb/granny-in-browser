@@ -43,6 +43,7 @@ export function GameUI() {
       {/* Win screen */}
       {hasEscaped && (
         <div
+          onClick={(e) => e.stopPropagation()}
           style={{
             position: 'fixed',
             top: 0,
@@ -58,6 +59,7 @@ export function GameUI() {
             justifyContent: 'center',
             zIndex: 2000,
             pointerEvents: 'all',
+            cursor: 'default',
           }}
         >
           <div style={{ fontSize: '48px', marginBottom: '30px', fontWeight: 'bold' }}>
