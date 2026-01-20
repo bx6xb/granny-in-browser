@@ -310,9 +310,11 @@ export function Player() {
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Handle ESC and ALT to toggle menu
+      // Handle ESC and ALT to toggle menu (but not during game over or victory)
       if (e.code === 'Escape' || e.code === 'AltLeft' || e.code === 'AltRight') {
-        setInGameMenuOpen(!inGameMenuOpen);
+        if (!gameOver && !hasEscaped) {
+          setInGameMenuOpen(!inGameMenuOpen);
+        }
         return;
       }
       
@@ -510,7 +512,7 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle, placePlank, inGameMenuOpen, setInGameMenuOpen]);
+  }, [toggleDoor, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle, placePlank, inGameMenuOpen, setInGameMenuOpen, gameOver]);
   
   // Handle continuous key press for well usage
   useEffect(() => {
