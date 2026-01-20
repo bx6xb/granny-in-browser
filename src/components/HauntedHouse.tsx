@@ -427,7 +427,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
   
   const { volume } = useGameSettings();
   const { nextDay } = useDayState();
-  const { playerSpawnArray } = usePlayerState();
+  const { playerSpawnArray, triggerCameraReset } = usePlayerState();
 
   const { watermelonPlaced, bladeDropped, itemRevealed, dropBlade, revealItem } = useGuillotine();
   const { itemInsideWatermelon } = useItems();
@@ -487,6 +487,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
           playerBody.setTranslation({ x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] }, true);
           playerBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
           playerBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+          triggerCameraReset();
         }
         atticTriggerActivated.current = false;
       }, 100);

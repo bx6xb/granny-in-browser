@@ -31,7 +31,7 @@ export function Player() {
   const flashlightRef = useRef<ThreeSpotLight>(null);
   const walkAudioRef = useRef<HTMLAudioElement | null>(null);
   const { camera, scene } = useThree();
-  const { playerSpawnArray } = usePlayerState();
+  const { playerSpawnArray, shouldResetCamera, clearCameraReset } = usePlayerState();
   const { toggleDoor, setNearbyDoor } = useDoors();
   const { setNearbyItem, grabItem, dropItem, heldItem } = useItems();
   const { setNearGuillotine, placeWatermelon } = useGuillotine();
@@ -296,6 +296,14 @@ export function Player() {
     const initialRotation = -Math.PI / 2; // 90 degrees to the right
     camera.rotation.set(camera.rotation.x, initialRotation, camera.rotation.z);
   }, [camera]);
+
+  // Watch for camera reset trigger
+  useEffect(() => {
+    if (shouldResetCamera) {
+      camera.rotation.set(0, -Math.PI / 2, 0);
+      clearCameraReset();
+    }
+  }, [shouldResetCamera, camera, clearCameraReset]);
 
   // Disable pointer lock controls when escaped or menu is open or game over
   useEffect(() => {
@@ -622,6 +630,9 @@ export function Player() {
             playerRef.current.setTranslation({ x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] }, true);
             playerRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
             playerRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
+            
+            // Reset camera rotation to initial position
+            camera.rotation.set(0, -Math.PI / 2, 0);
           }
           setIsDying(false);
         }, 500);
