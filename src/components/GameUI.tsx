@@ -163,9 +163,30 @@ export function GameUI() {
           <div style={{ fontSize: '24px', marginBottom: '20px' }}>
             Congratulations! You've successfully escaped the Haunted House!
           </div>
-          <div style={{ fontSize: '16px', opacity: 0.7 }}>
-            Press ESC to unlock mouse
-          </div>
+          <button
+            onClick={() => {
+              setScreen('mainMenu');
+            }}
+            style={{
+              fontSize: '24px',
+              padding: '15px 40px',
+              backgroundColor: '#00aa00',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontFamily: 'monospace',
+              fontWeight: 'bold',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#00cc00';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#00aa00';
+            }}
+          >
+            Return to Main Menu
+          </button>
         </div>
       )}
 
