@@ -16,6 +16,7 @@ interface WellState {
 }
 
 const WELL_SPEED = 1.0; // meters per second
+let wellAudio: HTMLAudioElement | null = null;
 
 export const useWell = create<WellState>((set, get) => ({
   handleSet: false,
@@ -33,9 +34,26 @@ export const useWell = create<WellState>((set, get) => ({
     set({ handleSet: true });
   },
   
-  startUsingWell: () => set({ isUsingWell: true }),
+  startUsingWell: () => {
+    const { bucketHeight } = get();
+    if (bucketHeight >= 4.7) return;
+    
+    if (!wellAudio) {
+      wellAudio = new Audio('/sounds/well.mp3');
+      wellAudio.volume = 0.5;
+      wellAudio.loop = true;
+    }
+    wellAudio.play().catch(err => console.warn('Well sound play failed:', err));
+    set({ isUsingWell: true });
+  },
   
-  stopUsingWell: () => set({ isUsingWell: false }),
+  stopUsingWell: () => {
+    if (wellAudio) {
+      wellAudio.pause();
+      wellAudio.currentTime = 0;
+    }
+    set({ isUsingWell: false });
+  },
   
   updateWellProgress: (delta) => {
     const { isUsingWell, bucketHeight, handleRotation } = get();
@@ -46,6 +64,14 @@ export const useWell = create<WellState>((set, get) => ({
         bucketHeight: newHeight,
         handleRotation: handleRotation + delta * rotationSpeed
       });
+      
+      if (newHeight >= 4.7) {
+        if (wellAudio) {
+          wellAudio.pause();
+          wellAudio.currentTime = 0;
+        }
+        set({ isUsingWell: false });
+      }
     }
   },
 }));

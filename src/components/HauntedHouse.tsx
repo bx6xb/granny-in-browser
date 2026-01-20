@@ -479,6 +479,10 @@ export function HauntedHouse(props: ThreeElements['group']) {
   useEffect(() => {
     if (watermelonPlaced && !bladeDropped && !animationStartedRef.current) {
       animationStartedRef.current = true;
+      const audio = new Audio('/sounds/blade.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(err => console.warn('Blade sound play failed:', err));
+      
       requestAnimationFrame(() => setAnimating(true));
       setTimeout(() => {
         dropBlade();
@@ -2290,6 +2294,9 @@ export function HauntedHouse(props: ThreeElements['group']) {
           angularDamping={0.3}
           onCollisionEnter={(e) => {
             if (!hatchFallen && e.other.rigidBodyObject?.name === 'player') {
+              const audio = new Audio('/sounds/metal.mp3');
+              audio.volume = 0.5;
+              audio.play().catch(err => console.warn('Metal sound play failed:', err));
               setHatchFallen(true);
             }
           }}
