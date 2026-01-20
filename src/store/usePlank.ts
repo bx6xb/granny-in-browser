@@ -23,5 +23,12 @@ export const usePlank = create<PlankState>((set) => ({
     set({ isChippedOff: true });
     useEscapeDoor.getState().removeBoard();
   },
-  placePlank: () => set({ plankPlaced: true }),
+  placePlank: () => {
+    // Play plank attic sound
+    const audio = new Audio('/sounds/plank_attic.mp3');
+    audio.volume = 0.5;
+    audio.play().catch(err => console.warn('Plank attic sound play failed:', err));
+    
+    set({ plankPlaced: true });
+  },
 }));

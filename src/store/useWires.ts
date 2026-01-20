@@ -19,6 +19,11 @@ export const useWires = create<WiresState>((set) => ({
   setNearWire: (wireName) => set({ nearWire: wireName }),
   
   cutWire: (wireName) => {
+    // Play cut sound
+    const audio = new Audio('/sounds/cut.mp3');
+    audio.volume = 0.5;
+    audio.play().catch(err => console.warn('Cut sound play failed:', err));
+    
     set((state) => {
       if (wireName === 'door_wire') {
         return { doorWireCut: true };
