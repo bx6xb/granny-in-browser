@@ -1,6 +1,8 @@
 import { RigidBody, RapierRigidBody } from '@react-three/rapier';
 import { useRef, useEffect } from 'react';
 import { useAtticPlanks } from '../store/useAtticPlanks';
+import { useThree } from '@react-three/fiber';
+import * as THREE from 'three';
 
 interface AtticPlanksProps {
   nodes: any;
@@ -9,11 +11,52 @@ interface AtticPlanksProps {
 
 export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
   const { activated, disappeared, activatePlanks, disappearPlanks } = useAtticPlanks();
+  const { camera } = useThree();
   
   const plank1Ref = useRef<RapierRigidBody>(null);
   const plank2Ref = useRef<RapierRigidBody>(null);
   const plank3Ref = useRef<RapierRigidBody>(null);
   const plank4Ref = useRef<RapierRigidBody>(null);
+  
+  const audioLoaderRef = useRef<THREE.AudioLoader | null>(null);
+  const audioBufferRef = useRef<AudioBuffer | null>(null);
+  const listenerRef = useRef<THREE.AudioListener | null>(null);
+  
+  useEffect(() => {
+    if (!listenerRef.current) {
+      listenerRef.current = new THREE.AudioListener();
+      camera.add(listenerRef.current);
+    }
+    
+    if (!audioLoaderRef.current) {
+      audioLoaderRef.current = new THREE.AudioLoader();
+      audioLoaderRef.current.load('/sounds/plank.mp3', (buffer) => {
+        audioBufferRef.current = buffer;
+      });
+    }
+    
+    return () => {
+      if (listenerRef.current) {
+        camera.remove(listenerRef.current);
+      }
+    };
+  }, [camera]);
+  
+  const playPlankSound = (position: THREE.Vector3) => {
+    if (audioBufferRef.current && listenerRef.current) {
+      const sound = new THREE.PositionalAudio(listenerRef.current);
+      sound.setBuffer(audioBufferRef.current);
+      sound.setRefDistance(5);
+      sound.setVolume(0.3);
+      sound.position.copy(position);
+      camera.parent?.add(sound);
+      sound.play();
+      
+      sound.onEnded = () => {
+        camera.parent?.remove(sound);
+      };
+    }
+  };
   
   // Apply impulse when activated to make them fall
   useEffect(() => {
@@ -54,7 +97,13 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
         position={[7.237, 7.831, -9.409]}
         type={activated ? 'dynamic' : 'fixed'}
         colliders="hull"
-        onCollisionEnter={handleCollision}
+        onCollisionEnter={() => {
+          handleCollision();
+          if (plank1Ref.current) {
+            const pos = plank1Ref.current.translation();
+            playPlankSound(new THREE.Vector3(pos.x, pos.y, pos.z));
+          }
+        }}
         mass={20}
         gravityScale={activated ? 2 : 0}
         linearDamping={0.5}
@@ -72,7 +121,13 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
         position={[8.855, 7.831, -9.159]}
         type={activated ? 'dynamic' : 'fixed'}
         colliders="hull"
-        onCollisionEnter={handleCollision}
+        onCollisionEnter={() => {
+          handleCollision();
+          if (plank2Ref.current) {
+            const pos = plank2Ref.current.translation();
+            playPlankSound(new THREE.Vector3(pos.x, pos.y, pos.z));
+          }
+        }}
         mass={20}
         gravityScale={activated ? 2 : 0}
         linearDamping={0.5}
@@ -90,7 +145,13 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
         position={[9.082, 7.831, -7.73]}
         type={activated ? 'dynamic' : 'fixed'}
         colliders="hull"
-        onCollisionEnter={handleCollision}
+        onCollisionEnter={() => {
+          handleCollision();
+          if (plank3Ref.current) {
+            const pos = plank3Ref.current.translation();
+            playPlankSound(new THREE.Vector3(pos.x, pos.y, pos.z));
+          }
+        }}
         mass={20}
         gravityScale={activated ? 2 : 0}
         linearDamping={0.5}
@@ -108,7 +169,13 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
         position={[7.54, 7.831, -7.811]}
         type={activated ? 'dynamic' : 'fixed'}
         colliders="hull"
-        onCollisionEnter={handleCollision}
+        onCollisionEnter={() => {
+          handleCollision();
+          if (plank4Ref.current) {
+            const pos = plank4Ref.current.translation();
+            playPlankSound(new THREE.Vector3(pos.x, pos.y, pos.z));
+          }
+        }}
         mass={20}
         gravityScale={activated ? 2 : 0}
         linearDamping={0.5}
