@@ -1,6 +1,7 @@
 import { RigidBody, RapierRigidBody } from '@react-three/rapier';
 import { useRef, useEffect } from 'react';
 import { useAtticPlanks } from '../store/useAtticPlanks';
+import { useGameSettings } from '../store/useGameSettings';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -11,6 +12,7 @@ interface AtticPlanksProps {
 
 export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
   const { activated, disappeared, activatePlanks, disappearPlanks } = useAtticPlanks();
+  const { volume } = useGameSettings();
   const { camera } = useThree();
   
   const plank1Ref = useRef<RapierRigidBody>(null);
@@ -47,7 +49,8 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
       const sound = new THREE.PositionalAudio(listenerRef.current);
       sound.setBuffer(audioBufferRef.current);
       sound.setRefDistance(5);
-      sound.setVolume(0.3);
+      const { volume } = useGameSettings.getState();
+      sound.setVolume((volume / 100) * 0.3);
       sound.position.copy(position);
       camera.parent?.add(sound);
       sound.play();

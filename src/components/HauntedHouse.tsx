@@ -21,7 +21,6 @@ import { useWell } from '../store/useWell';
 import { useEffect, useRef, useState } from 'react';
 import { useFrame, type ThreeElements } from '@react-three/fiber';
 import type { RapierRigidBody } from '@react-three/rapier';
-import type * as RAPIER from '@dimforge/rapier3d-compat';
 import { useGameSettings } from '../store/useGameSettings';
 
 type GLTFResult = GLTF & {
@@ -1858,12 +1857,8 @@ export function HauntedHouse(props: ThreeElements['group']) {
               material={materials['bed 2']}
             />
           </group>
-          <mesh
-            name="table002"
-            geometry={nodes.table002.geometry}
-            material={materials.wood2}
-            position={[18.694, 3.743, -13.758]}
-          />
+          <mesh name="table002" geometry={nodes.table002.geometry} material={materials.wood2} position={[18.694, 3.743, -13.758]} />
+          <mesh name="table004" geometry={nodes.table004.geometry} material={materials.wood2} position={[20.952, -1.224, -13.71]} />
 
           <group name="bed003" position={[11.064, 3.456, -22.577]} rotation={[0, -Math.PI / 2, 0]}>
             <mesh name="Cube272" geometry={nodes.Cube272.geometry} material={materials.wood2} />
@@ -1963,16 +1958,6 @@ export function HauntedHouse(props: ThreeElements['group']) {
             position={[13.6, -0.04, -9.046]}
             scale={[1, 0.037, 1]}
           />
-          <mesh
-            name="table004"
-            geometry={nodes.table004.geometry}
-            material={materials.wood2}
-            position={[20.952, -1.224, -13.71]}
-          />
-
-
-
-
           <mesh
             name="closet004"
             geometry={nodes.closet004.geometry}
