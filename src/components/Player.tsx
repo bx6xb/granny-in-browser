@@ -27,6 +27,7 @@ export function Player() {
   const playerRef = useRef<RapierRigidBody>(null);
   const controlsRef = useRef(null);
   const flashlightRef = useRef<ThreeSpotLight>(null);
+  const walkAudioRef = useRef<HTMLAudioElement | null>(null);
   const { camera, scene } = useThree();
   const { playerSpawnArray } = usePlayerState();
   const { toggleDoor, setNearbyDoor } = useDoors();
@@ -40,6 +41,19 @@ export function Player() {
   const { openSafe } = useSafe();
   const { setNearShaft, setNearHandle, setHandle, startUsingWell, stopUsingWell } = useWell();
   const [isCrouching, setIsCrouching] = useState(false);
+
+  // Initialize walk audio
+  useEffect(() => {
+    const audio = new Audio('/sounds/walk.mp3');
+    audio.loop = true;
+    audio.volume = 0.3;
+    walkAudioRef.current = audio;
+    
+    return () => {
+      audio.pause();
+      audio.src = '';
+    };
+  }, []);
 
   // Exit pointer lock when player escapes
   useEffect(() => {
@@ -792,9 +806,20 @@ export function Player() {
     }
 
     const moveLength = moveDirection.current.length();
-    if (moveLength > 0) {
+    const isMoving = moveLength > 0;
+    
+    if (isMoving) {
       moveDirection.current.normalize();
       moveDirection.current.multiplyScalar(currentSpeed);
+    }
+
+    // Play/pause walk sound based on movement
+    if (walkAudioRef.current) {
+      if (isMoving && walkAudioRef.current.paused) {
+        walkAudioRef.current.play().catch(() => {});
+      } else if (!isMoving && !walkAudioRef.current.paused) {
+        walkAudioRef.current.pause();
+      }
     }
 
     // Apply horizontal movement (with instant stop when no input)
