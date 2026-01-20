@@ -20,6 +20,23 @@ interface DoorsState {
   getDoorState: (doorId: string) => DoorState | undefined;
 }
 
+const playDoorSound = (doorId: string, isOpening: boolean) => {
+  const actualDoors = ['barn_door', 'main_door', 'room_door'];
+  const isActualDoor = actualDoors.some(prefix => doorId.startsWith(prefix));
+  
+  let soundPath: string;
+  
+  if (isActualDoor) {
+    soundPath = isOpening ? '/sounds/door_open.mp3' : '/sounds/door_close.mp3';
+  } else {
+    soundPath = '/sounds/closet_door.mp3';
+  }
+  
+  const audio = new Audio(soundPath);
+  audio.volume = 0.5;
+  audio.play().catch(err => console.warn('Sound play failed:', err));
+};
+
 const createDefaultDoorState = (openDirection: 1 | -1 = 1): DoorState => ({
   isOpen: false,
   isRotating: false,
@@ -71,6 +88,9 @@ export const useDoors = create<DoorsState>((set, get) => ({
       if (door && !door.isRotating) {
         const newIsOpen = !door.isOpen;
         const targetRotation = newIsOpen ? (Math.PI / 2) * door.openDirection : 0;
+        
+        playDoorSound(doorId, newIsOpen);
+        
         newDoors.set(doorId, {
           ...door,
           isOpen: newIsOpen,
