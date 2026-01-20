@@ -443,40 +443,35 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const plankAnimationStartedRef = useRef(false);
   const bucketRef = useRef<RapierRigidBody>(null);
   
-  const box1SoundPlayed = useRef(false);
-  const box2SoundPlayed = useRef(false);
-  const box3SoundPlayed = useRef(false);
-  const plank1SoundPlayed = useRef(false);
-  const plank2SoundPlayed = useRef(false);
-  const soundGracePeriod = useRef(true);
+  const box1LastSound = useRef(0);
+  const box2LastSound = useRef(0);
+  const box3LastSound = useRef(0);
+  const plank1LastSound = useRef(0);
+  const plank2LastSound = useRef(0);
+  const soundCooldown = 500; // milliseconds
 
   // Initialize random shield selection on mount
   useEffect(() => {
     initializeActiveShield();
   }, [initializeActiveShield]);
   
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      soundGracePeriod.current = false;
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
-  
-  const playBoxSound = (boxRef: React.MutableRefObject<boolean>) => {
-    if (!boxRef.current && !soundGracePeriod.current) {
+  const playBoxSound = (lastSoundRef: React.MutableRefObject<number>) => {
+    const now = Date.now();
+    if (now - lastSoundRef.current > soundCooldown) {
       const audio = new Audio('/sounds/box.mp3');
       audio.volume = 0.5;
       audio.play().catch(err => console.warn('Box sound play failed:', err));
-      boxRef.current = true;
+      lastSoundRef.current = now;
     }
   };
   
-  const playPlankSound = (plankRef: React.MutableRefObject<boolean>) => {
-    if (!plankRef.current && !soundGracePeriod.current) {
+  const playPlankSound = (lastSoundRef: React.MutableRefObject<number>) => {
+    const now = Date.now();
+    if (now - lastSoundRef.current > soundCooldown) {
       const audio = new Audio('/sounds/plank.mp3');
       audio.volume = 0.5;
       audio.play().catch(err => console.warn('Plank sound play failed:', err));
-      plankRef.current = true;
+      lastSoundRef.current = now;
     }
   };
 
@@ -2247,7 +2242,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         position={[22.352, 3.464, -23.834]}
         type="dynamic"
         colliders="cuboid"
-        onCollisionEnter={() => playBoxSound(box1SoundPlayed)}
+        onCollisionEnter={() => playBoxSound(box1LastSound)}
       >
         <mesh
           name="box001"
@@ -2260,7 +2255,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         position={[22.352, 4.725, -23.834]}
         type="dynamic"
         colliders="cuboid"
-        onCollisionEnter={() => playBoxSound(box2SoundPlayed)}
+        onCollisionEnter={() => playBoxSound(box2LastSound)}
       >
         <mesh
           name="box002"
@@ -2273,7 +2268,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         position={[22.352, 5.989, -23.834]}
         type="dynamic"
         colliders="cuboid"
-        onCollisionEnter={() => playBoxSound(box3SoundPlayed)}
+        onCollisionEnter={() => playBoxSound(box3LastSound)}
       >
         <mesh
           name="box003"
@@ -2317,7 +2312,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         gravityScale={1}
         linearDamping={0.5}
         angularDamping={0.5}
-        onCollisionEnter={() => playPlankSound(plank1SoundPlayed)}
+        onCollisionEnter={() => playPlankSound(plank1LastSound)}
       >
         <mesh
           name="plank001"
@@ -2334,7 +2329,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         gravityScale={1}
         linearDamping={0.5}
         angularDamping={0.5}
-        onCollisionEnter={() => playPlankSound(plank2SoundPlayed)}
+        onCollisionEnter={() => playPlankSound(plank2LastSound)}
       >
         <mesh
           name="plank002"
