@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useGameSettings } from './useGameSettings';
 
 export interface EscapeDoorStatus {
   wiresCut: number;
@@ -70,7 +71,8 @@ export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
 
   openLock: () => {
     const audio = new Audio('/sounds/lock.mp3');
-    audio.volume = 0.5;
+    const { volume } = useGameSettings.getState();
+    audio.volume = (volume / 100) * 0.5;
     audio.play().catch(err => console.warn('Lock sound play failed:', err));
     
     set((state) => {
@@ -84,7 +86,8 @@ export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
 
   swipeCard: () => {
     const audio = new Audio('/sounds/terminal.mp3');
-    audio.volume = 0.5;
+    const { volume } = useGameSettings.getState();
+    audio.volume = (volume / 100) * 0.5;
     audio.play().catch(err => console.warn('Terminal sound play failed:', err));
     
     set((state) => {

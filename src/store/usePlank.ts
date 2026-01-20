@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { useEscapeDoor } from './useEscapeDoor';
+import { useGameSettings } from './useGameSettings';
 
 interface PlankState {
   isChippedOff: boolean;
@@ -10,6 +11,7 @@ interface PlankState {
   setNearPlankSlot: (near: boolean) => void;
   chipOffPlank: () => void;
   placePlank: () => void;
+  reset: () => void;
 }
 
 export const usePlank = create<PlankState>((set) => ({
@@ -26,9 +28,11 @@ export const usePlank = create<PlankState>((set) => ({
   placePlank: () => {
     // Play plank attic sound
     const audio = new Audio('/sounds/plank_attic.mp3');
-    audio.volume = 0.5;
+    const { volume } = useGameSettings.getState();
+    audio.volume = (volume / 100) * 0.5;
     audio.play().catch(err => console.warn('Plank attic sound play failed:', err));
     
     set({ plankPlaced: true });
   },
+  reset: () => set({ isChippedOff: false, nearPlank: false, nearPlankSlot: false, plankPlaced: false }),
 }));

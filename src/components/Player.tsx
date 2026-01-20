@@ -15,6 +15,7 @@ import { useWires } from '../store/useWires';
 import { useLock } from '../store/useLock';
 import { useSafe } from '../store/useSafe';
 import { useWell } from '../store/useWell';
+import { useGameSettings } from '../store/useGameSettings';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
@@ -40,13 +41,15 @@ export function Player() {
   const { setNearLock } = useLock();
   const { openSafe } = useSafe();
   const { setNearShaft, setNearHandle, setHandle, startUsingWell, stopUsingWell } = useWell();
+  const { inGameMenuOpen, setInGameMenuOpen } = useGameSettings();
   const [isCrouching, setIsCrouching] = useState(false);
 
   // Initialize walk audio
   useEffect(() => {
     const audio = new Audio('/sounds/walk.mp3');
     audio.loop = true;
-    audio.volume = 0.3;
+    const initialVolume = useGameSettings.getState().volume;
+    audio.volume = (initialVolume / 100) * 0.3;
     walkAudioRef.current = audio;
     
     return () => {
@@ -54,13 +57,36 @@ export function Player() {
       audio.src = '';
     };
   }, []);
-
-  // Exit pointer lock when player escapes
+  
+  // Update walk audio volume when settings change
+  const { volume } = useGameSettings();
   useEffect(() => {
-    if (hasEscaped && document.pointerLockElement) {
+    if (walkAudioRef.current) {
+      walkAudioRef.current.volume = (volume / 100) * 0.3;
+    }
+  }, [volume]);
+
+  // Exit pointer lock when player escapes or menu opens
+  useEffect(() => {
+    if ((hasEscaped || inGameMenuOpen) && document.pointerLockElement) {
       document.exitPointerLock();
     }
-  }, [hasEscaped]);
+  }, [hasEscaped, inGameMenuOpen]);
+
+  // Open menu when window loses focus
+  useEffect(() => {
+    const handleBlur = () => {
+      if (!hasEscaped && !inGameMenuOpen) {
+        setInGameMenuOpen(true);
+      }
+    };
+
+    window.addEventListener('blur', handleBlur);
+    
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [hasEscaped, inGameMenuOpen, setInGameMenuOpen]);
 
   // ===== PERFORMANCE: Dedicated array for interactive objects =====
   const interactiveObjects = useRef<THREE.Object3D[]>([]);
@@ -222,21 +248,27 @@ export function Player() {
     camera.rotation.set(camera.rotation.x, initialRotation, camera.rotation.z);
   }, [camera]);
 
-  // Disable pointer lock controls when escaped
+  // Disable pointer lock controls when escaped or menu is open
   useEffect(() => {
-    if (hasEscaped && controlsRef.current) {
+    if ((hasEscaped || inGameMenuOpen) && controlsRef.current) {
       const controls = controlsRef.current as any;
       if (controls.unlock) {
         controls.unlock();
       }
     }
-  }, [hasEscaped]);
+  }, [hasEscaped, inGameMenuOpen]);
 
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Disable all input if player has escaped
-      if (hasEscaped) return;
+      // Handle ESC and ALT to toggle menu
+      if (e.code === 'Escape' || e.code === 'AltLeft' || e.code === 'AltRight') {
+        setInGameMenuOpen(!inGameMenuOpen);
+        return;
+      }
+      
+      // Disable all input if player has escaped or menu is open
+      if (hasEscaped || inGameMenuOpen) return;
       
       switch (e.code) {
         case 'KeyW':
@@ -400,8 +432,8 @@ export function Player() {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      // Disable all input if player has escaped
-      if (hasEscaped) return;
+      // Disable all input if player has escaped or menu is open
+      if (hasEscaped || inGameMenuOpen) return;
       
       switch (e.code) {
         case 'KeyW':
@@ -429,12 +461,12 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle, placePlank]);
+  }, [toggleDoor, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle, placePlank, inGameMenuOpen, setInGameMenuOpen]);
   
   // Handle continuous key press for well usage
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (hasEscaped) return;
+      if (hasEscaped || inGameMenuOpen) return;
       
       if (e.code === 'KeyE') {
         const nearHandle = useWell.getState().nearHandle;
@@ -459,7 +491,7 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [hasEscaped, startUsingWell, stopUsingWell]);
+  }, [hasEscaped, inGameMenuOpen, startUsingWell, stopUsingWell]);
 
   // Track previous crouch state to detect transitions
   const prevCrouchState = useRef(false);
@@ -513,8 +545,8 @@ export function Player() {
   useFrame(() => {
     if (!playerRef.current) return;
     
-    // Stop game if player has escaped
-    if (hasEscaped) {
+    // Stop game if player has escaped or menu is open
+    if (hasEscaped || inGameMenuOpen) {
       // Freeze player movement
       const player = playerRef.current;
       player.setLinvel({ x: 0, y: 0, z: 0 }, true);
@@ -867,7 +899,7 @@ export function Player() {
 
   return (
     <>
-      <PointerLockControls ref={controlsRef} enabled={!hasEscaped} />
+      <PointerLockControls ref={controlsRef} enabled={!hasEscaped && !inGameMenuOpen} />
 
       {/* Player flashlight - optimized spotlight that follows camera direction */}
       <spotLight

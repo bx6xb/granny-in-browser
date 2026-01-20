@@ -14,6 +14,7 @@ import { useGLTF as useHouseGLTF } from '@react-three/drei';
 import { useWell } from '../store/useWell';
 import { useFrame } from '@react-three/fiber';
 import { useGuillotine } from '../store/useGuillotine';
+import { useGameSettings } from '../store/useGameSettings';
 
 // Map item names to their drop sound files
 const itemDropSounds: Record<string, string> = {
@@ -65,7 +66,8 @@ const playItemDropSound = (itemName: string) => {
   const soundPath = itemDropSounds[itemName];
   if (soundPath) {
     const audio = new Audio(soundPath);
-    audio.volume = 0.5;
+    const { volume } = useGameSettings.getState();
+    audio.volume = (volume / 100) * 0.5;
     audio.play().catch(err => console.warn('Item drop sound play failed:', err));
   }
 };

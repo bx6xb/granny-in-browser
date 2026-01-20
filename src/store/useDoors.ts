@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useGameSettings } from './useGameSettings';
 
 export interface DoorState {
   isOpen: boolean;
@@ -18,6 +19,7 @@ interface DoorsState {
   toggleDoor: (doorId: string) => void;
   setNearbyDoor: (doorId: string | null) => void;
   getDoorState: (doorId: string) => DoorState | undefined;
+  reset: () => void;
 }
 
 const playDoorSound = (doorId: string, isOpening: boolean) => {
@@ -33,7 +35,8 @@ const playDoorSound = (doorId: string, isOpening: boolean) => {
   }
   
   const audio = new Audio(soundPath);
-  audio.volume = 0.5;
+  const { volume } = useGameSettings.getState();
+  audio.volume = (volume / 100) * 0.5;
   audio.play().catch(err => console.warn('Sound play failed:', err));
 };
 
@@ -108,5 +111,9 @@ export const useDoors = create<DoorsState>((set, get) => ({
 
   getDoorState: (doorId: string) => {
     return get().doors.get(doorId);
+  },
+
+  reset: () => {
+    set({ doors: new Map(), nearbyDoor: null });
   },
 }));

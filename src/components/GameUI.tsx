@@ -102,7 +102,7 @@ export function GameUI() {
         <div>• E - Interact with doors</div>
         <div>• F - Grab items</div>
         <div>• Space - Drop item</div>
-        <div>• ESC - Unlock mouse</div>
+        <div>• ESC/ALT - Open menu</div>
         <div style={{ marginTop: '8px', fontSize: '12px', opacity: 0.8 }}>
           💡 Use your flashlight to see in the dark
         </div>

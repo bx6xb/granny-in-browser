@@ -14,18 +14,24 @@ interface ItemsState {
   isItemHeld: (itemName: string) => boolean;
   getItemPosition: (itemName: string, defaultPosition: [number, number, number]) => [number, number, number];
   setSpawnPosition: (itemName: string, position: [number, number, number]) => void;
+  reset: () => void;
 }
 
-// Select random seed (1, 2, or 3)
-const selectedSeed = (Math.floor(Math.random() * 3) + 1) as 1 | 2 | 3;
-const { itemSlots, watermelonItem } = generateItemSpawns(selectedSeed);
+// Function to generate new item spawns
+const generateNewItemSpawns = () => {
+  const selectedSeed = (Math.floor(Math.random() * 3) + 1) as 1 | 2 | 3;
+  return generateItemSpawns(selectedSeed);
+};
+
+// Initial spawns
+const initialSpawns = generateNewItemSpawns();
 
 export const useItems = create<ItemsState>((set, get) => ({
   nearbyItem: null,
   heldItem: null,
   droppedPositions: {},
-  itemInsideWatermelon: watermelonItem,
-  itemSlots,
+  itemInsideWatermelon: initialSpawns.watermelonItem,
+  itemSlots: initialSpawns.itemSlots,
   spawnPositions: {},
   
   setNearbyItem: (itemName) => set({ nearbyItem: itemName }),
@@ -80,5 +86,17 @@ export const useItems = create<ItemsState>((set, get) => ({
         [itemName]: position,
       },
     }));
+  },
+
+  reset: () => {
+    const newSpawns = generateNewItemSpawns();
+    set({
+      nearbyItem: null,
+      heldItem: null,
+      droppedPositions: {},
+      itemInsideWatermelon: newSpawns.watermelonItem,
+      itemSlots: newSpawns.itemSlots,
+      spawnPositions: {},
+    });
   },
 }));

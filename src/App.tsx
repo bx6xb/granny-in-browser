@@ -6,12 +6,13 @@ import { HauntedHouse } from './components/HauntedHouse';
 import { Granny } from './components/Granny';
 import { Player } from './components/Player';
 import { GameUI } from './components/GameUI';
+import { InGameMenu } from './components/InGameMenu';
 import { MainMenu } from './components/MainMenu';
 import { SettingsMenu } from './components/SettingsMenu';
 import { useGameSettings } from './store/useGameSettings';
 
 export default function App() {
-  const { screen } = useGameSettings();
+  const { screen, inGameMenuOpen } = useGameSettings();
 
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#000000' }}>
@@ -21,6 +22,7 @@ export default function App() {
       {screen === 'game' && (
         <>
           <GameUI />
+          {inGameMenuOpen && <InGameMenu />}
           <div className="crosshair" />
           <Canvas 
             shadows 

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useGameSettings } from './useGameSettings';
 
 interface WiresState {
   doorWireCut: boolean;
@@ -21,7 +22,8 @@ export const useWires = create<WiresState>((set) => ({
   cutWire: (wireName) => {
     // Play cut sound
     const audio = new Audio('/sounds/cut.mp3');
-    audio.volume = 0.5;
+    const { volume } = useGameSettings.getState();
+    audio.volume = (volume / 100) * 0.5;
     audio.play().catch(err => console.warn('Cut sound play failed:', err));
     
     set((state) => {

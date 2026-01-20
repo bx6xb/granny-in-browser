@@ -22,6 +22,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useFrame, type ThreeElements } from '@react-three/fiber';
 import type { RapierRigidBody } from '@react-three/rapier';
 import type * as RAPIER from '@dimforge/rapier3d-compat';
+import { useGameSettings } from '../store/useGameSettings';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -421,6 +422,8 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const itemsModel = useGLTF('/models/items.glb') as any; // Load items model for watermelon
 
   useHauntedHouse(nodes);
+  
+  const { volume } = useGameSettings();
 
   const { watermelonPlaced, bladeDropped, itemRevealed, dropBlade, revealItem } = useGuillotine();
   const { itemInsideWatermelon } = useItems();
@@ -459,7 +462,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
     const now = Date.now();
     if (now - lastSoundRef.current > soundCooldown) {
       const audio = new Audio('/sounds/box.mp3');
-      audio.volume = 0.5;
+      audio.volume = (volume / 100) * 0.5;
       audio.play().catch(err => console.warn('Box sound play failed:', err));
       lastSoundRef.current = now;
     }
@@ -469,7 +472,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
     const now = Date.now();
     if (now - lastSoundRef.current > soundCooldown) {
       const audio = new Audio('/sounds/plank.mp3');
-      audio.volume = 0.5;
+      audio.volume = (volume / 100) * 0.5;
       audio.play().catch(err => console.warn('Plank sound play failed:', err));
       lastSoundRef.current = now;
     }
@@ -480,7 +483,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
     if (watermelonPlaced && !bladeDropped && !animationStartedRef.current) {
       animationStartedRef.current = true;
       const audio = new Audio('/sounds/blade.mp3');
-      audio.volume = 0.5;
+      audio.volume = (volume / 100) * 0.5;
       audio.play().catch(err => console.warn('Blade sound play failed:', err));
       
       requestAnimationFrame(() => setAnimating(true));
@@ -2295,7 +2298,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
           onCollisionEnter={(e) => {
             if (!hatchFallen && e.other.rigidBodyObject?.name === 'player') {
               const audio = new Audio('/sounds/metal.mp3');
-              audio.volume = 0.5;
+              audio.volume = (volume / 100) * 0.5;
               audio.play().catch(err => console.warn('Metal sound play failed:', err));
               setHatchFallen(true);
             }

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useGameSettings } from './useGameSettings';
 
 interface WellState {
   handleSet: boolean;
@@ -13,6 +14,7 @@ interface WellState {
   startUsingWell: () => void;
   stopUsingWell: () => void;
   updateWellProgress: (delta: number) => void;
+  reset: () => void;
 }
 
 const WELL_SPEED = 1.0; // meters per second
@@ -41,9 +43,10 @@ export const useWell = create<WellState>((set, get) => ({
     
     if (!wellAudio) {
       wellAudio = new Audio('/sounds/well.mp3');
-      wellAudio.volume = 0.5;
       wellAudio.loop = true;
     }
+    const { volume } = useGameSettings.getState();
+    wellAudio.volume = (volume / 100) * 0.5;
     wellPlayPromise = wellAudio.play().catch(() => {});
     set({ isUsingWell: true });
   },
@@ -77,5 +80,12 @@ export const useWell = create<WellState>((set, get) => ({
         set({ isUsingWell: false });
       }
     }
+  },
+  reset: () => {
+    if (wellAudio) {
+      wellAudio.pause();
+      wellAudio.currentTime = 0;
+    }
+    set({ handleSet: false, nearShaft: false, nearHandle: false, isUsingWell: false, handleRotation: 0, bucketHeight: 0 });
   },
 }));

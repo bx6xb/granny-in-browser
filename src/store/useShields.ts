@@ -3,6 +3,7 @@ import { create } from 'zustand';
 interface ShieldsState {
   activeShieldId: number; // 1, 2, or 3
   initializeActiveShield: () => void;
+  reset: () => void;
 }
 
 export const useShields = create<ShieldsState>((set, get) => ({
@@ -16,4 +17,5 @@ export const useShields = create<ShieldsState>((set, get) => ({
       set({ activeShieldId: randomShield });
     }
   },
+  reset: () => set({ activeShieldId: 1 }),
 }));
