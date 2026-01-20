@@ -71,12 +71,12 @@ export function Player() {
     }
   }, [volume]);
 
-  // Exit pointer lock when player escapes or menu opens
+  // Exit pointer lock when player escapes or menu opens or game over
   useEffect(() => {
-    if ((hasEscaped || inGameMenuOpen) && document.pointerLockElement) {
+    if ((hasEscaped || inGameMenuOpen || gameOver) && document.pointerLockElement) {
       document.exitPointerLock();
     }
-  }, [hasEscaped, inGameMenuOpen]);
+  }, [hasEscaped, inGameMenuOpen, gameOver]);
 
   // Handle pointer lock errors and state changes
   useEffect(() => {
@@ -297,15 +297,15 @@ export function Player() {
     camera.rotation.set(camera.rotation.x, initialRotation, camera.rotation.z);
   }, [camera]);
 
-  // Disable pointer lock controls when escaped or menu is open
+  // Disable pointer lock controls when escaped or menu is open or game over
   useEffect(() => {
-    if ((hasEscaped || inGameMenuOpen) && controlsRef.current) {
+    if ((hasEscaped || inGameMenuOpen || gameOver) && controlsRef.current) {
       const controls = controlsRef.current as any;
       if (controls.unlock) {
         controls.unlock();
       }
     }
-  }, [hasEscaped, inGameMenuOpen]);
+  }, [hasEscaped, inGameMenuOpen, gameOver]);
 
   // Handle keyboard input
   useEffect(() => {
@@ -972,7 +972,7 @@ export function Player() {
     <>
       <PointerLockControls 
         ref={controlsRef} 
-        enabled={!hasEscaped && !inGameMenuOpen && canEnablePointerLock} 
+        enabled={!hasEscaped && !inGameMenuOpen && !gameOver && canEnablePointerLock} 
       />
 
       {/* Player flashlight - optimized spotlight that follows camera direction */}
