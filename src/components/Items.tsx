@@ -76,12 +76,14 @@ function ContainerItem({
   bodyType,
   position,
   children,
+  startupGracePeriod,
   ...rigidBodyProps
 }: {
   itemName: string;
   bodyType: 'dynamic' | 'kinematicPosition';
   position: [number, number, number];
   children: React.ReactNode;
+  startupGracePeriod: React.MutableRefObject<boolean>;
   [key: string]: any;
 }) {
   const rbRef = React.useRef<RapierRigidBody>(null);
@@ -125,7 +127,7 @@ function ContainerItem({
   }, [position[0], position[1], position[2]]);
 
   const handleCollision = () => {
-    if (!hasPlayedDropSound.current && !isFirstFrame.current && bodyType === 'dynamic') {
+    if (!hasPlayedDropSound.current && !isFirstFrame.current && !startupGracePeriod.current && bodyType === 'dynamic') {
       playItemDropSound(itemName);
       hasPlayedDropSound.current = true;
     }
@@ -154,11 +156,22 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
   const [initialized, setInitialized] = React.useState(false);
   const [itemContainers, setItemContainers] = React.useState<Record<string, { type: 'bucket', id: string, basePos: [number, number, number] }>>({});
   
+  // Startup grace period to prevent sounds during initial spawn
+  const startupGracePeriod = React.useRef(true);
+  
   // Track which items have played their drop sound
   const vaseDropSoundPlayed = React.useRef(false);
   const vaseIsFirstFrame = React.useRef(true);
   const plankDropSoundPlayed = React.useRef(false);
   const plankIsFirstFrame = React.useRef(true);
+  
+  // Disable startup grace period after 2 seconds
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      startupGracePeriod.current = false;
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Initialize spawn positions from GLTF empties and detect containers
   React.useEffect(() => {
@@ -245,7 +258,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
   
   // Collision handler for vase
   const handleVaseCollision = () => {
-    if (!vaseDropSoundPlayed.current && !vaseIsFirstFrame.current) {
+    if (!vaseDropSoundPlayed.current && !vaseIsFirstFrame.current && !startupGracePeriod.current) {
       playItemDropSound('vase');
       vaseDropSoundPlayed.current = true;
     }
@@ -253,7 +266,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
   
   // Collision handler for plank
   const handlePlankCollision = () => {
-    if (!plankDropSoundPlayed.current && !plankIsFirstFrame.current) {
+    if (!plankDropSoundPlayed.current && !plankIsFirstFrame.current && !startupGracePeriod.current) {
       playItemDropSound('wood_plank_item');
       plankDropSoundPlayed.current = true;
     }
@@ -276,6 +289,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           itemName="padlock_key"
           bodyType={getItemBodyType('padlock_key')}
           position={getContainerAdjustedPosition('padlock_key', [-1.744, 4.512, -16.36])}
+          startupGracePeriod={startupGracePeriod}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -302,6 +316,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           itemName="master_key"
           bodyType={getItemBodyType('master_key')}
           position={getContainerAdjustedPosition('master_key', [-1.744, 4.512, -16.597])}
+          startupGracePeriod={startupGracePeriod}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -328,6 +343,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           itemName="card"
           bodyType={getItemBodyType('card')}
           position={getContainerAdjustedPosition('card', [-0.344, 5.349, -16.871])}
+          startupGracePeriod={startupGracePeriod}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -350,6 +366,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           itemName="safe_key"
           bodyType={getItemBodyType('safe_key')}
           position={getContainerAdjustedPosition('safe_key', [-1.744, 4.512, -16.957])}
+          startupGracePeriod={startupGracePeriod}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -376,6 +393,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           itemName="handle"
           bodyType={getItemBodyType('handle')}
           position={getContainerAdjustedPosition('handle', [-0.396, 5.348, -17.387])}
+          startupGracePeriod={startupGracePeriod}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -400,6 +418,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           itemName="watermelon"
           bodyType={getItemBodyType('watermelon')}
           position={getContainerAdjustedPosition('watermelon', [-0.106, 4.975, -15.882])}
+          startupGracePeriod={startupGracePeriod}
           colliders="ball"
           restitution={0.2}
           friction={0.8}
@@ -435,6 +454,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           itemName="cut_pliers"
           bodyType={getItemBodyType('cut_pliers')}
           position={getContainerAdjustedPosition('cut_pliers', [0.565, 4.864, -17.027])}
+          startupGracePeriod={startupGracePeriod}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
@@ -466,6 +486,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           itemName="hammer"
           bodyType={getItemBodyType('hammer')}
           position={getContainerAdjustedPosition('hammer', [-0.711, 5.102, -16.354])}
+          startupGracePeriod={startupGracePeriod}
           colliders="cuboid"
           restitution={0.2}
           friction={0.8}
