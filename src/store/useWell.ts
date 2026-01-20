@@ -17,6 +17,7 @@ interface WellState {
 
 const WELL_SPEED = 1.0; // meters per second
 let wellAudio: HTMLAudioElement | null = null;
+let wellPlayPromise: Promise<void> | null = null;
 
 export const useWell = create<WellState>((set, get) => ({
   handleSet: false,
@@ -43,12 +44,13 @@ export const useWell = create<WellState>((set, get) => ({
       wellAudio.volume = 0.5;
       wellAudio.loop = true;
     }
-    wellAudio.play().catch(err => console.warn('Well sound play failed:', err));
+    wellPlayPromise = wellAudio.play().catch(() => {});
     set({ isUsingWell: true });
   },
   
-  stopUsingWell: () => {
-    if (wellAudio) {
+  stopUsingWell: async () => {
+    if (wellAudio && wellPlayPromise) {
+      await wellPlayPromise;
       wellAudio.pause();
       wellAudio.currentTime = 0;
     }
@@ -66,9 +68,11 @@ export const useWell = create<WellState>((set, get) => ({
       });
       
       if (newHeight >= 4.7) {
-        if (wellAudio) {
-          wellAudio.pause();
-          wellAudio.currentTime = 0;
+        if (wellAudio && wellPlayPromise) {
+          wellPlayPromise.then(() => {
+            wellAudio!.pause();
+            wellAudio!.currentTime = 0;
+          });
         }
         set({ isUsingWell: false });
       }
