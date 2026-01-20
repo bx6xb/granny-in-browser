@@ -31,38 +31,51 @@ export function Door({
   const groupRef = useRef<THREE.Group>(null);
   const { initializeDoor, getDoorState, setDoorRotating, updateDoorRotation } = useDoors();
 
+  // Subscribe to door state changes
+  const doorState = useDoors((state) => state.doors.get(doorId));
+
   // Initialize door on mount
   useEffect(() => {
     initializeDoor(doorId, openDirection);
   }, [doorId, openDirection, initializeDoor]);
 
-  // Animate door rotation
-  useFrame(() => {
-    const doorState = getDoorState(doorId);
+  // Sync visual rotation when state changes (especially when doors are reset)
+  useEffect(() => {
     const targetRef = groupRef.current || meshRef.current;
     if (!doorState || !targetRef) return;
 
-    if (doorState.isRotating) {
+    // If door is not rotating, immediately sync visual rotation to current state
+    if (!doorState.isRotating) {
+      targetRef.rotation.y = rotation[1] + doorState.currentRotation;
+    }
+  }, [doorState, rotation]);
+
+  // Animate door rotation
+  useFrame(() => {
+    const currentDoorState = getDoorState(doorId);
+    const targetRef = groupRef.current || meshRef.current;
+    if (!currentDoorState || !targetRef) return;
+
+    if (currentDoorState.isRotating) {
       const rotationSpeed = 0.15; // Adjust for smoother/faster animation
-      const diff = doorState.targetRotation - doorState.currentRotation;
+      const diff = currentDoorState.targetRotation - currentDoorState.currentRotation;
 
       if (Math.abs(diff) > 0.05) {
         // Smoothly interpolate towards target
-        const newRotation = doorState.currentRotation + diff * rotationSpeed;
+        const newRotation = currentDoorState.currentRotation + diff * rotationSpeed;
         updateDoorRotation(doorId, newRotation);
         
         // Update rotation (group or mesh)
         targetRef.rotation.y = rotation[1] + newRotation;
       } else {
         // Snap to target and stop rotating
-        updateDoorRotation(doorId, doorState.targetRotation);
-        targetRef.rotation.y = rotation[1] + doorState.targetRotation;
+        updateDoorRotation(doorId, currentDoorState.targetRotation);
+        targetRef.rotation.y = rotation[1] + currentDoorState.targetRotation;
         setDoorRotating(doorId, false);
       }
     }
   });
 
-  const doorState = getDoorState(doorId);
   const isRotating = doorState?.isRotating || false;
 
   // Set userData on mesh ref when it's ready

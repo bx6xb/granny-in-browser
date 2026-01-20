@@ -19,6 +19,7 @@ interface DoorsState {
   toggleDoor: (doorId: string) => void;
   setNearbyDoor: (doorId: string | null) => void;
   getDoorState: (doorId: string) => DoorState | undefined;
+  closeAllDoors: () => void;
   reset: () => void;
 }
 
@@ -111,6 +112,24 @@ export const useDoors = create<DoorsState>((set, get) => ({
 
   getDoorState: (doorId: string) => {
     return get().doors.get(doorId);
+  },
+
+  closeAllDoors: () => {
+    set((state) => {
+      const newDoors = new Map(state.doors);
+      newDoors.forEach((door, doorId) => {
+        if (door.isOpen) {
+          newDoors.set(doorId, {
+            ...door,
+            isOpen: false,
+            targetRotation: 0,
+            currentRotation: 0,
+            isRotating: false,
+          });
+        }
+      });
+      return { doors: newDoors };
+    });
   },
 
   reset: () => {
