@@ -11,6 +11,7 @@ import { useAtticPlanks } from './useAtticPlanks';
 import { useLock } from './useLock';
 import { useTerminal } from './useTerminal';
 import { useWell } from './useWell';
+import { useDayState } from './useDayState';
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
 export type GameScreen = 'mainMenu' | 'settings' | 'game';
@@ -56,5 +57,6 @@ export const useGameSettings = create<GameSettingsState>((set) => ({
     useLock.getState().reset();
     useTerminal.getState().reset();
     useWell.getState().reset();
+    useDayState.getState().reset();
   },
 }));

@@ -16,6 +16,7 @@ import { useLock } from '../store/useLock';
 import { useSafe } from '../store/useSafe';
 import { useWell } from '../store/useWell';
 import { useGameSettings } from '../store/useGameSettings';
+import { useDayState } from '../store/useDayState';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
@@ -42,9 +43,11 @@ export function Player() {
   const { openSafe } = useSafe();
   const { setNearShaft, setNearHandle, setHandle, startUsingWell, stopUsingWell } = useWell();
   const { inGameMenuOpen, setInGameMenuOpen } = useGameSettings();
+  const { nextDay, showDayMessage, gameOver } = useDayState();
   const [isCrouching, setIsCrouching] = useState(false);
   const lastPointerLockExit = useRef(0);
   const [canEnablePointerLock, setCanEnablePointerLock] = useState(true);
+  const [isDying, setIsDying] = useState(false);
 
   // Initialize walk audio
   useEffect(() => {
@@ -591,8 +594,8 @@ export function Player() {
   useFrame(() => {
     if (!playerRef.current) return;
     
-    // Stop game if player has escaped or menu is open
-    if (hasEscaped || inGameMenuOpen) {
+    // Stop game if player has escaped, menu is open, game over, or showing day message
+    if (hasEscaped || inGameMenuOpen || gameOver || showDayMessage) {
       // Freeze player movement
       const player = playerRef.current;
       player.setLinvel({ x: 0, y: 0, z: 0 }, true);
@@ -602,6 +605,26 @@ export function Player() {
     const player = playerRef.current;
     const velocity = player.linvel();
     const playerPosition = player.translation();
+
+    // Check if player fell through the attic (Y position below -5)
+    if (playerPosition.y < -5 && !isDying) {
+      setIsDying(true);
+      
+      // Wait 1 second, then trigger next day and respawn
+      setTimeout(() => {
+        nextDay();
+        
+        // Reset player position after short delay
+        setTimeout(() => {
+          if (playerRef.current && playerSpawnArray) {
+            playerRef.current.setTranslation({ x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] }, true);
+            playerRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+            playerRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
+          }
+          setIsDying(false);
+        }, 500);
+      }, 1000);
+    }
 
     // ===== OPTIMIZED CEILING CHECK (only when trying to stand up) =====
     // Only check ceiling if player is crouched and NOT pressing crouch key (trying to stand)

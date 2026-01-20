@@ -6,7 +6,12 @@ Command: npx gltfjsx@6.5.3 public/models/granny.glb --types --keepnames -o src/c
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
+import { RigidBody } from '@react-three/rapier';
 import { useGrannyState } from '../store/useGrannyState';
+import { useDayState } from '../store/useDayState';
+import { usePlayerState } from '../store/usePlayerState';
+import { useRef, useState } from 'react';
+import type { RapierRigidBody } from '@react-three/rapier';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -30,9 +35,46 @@ type GLTFResult = GLTF & {
 export function Granny(props: JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/granny.glb') as GLTFResult;
   const { grannySpawnArray } = useGrannyState();
+  const { nextDay } = useDayState();
+  const { playerSpawnArray } = usePlayerState();
+  const grannyRef = useRef<RapierRigidBody>(null);
+  const [isCatching, setIsCatching] = useState(false);
+
+  const handlePlayerCollision = (playerRigidBody: any) => {
+    if (isCatching) return;
+    
+    setIsCatching(true);
+    
+    // Wait 1 second, then trigger next day and respawn
+    setTimeout(() => {
+      nextDay();
+      
+      // Reset player position after short delay
+      setTimeout(() => {
+        if (playerRigidBody && playerSpawnArray) {
+          playerRigidBody.setTranslation({ x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] }, true);
+          playerRigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+          playerRigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+        }
+        setIsCatching(false);
+      }, 500);
+    }, 1000);
+  };
 
   return (
-    <group {...props} dispose={null} position={grannySpawnArray || [0, 0, 0]}>
+    <RigidBody
+      ref={grannyRef}
+      type="fixed"
+      position={grannySpawnArray || [0, 0, 0]}
+      colliders="cuboid"
+      sensor
+      onIntersectionEnter={(e) => {
+        if (e.other.rigidBodyObject?.name === 'player') {
+          handlePlayerCollision(e.other.rigidBody);
+        }
+      }}
+    >
+      <group {...props} dispose={null}>
       <mesh
         name="leg"
         geometry={nodes.leg.geometry}
@@ -87,6 +129,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
         scale={[0.075, 0.569, 0.069]}
       />
     </group>
+    </RigidBody>
   );
 }
 

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useDoors } from '../store/useDoors';
 import { useItems } from '../store/useItems';
 import { useGuillotine } from '../store/useGuillotine';
@@ -8,6 +9,8 @@ import { useWires } from '../store/useWires';
 import { useLock } from '../store/useLock';
 import { useSafe } from '../store/useSafe';
 import { useWell } from '../store/useWell';
+import { useDayState } from '../store/useDayState';
+import { useGameSettings } from '../store/useGameSettings';
 
 export function GameUI() {
   const { nearbyDoor, getDoorState } = useDoors();
@@ -20,7 +23,19 @@ export function GameUI() {
   const { nearLock } = useLock();
   const { safeOpened } = useSafe();
   const { nearShaft, nearHandle, handleSet, bucketHeight } = useWell();
+  const { currentDay, showDayMessage, gameOver, hideDayMessage } = useDayState();
+  const { setScreen } = useGameSettings();
   const doorState = nearbyDoor ? getDoorState(nearbyDoor) : null;
+
+  // Auto-hide day message after 3 seconds
+  useEffect(() => {
+    if (showDayMessage && !gameOver) {
+      const timer = setTimeout(() => {
+        hideDayMessage();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showDayMessage, gameOver, hideDayMessage]);
 
   // Format item names for display
   const formatItemName = (itemName: string): string => {
@@ -40,6 +55,86 @@ export function GameUI() {
 
   return (
     <>
+      {/* Day message - black screen with day number */}
+      {showDayMessage && !gameOver && !hasEscaped && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#000000',
+            color: 'white',
+            fontFamily: 'monospace',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 3000,
+            pointerEvents: 'none',
+          }}
+        >
+          <div style={{ fontSize: '72px', fontWeight: 'bold', textAlign: 'center' }}>
+            Day {currentDay}
+          </div>
+        </div>
+      )}
+
+      {/* Game Over screen */}
+      {gameOver && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.98)',
+            color: '#ff4444',
+            fontFamily: 'monospace',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 3000,
+            pointerEvents: 'all',
+            cursor: 'default',
+          }}
+        >
+          <div style={{ fontSize: '64px', marginBottom: '40px', fontWeight: 'bold', color: '#ff4444' }}>
+            GAME OVER
+          </div>
+          <div style={{ fontSize: '28px', marginBottom: '50px', color: '#fff', opacity: 0.9 }}>
+            You failed to escape in 5 days...
+          </div>
+          <button
+            onClick={() => {
+              setScreen('mainMenu');
+            }}
+            style={{
+              fontSize: '24px',
+              padding: '15px 40px',
+              backgroundColor: '#ff4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontFamily: 'monospace',
+              fontWeight: 'bold',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#ff6666';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#ff4444';
+            }}
+          >
+            Return to Main Menu
+          </button>
+        </div>
+      )}
+
       {/* Win screen */}
       {hasEscaped && (
         <div
