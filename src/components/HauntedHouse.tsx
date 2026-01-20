@@ -26,6 +26,7 @@ import { useGameSettings } from '../store/useGameSettings';
 type GLTFResult = GLTF & {
   nodes: {
     navmesh: THREE.Mesh;
+    attic_trigger: THREE.Mesh;
     Plane005: THREE.Mesh;
     Cube047: THREE.Mesh;
     Cube048: THREE.Mesh;
@@ -901,6 +902,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
             material={materials.walls}
             position={[3.321, 10.666, -16.979]}
           />
+          <mesh name="attic_trigger" geometry={nodes.attic_trigger.geometry} material={nodes.attic_trigger.material} position={[8.114, 7.44, -8.506]} scale={[1.77, 0.12, 1.77]} />
           <mesh
             name="Cube053"
             geometry={nodes.Cube053.geometry}
