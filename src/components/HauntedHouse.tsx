@@ -6,7 +6,7 @@ Command: npx gltfjsx@6.5.3 public/models/hauntedHouse.glb --types --keepnames -o
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
-import { RigidBody } from '@react-three/rapier';
+import { RigidBody, CapsuleCollider, CuboidCollider } from '@react-three/rapier';
 import { useHauntedHouse } from '../hooks/useHauntedHouse';
 import { Door } from './Door';
 import { Items } from './Items';
@@ -22,6 +22,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useFrame, type ThreeElements } from '@react-three/fiber';
 import type { RapierRigidBody } from '@react-three/rapier';
 import { useGameSettings } from '../store/useGameSettings';
+import { useDayState } from '../store/useDayState';
+import { usePlayerState } from '../store/usePlayerState';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -424,6 +426,8 @@ export function HauntedHouse(props: ThreeElements['group']) {
   useHauntedHouse(nodes);
   
   const { volume } = useGameSettings();
+  const { nextDay } = useDayState();
+  const { playerSpawnArray } = usePlayerState();
 
   const { watermelonPlaced, bladeDropped, itemRevealed, dropBlade, revealItem } = useGuillotine();
   const { itemInsideWatermelon } = useItems();
@@ -445,6 +449,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const animationStartedRef = useRef(false);
   const plankAnimationStartedRef = useRef(false);
   const bucketRef = useRef<RapierRigidBody>(null);
+  const atticTriggerActivated = useRef(false);
   
   const box1LastSound = useRef(0);
   const box2LastSound = useRef(0);
@@ -457,6 +462,27 @@ export function HauntedHouse(props: ThreeElements['group']) {
   useEffect(() => {
     initializeActiveShield();
   }, [initializeActiveShield]);
+  
+  // Handle attic trigger activation
+  const handleAtticTrigger = (playerBody: RapierRigidBody) => {
+    if (atticTriggerActivated.current) return;
+    atticTriggerActivated.current = true;
+    
+    // Wait briefly, then trigger next day and respawn
+    setTimeout(() => {
+      nextDay();
+      
+      // Reset player position after short delay
+      setTimeout(() => {
+        if (playerSpawnArray) {
+          playerBody.setTranslation({ x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] }, true);
+          playerBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+          playerBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+        }
+        atticTriggerActivated.current = false;
+      }, 500);
+    }, 100);
+  };
   
   const playBoxSound = (lastSoundRef: React.MutableRefObject<number>) => {
     const now = Date.now();
@@ -902,7 +928,6 @@ export function HauntedHouse(props: ThreeElements['group']) {
             material={materials.walls}
             position={[3.321, 10.666, -16.979]}
           />
-          <mesh name="attic_trigger" geometry={nodes.attic_trigger.geometry} material={nodes.attic_trigger.material} position={[8.114, 7.44, -8.506]} scale={[1.77, 0.12, 1.77]} />
           <mesh
             name="Cube053"
             geometry={nodes.Cube053.geometry}
@@ -932,6 +957,14 @@ export function HauntedHouse(props: ThreeElements['group']) {
             geometry={nodes.Cube056.geometry}
             material={materials.walls}
             position={[12.188, 10.666, -5.132]}
+          />
+          <mesh
+            name="attic_trigger"
+            geometry={nodes.attic_trigger.geometry}
+            material={nodes.attic_trigger.material}
+            position={[8.114, 7.44, -8.506]}
+            scale={[1.77, 0.12, 1.77]}
+            visible={false}
           />
           {!atticWireCut && (
             <mesh name="attic_wire" geometry={nodes.attic_wire.geometry} material={materials.wire} position={[15.883, 10.13, -8.211]} />
@@ -2447,6 +2480,28 @@ export function HauntedHouse(props: ThreeElements['group']) {
           geometry={nodes.chair008.geometry}
           material={materials.wood2}
           scale={[1, 0.612, 1]}
+        />
+      </RigidBody>
+      
+      {/* Attic trigger - sensor that triggers day transition when player falls through */}
+      <RigidBody
+        position={[8.114, 7.44, -8.506]}
+        type="fixed"
+        sensor
+        colliders={false}
+        onIntersectionEnter={(e) => {
+          console.log('Attic trigger hit by:', e.other.rigidBodyObject?.name);
+          if (e.other.rigidBodyObject?.name === 'player' && e.other.rigidBody) {
+            console.log('Player fell through attic trigger!');
+            handleAtticTrigger(e.other.rigidBody);
+          }
+        }}
+      >
+        <CuboidCollider args={[2, 0.5, 2]} sensor />
+        <mesh
+          geometry={nodes.attic_trigger.geometry}
+          scale={[1.77, 0.12, 1.77]}
+          visible={false}
         />
       </RigidBody>
     </>
