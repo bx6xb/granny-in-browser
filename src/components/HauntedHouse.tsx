@@ -457,11 +457,20 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const plank1LastSound = useRef(0);
   const plank2LastSound = useRef(0);
   const soundCooldown = 500; // milliseconds
+  const startupGracePeriod = useRef(true);
 
   // Initialize random shield selection on mount
   useEffect(() => {
     initializeActiveShield();
   }, [initializeActiveShield]);
+
+  // Disable startup grace period after 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startupGracePeriod.current = false;
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
   
   // Handle attic trigger activation
   const handleAtticTrigger = (playerBody: RapierRigidBody) => {
@@ -485,6 +494,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
   };
   
   const playBoxSound = (lastSoundRef: React.MutableRefObject<number>) => {
+    if (startupGracePeriod.current) return;
     const now = Date.now();
     if (now - lastSoundRef.current > soundCooldown) {
       const audio = new Audio('/sounds/box.mp3');
@@ -495,6 +505,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
   };
   
   const playPlankSound = (lastSoundRef: React.MutableRefObject<number>) => {
+    if (startupGracePeriod.current) return;
     const now = Date.now();
     if (now - lastSoundRef.current > soundCooldown) {
       const audio = new Audio('/sounds/plank.mp3');
