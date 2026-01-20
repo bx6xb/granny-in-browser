@@ -43,6 +43,8 @@ export function Player() {
   const { setNearShaft, setNearHandle, setHandle, startUsingWell, stopUsingWell } = useWell();
   const { inGameMenuOpen, setInGameMenuOpen } = useGameSettings();
   const [isCrouching, setIsCrouching] = useState(false);
+  const lastPointerLockExit = useRef(0);
+  const [canEnablePointerLock, setCanEnablePointerLock] = useState(true);
 
   // Initialize walk audio
   useEffect(() => {
@@ -72,6 +74,50 @@ export function Player() {
       document.exitPointerLock();
     }
   }, [hasEscaped, inGameMenuOpen]);
+
+  // Handle pointer lock errors and state changes
+  useEffect(() => {
+    const handlePointerLockError = (e: Event) => {
+      // Silently handle pointer lock errors - they're often timing-related and harmless
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handlePointerLockChange = () => {
+      if (!document.pointerLockElement) {
+        // Track when pointer lock exits and add cooldown
+        lastPointerLockExit.current = Date.now();
+        setCanEnablePointerLock(false);
+        
+        // Re-enable after 300ms cooldown to avoid timing issues
+        setTimeout(() => {
+          setCanEnablePointerLock(true);
+        }, 300);
+      }
+    };
+
+    // Override default error handling for pointer lock
+    const originalErrorHandler = window.onerror;
+    window.onerror = (msg, url, line, col, error) => {
+      if (typeof msg === 'string' && 
+          (msg.includes('PointerLockControls') || 
+           msg.includes('Pointer Lock API') ||
+           (error && error.name === 'SecurityError' && error.message?.includes('lock')))) {
+        // Suppress pointer lock errors
+        return true;
+      }
+      return originalErrorHandler ? originalErrorHandler(msg, url, line, col, error) : false;
+    };
+
+    document.addEventListener('pointerlockerror', handlePointerLockError);
+    document.addEventListener('pointerlockchange', handlePointerLockChange);
+    
+    return () => {
+      document.removeEventListener('pointerlockerror', handlePointerLockError);
+      document.removeEventListener('pointerlockchange', handlePointerLockChange);
+      window.onerror = originalErrorHandler;
+    };
+  }, []);
 
   // Open menu when window loses focus
   useEffect(() => {
@@ -899,7 +945,10 @@ export function Player() {
 
   return (
     <>
-      <PointerLockControls ref={controlsRef} enabled={!hasEscaped && !inGameMenuOpen} />
+      <PointerLockControls 
+        ref={controlsRef} 
+        enabled={!hasEscaped && !inGameMenuOpen && canEnablePointerLock} 
+      />
 
       {/* Player flashlight - optimized spotlight that follows camera direction */}
       <spotLight
