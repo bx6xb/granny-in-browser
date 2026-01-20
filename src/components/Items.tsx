@@ -15,6 +15,20 @@ import { useWell } from '../store/useWell';
 import { useFrame } from '@react-three/fiber';
 import { useGuillotine } from '../store/useGuillotine';
 
+// Map item names to their drop sound files
+const itemDropSounds: Record<string, string> = {
+  card: '/sounds/card.mp3',
+  cut_pliers: '/sounds/cut_pliers.mp3',
+  padlock_key: '/sounds/key.mp3',
+  master_key: '/sounds/key.mp3',
+  safe_key: '/sounds/key.mp3',
+  vase: '/sounds/vase.mp3',
+  hammer: '/sounds/hammer.mp3',
+  watermelon: '/sounds/watermelon.mp3',
+  handle: '/sounds/handle.mp3',
+  wood_plank_item: '/sounds/plank.mp3',
+};
+
 type GLTFResult = GLTF & {
   nodes: {
     Cube002: THREE.Mesh;
@@ -46,6 +60,16 @@ type GLTFResult = GLTF & {
   };
 };
 
+// Helper function to play item drop sounds
+const playItemDropSound = (itemName: string) => {
+  const soundPath = itemDropSounds[itemName];
+  if (soundPath) {
+    const audio = new Audio(soundPath);
+    audio.volume = 0.5;
+    audio.play().catch(err => console.warn('Item drop sound play failed:', err));
+  }
+};
+
 // Helper component for items that need to follow containers
 function ContainerItem({
   itemName,
@@ -63,6 +87,8 @@ function ContainerItem({
   const rbRef = React.useRef<RapierRigidBody>(null);
   const lastBodyType = React.useRef(bodyType);
   const lastPosition = React.useRef<[number, number, number]>(position);
+  const hasPlayedDropSound = React.useRef(false);
+  const isFirstFrame = React.useRef(true);
 
   useFrame(() => {
     if (rbRef.current && bodyType === 'kinematicPosition') {
@@ -76,6 +102,11 @@ function ContainerItem({
       
       lastPosition.current = [x, y, z];
     }
+    
+    // Skip first frame to avoid playing sound on initial spawn
+    if (isFirstFrame.current) {
+      isFirstFrame.current = false;
+    }
   });
 
   // Reset velocity when transitioning to dynamic
@@ -86,9 +117,28 @@ function ContainerItem({
     }
     lastBodyType.current = bodyType;
   }, [bodyType]);
+  
+  // Reset sound flag when position changes (item was picked up and dropped again)
+  React.useEffect(() => {
+    hasPlayedDropSound.current = false;
+    isFirstFrame.current = true;
+  }, [position[0], position[1], position[2]]);
+
+  const handleCollision = () => {
+    if (!hasPlayedDropSound.current && !isFirstFrame.current && bodyType === 'dynamic') {
+      playItemDropSound(itemName);
+      hasPlayedDropSound.current = true;
+    }
+  };
 
   return (
-    <RigidBody ref={rbRef} type={bodyType} position={position} {...rigidBodyProps}>
+    <RigidBody 
+      ref={rbRef} 
+      type={bodyType} 
+      position={position} 
+      onCollisionEnter={handleCollision}
+      {...rigidBodyProps}
+    >
       {children}
     </RigidBody>
   );
@@ -103,6 +153,12 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
   const { itemRevealed } = useGuillotine();
   const [initialized, setInitialized] = React.useState(false);
   const [itemContainers, setItemContainers] = React.useState<Record<string, { type: 'bucket', id: string, basePos: [number, number, number] }>>({});
+  
+  // Track which items have played their drop sound
+  const vaseDropSoundPlayed = React.useRef(false);
+  const vaseIsFirstFrame = React.useRef(true);
+  const plankDropSoundPlayed = React.useRef(false);
+  const plankIsFirstFrame = React.useRef(true);
 
   // Initialize spawn positions from GLTF empties and detect containers
   React.useEffect(() => {
@@ -163,6 +219,46 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
     return 'dynamic';
   }, [itemContainers]);
 
+  // Track first frame for items to avoid playing sound on spawn
+  useFrame(() => {
+    if (vaseIsFirstFrame.current) {
+      vaseIsFirstFrame.current = false;
+    }
+    if (plankIsFirstFrame.current) {
+      plankIsFirstFrame.current = false;
+    }
+  });
+  
+  // Reset vase sound flag when position changes
+  const vasePosition = getItemPosition('vase', [1.808, 4.774, -21.72]);
+  React.useEffect(() => {
+    vaseDropSoundPlayed.current = false;
+    vaseIsFirstFrame.current = true;
+  }, [vasePosition[0], vasePosition[1], vasePosition[2]]);
+  
+  // Reset plank sound flag when position changes
+  const plankPosition = getItemPosition('wood_plank_item', [8.036, -0.873, -3.118]);
+  React.useEffect(() => {
+    plankDropSoundPlayed.current = false;
+    plankIsFirstFrame.current = true;
+  }, [plankPosition[0], plankPosition[1], plankPosition[2]]);
+  
+  // Collision handler for vase
+  const handleVaseCollision = () => {
+    if (!vaseDropSoundPlayed.current && !vaseIsFirstFrame.current) {
+      playItemDropSound('vase');
+      vaseDropSoundPlayed.current = true;
+    }
+  };
+  
+  // Collision handler for plank
+  const handlePlankCollision = () => {
+    if (!plankDropSoundPlayed.current && !plankIsFirstFrame.current) {
+      playItemDropSound('wood_plank_item');
+      plankDropSoundPlayed.current = true;
+    }
+  };
+  
   // Collision groups:
   // - Group 0 (0x0001): Static geometry (floors, walls, furniture)
   // - Group 1 (0x0002): Player
@@ -404,6 +500,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           collisionGroups={itemCollisionGroup}
           scale={0.85}
           linearVelocity={[0, -0.5, -2]}
+          onCollisionEnter={handlePlankCollision}
         >
           <mesh
             name="wood_plank_item"
@@ -429,6 +526,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           ccd={true}
           collisionGroups={itemCollisionGroup}
           scale={0.9}
+          onCollisionEnter={handleVaseCollision}
         >
           <mesh
             name="vase"
