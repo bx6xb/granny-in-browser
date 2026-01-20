@@ -31,6 +31,16 @@ export default function App() {
               antialias: false,
               powerPreference: 'high-performance'
             }}
+            onCreated={({ gl }) => {
+              gl.domElement.addEventListener('webglcontextlost', (e) => {
+                e.preventDefault();
+                console.warn('WebGL context lost - attempting recovery');
+              });
+              gl.domElement.addEventListener('webglcontextrestored', () => {
+                console.log('WebGL context restored');
+                window.location.reload();
+              });
+            }}
           >
             <ambientLight intensity={0.05} />
             
