@@ -199,31 +199,40 @@ export function GameUI() {
           left: '20px',
           color: 'white',
           fontFamily: 'monospace',
-          fontSize: '14px',
+          fontSize: window.innerWidth <= 768 ? '11px' : '14px',
           backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          padding: '15px',
+          padding: window.innerWidth <= 768 ? '10px' : '15px',
           borderRadius: '8px',
           pointerEvents: 'none',
           zIndex: 1000,
+          maxWidth: window.innerWidth <= 768 ? '160px' : 'auto',
         }}
       >
-        <div style={{ marginBottom: '10px', fontSize: '16px', fontWeight: 'bold' }}>
-          🏚️ Haunted House - Night Mode
+        <div style={{ marginBottom: '10px', fontSize: window.innerWidth <= 768 ? '13px' : '16px', fontWeight: 'bold' }}>
+          🏚️ Haunted House
         </div>
-        <div style={{ marginBottom: '5px' }}>
-          <strong>Controls:</strong>
-        </div>
-        <div>• Click to lock mouse</div>
-        <div>• WASD - Move</div>
-        <div>• Mouse - Look around</div>
-        <div>• C - Crouch</div>
-        <div>• E - Interact with doors</div>
-        <div>• F - Grab items</div>
-        <div>• Space - Drop item</div>
-        <div>• ESC/ALT - Open menu</div>
-        <div style={{ marginTop: '8px', fontSize: '12px', opacity: 0.8 }}>
-          💡 Use your flashlight to see in the dark
-        </div>
+        {window.innerWidth > 1024 ? (
+          <>
+            <div style={{ marginBottom: '5px' }}>
+              <strong>Controls:</strong>
+            </div>
+            <div>• Click to lock mouse</div>
+            <div>• WASD - Move</div>
+            <div>• Mouse - Look around</div>
+            <div>• C - Crouch</div>
+            <div>• E - Interact with doors</div>
+            <div>• F - Grab items</div>
+            <div>• Space - Drop item</div>
+            <div>• ESC/ALT - Open menu</div>
+            <div style={{ marginTop: '8px', fontSize: '12px', opacity: 0.8 }}>
+              💡 Use your flashlight to see in the dark
+            </div>
+          </>
+        ) : (
+          <div style={{ fontSize: '10px', opacity: 0.9 }}>
+            Touch controls enabled
+          </div>
+        )}
       </div>
 
       {/* Main door escape prompt */}

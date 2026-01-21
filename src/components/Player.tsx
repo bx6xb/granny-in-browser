@@ -19,6 +19,8 @@ import { useGameSettings } from '../store/useGameSettings';
 import { useDayState } from '../store/useDayState';
 import { useBedHiding } from '../store/useBedHiding';
 import type { SpotLight as ThreeSpotLight } from 'three';
+import { useMobileControls } from '../store/useMobileControls';
+import { mobileMovement } from './MobileControls';
 
 const PLAYER_HEIGHT = 1.7;
 const CROUCH_HEIGHT = 0.9; // Adjust this value to fit through holes
@@ -32,7 +34,7 @@ export function Player() {
   const flashlightRef = useRef<ThreeSpotLight>(null);
   const walkAudioRef = useRef<HTMLAudioElement | null>(null);
   const { camera, scene } = useThree();
-  const { playerSpawnArray, shouldResetCamera, clearCameraReset } = usePlayerState();
+  const { playerSpawnArray, shouldResetCamera, clearCameraReset, setCamera } = usePlayerState();
   const { toggleDoor, setNearbyDoor } = useDoors();
   const { setNearbyItem, grabItem, dropItem, heldItem } = useItems();
   const { setNearGuillotine, placeWatermelon } = useGuillotine();
@@ -290,7 +292,7 @@ export function Player() {
     return () => clearInterval(rebuildTimeout);
   }, [scene]);
 
-  // Movement state
+  // Movement state - import from MobileControls for mobile, use ref for keyboard
   const movement = useRef({
     forward: false,
     backward: false,
@@ -302,11 +304,12 @@ export function Player() {
   // Track if C key is pressed to prevent continuous toggling
   const crouchKeyHeld = useRef(false);
 
-  // Set initial camera rotation (90 degrees to the right)
+  // Set initial camera rotation (90 degrees to the right) and store camera reference
   useEffect(() => {
     const initialRotation = -Math.PI / 2; // 90 degrees to the right
     camera.rotation.set(camera.rotation.x, initialRotation, camera.rotation.z);
-  }, [camera]);
+    setCamera(camera);
+  }, [camera, setCamera]);
 
   // Watch for camera reset trigger
   useEffect(() => {
@@ -620,6 +623,9 @@ export function Player() {
   const lastNearPlankSlot = useRef<boolean>(false);
   const lastNearBed = useRef<string | null>(null);
   const currentBedObject = useRef<THREE.Object3D | null>(null);
+  
+  // Expose movement ref for mobile controls
+  const { setInteract, setGrab, setDrop, setCrouch } = useMobileControls();
 
   // Configure raycaster to only check layer 1 (interactive objects)
   useEffect(() => {
@@ -1010,16 +1016,22 @@ export function Player() {
     // Reset moveDirection
     moveDirection.current.set(0, 0, 0);
 
-    if (movement.current.forward) {
+    // Combine keyboard and mobile movement
+    const isForward = movement.current.forward || mobileMovement.forward;
+    const isBackward = movement.current.backward || mobileMovement.backward;
+    const isLeft = movement.current.left || mobileMovement.left;
+    const isRight = movement.current.right || mobileMovement.right;
+
+    if (isForward) {
       moveDirection.current.add(direction.current);
     }
-    if (movement.current.backward) {
+    if (isBackward) {
       moveDirection.current.sub(direction.current);
     }
-    if (movement.current.left) {
+    if (isLeft) {
       moveDirection.current.add(right.current);
     }
-    if (movement.current.right) {
+    if (isRight) {
       moveDirection.current.sub(right.current);
     }
 
@@ -1082,6 +1094,154 @@ export function Player() {
 
   // Get spawn position
   const spawnPosition: [number, number, number] = playerSpawnArray || [0, 2, 0];
+
+  // Mobile control callbacks
+  const handleInteract = () => {
+    if (hasEscaped || inGameMenuOpen) return;
+    
+    const currentHeldItem = useItems.getState().heldItem;
+    const nearPlankSlot = usePlank.getState().nearPlankSlot;
+    const plankPlaced = usePlank.getState().plankPlaced;
+    
+    if (nearPlankSlot && currentHeldItem === 'wood_plank_item' && !plankPlaced) {
+      placePlank();
+      useItems.getState().dropItem([0, -100, 0]);
+      return;
+    }
+    
+    const nearShaft = useWell.getState().nearShaft;
+    const handleSet = useWell.getState().handleSet;
+    
+    if (nearShaft && currentHeldItem === 'handle' && !handleSet) {
+      setHandle();
+      useItems.getState().dropItem([0, -100, 0]);
+      return;
+    }
+    
+    const nearMainDoor = useEscapeDoor.getState().nearMainDoor;
+    const isDoorUnlocked = useEscapeDoor.getState().isDoorUnlocked;
+    
+    if (nearMainDoor && currentHeldItem === 'master_key' && isDoorUnlocked) {
+      escape();
+      return;
+    }
+    
+    const nearLock = useLock.getState().nearLock;
+    const lockOpened = useEscapeDoor.getState().lockOpened;
+    
+    if (nearLock && currentHeldItem === 'padlock_key' && !lockOpened) {
+      openLock();
+      return;
+    }
+    
+    const nearWire = useWires.getState().nearWire;
+    const wiresState = useWires.getState();
+    
+    if (nearWire && currentHeldItem === 'cut_pliers') {
+      if (nearWire === 'door_wire' && !wiresState.doorWireCut) {
+        useWires.getState().cutWire('door_wire');
+        cutWire();
+        return;
+      } else if (nearWire.startsWith('shield_wire') && !wiresState.shieldWireCut) {
+        useWires.getState().cutWire(nearWire);
+        cutWire();
+        return;
+      } else if (nearWire === 'attic_wire' && !wiresState.atticWireCut) {
+        useWires.getState().cutWire('attic_wire');
+        return;
+      }
+    }
+    
+    const nearPlank = usePlank.getState().nearPlank;
+    const plankChipped = usePlank.getState().isChippedOff;
+    
+    if (nearPlank && currentHeldItem === 'hammer' && !plankChipped) {
+      chipOffPlank();
+      return;
+    }
+    
+    const nearTerminal = useTerminal.getState().nearTerminal;
+    const cardSwiped = useEscapeDoor.getState().cardSwiped;
+    
+    if (nearTerminal && currentHeldItem === 'card' && !cardSwiped) {
+      swipeCard();
+      return;
+    }
+    
+    const nearGuillotine = useGuillotine.getState().nearGuillotine;
+    
+    if (nearGuillotine && currentHeldItem === 'watermelon') {
+      placeWatermelon();
+      useItems.getState().dropItem([0, 0, 0]);
+      return;
+    }
+    
+    const nearBed = useBedHiding.getState().nearBed;
+    const isCurrentlyHiding = useBedHiding.getState().isHiding;
+    
+    if (nearBed && !isCurrentlyHiding && playerRef.current && currentBedObject.current) {
+      const pos = playerRef.current.translation();
+      const bedWorldPos = new THREE.Vector3();
+      currentBedObject.current.getWorldPosition(bedWorldPos);
+      hideInBed(nearBed, [pos.x, pos.y, pos.z], [bedWorldPos.x, bedWorldPos.y, bedWorldPos.z]);
+      return;
+    } else if (isCurrentlyHiding) {
+      standUp();
+      return;
+    }
+    
+    const nearbyDoorId = useDoors.getState().nearbyDoor;
+    if (nearbyDoorId) {
+      if (nearbyDoorId === 'safe_door001') {
+        const currentHeldItem = useItems.getState().heldItem;
+        const safeOpened = useSafe.getState().safeOpened;
+        if (currentHeldItem === 'safe_key' && !safeOpened) {
+          toggleDoor(nearbyDoorId);
+          openSafe();
+        }
+      } else {
+        toggleDoor(nearbyDoorId);
+      }
+    }
+  };
+
+  const handleGrab = () => {
+    if (hasEscaped || inGameMenuOpen) return;
+    
+    const nearbyItemName = useItems.getState().nearbyItem;
+    const currentHeldItem = useItems.getState().heldItem;
+    if (nearbyItemName) {
+      if (currentHeldItem && playerRef.current) {
+        const pos = playerRef.current.translation();
+        dropItem([pos.x, pos.y - 0.5, pos.z]);
+      }
+      grabItem(nearbyItemName);
+    }
+  };
+
+  const handleDrop = () => {
+    if (hasEscaped || inGameMenuOpen) return;
+    
+    if (useItems.getState().heldItem && playerRef.current) {
+      const pos = playerRef.current.translation();
+      dropItem([pos.x, pos.y - 0.5, pos.z]);
+    }
+  };
+
+  const handleCrouch = () => {
+    if (hasEscaped || inGameMenuOpen) return;
+    
+    movement.current.crouch = !movement.current.crouch;
+    setIsCrouching(!isCrouching);
+  };
+
+  // Register mobile control handlers
+  useEffect(() => {
+    setInteract(() => handleInteract);
+    setGrab(() => handleGrab);
+    setDrop(() => handleDrop);
+    setCrouch(() => handleCrouch);
+  }, [setInteract, setGrab, setDrop, setCrouch]);
 
   return (
     <>

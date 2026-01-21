@@ -9,6 +9,7 @@ import { GameUI } from './components/GameUI';
 import { InGameMenu } from './components/InGameMenu';
 import { MainMenu } from './components/MainMenu';
 import { SettingsMenu } from './components/SettingsMenu';
+import { MobileControls } from './components/MobileControls';
 import { useGameSettings } from './store/useGameSettings';
 import { useDayState } from './store/useDayState';
 import { useEscapeDoor } from './store/useEscapeDoor';
@@ -67,6 +68,7 @@ export default function App() {
 
             <Stats className="fps-stats" />
           </Canvas>
+          <MobileControls disabled={inGameMenuOpen || gameOver || hasEscaped} />
         </>
       )}
     </div>

@@ -36,30 +36,31 @@ export function InGameMenu() {
       <div
         style={{
           backgroundColor: 'rgba(20, 20, 20, 0.95)',
-          padding: '40px 60px',
+          padding: window.innerWidth <= 768 ? '30px 20px' : '40px 60px',
           borderRadius: '12px',
           border: '2px solid rgba(255, 255, 255, 0.2)',
-          minWidth: '400px',
+          minWidth: window.innerWidth <= 768 ? '90%' : '400px',
+          maxWidth: window.innerWidth <= 768 ? '90%' : 'auto',
         }}
       >
         <h1
           style={{
             color: 'white',
             fontFamily: 'monospace',
-            fontSize: '32px',
-            marginBottom: '30px',
+            fontSize: window.innerWidth <= 768 ? '24px' : '32px',
+            marginBottom: window.innerWidth <= 768 ? '20px' : '30px',
             textAlign: 'center',
           }}
         >
           PAUSED
         </h1>
 
-        <div style={{ marginBottom: '30px' }}>
+        <div style={{ marginBottom: window.innerWidth <= 768 ? '20px' : '30px' }}>
           <label
             style={{
               color: 'white',
               fontFamily: 'monospace',
-              fontSize: '18px',
+              fontSize: window.innerWidth <= 768 ? '14px' : '18px',
               display: 'block',
               marginBottom: '10px',
             }}
@@ -83,14 +84,14 @@ export function InGameMenu() {
           onClick={handleBackToGame}
           style={{
             width: '100%',
-            padding: '15px',
+            padding: window.innerWidth <= 768 ? '12px' : '15px',
             marginBottom: '15px',
             backgroundColor: 'rgba(0, 150, 0, 0.8)',
             color: 'white',
             border: '2px solid rgba(0, 255, 0, 0.3)',
             borderRadius: '8px',
             fontFamily: 'monospace',
-            fontSize: '18px',
+            fontSize: window.innerWidth <= 768 ? '16px' : '18px',
             cursor: 'pointer',
             transition: 'all 0.2s',
           }}
@@ -110,13 +111,13 @@ export function InGameMenu() {
           onClick={handleBackToMainMenu}
           style={{
             width: '100%',
-            padding: '15px',
+            padding: window.innerWidth <= 768 ? '12px' : '15px',
             backgroundColor: 'rgba(150, 0, 0, 0.8)',
             color: 'white',
             border: '2px solid rgba(255, 0, 0, 0.3)',
             borderRadius: '8px',
             fontFamily: 'monospace',
-            fontSize: '18px',
+            fontSize: window.innerWidth <= 768 ? '16px' : '18px',
             cursor: 'pointer',
             transition: 'all 0.2s',
           }}

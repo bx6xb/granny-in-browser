@@ -24,17 +24,18 @@ export function SettingsMenu() {
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '40px',
-          padding: '60px',
+          gap: window.innerWidth <= 768 ? '20px' : '40px',
+          padding: window.innerWidth <= 768 ? '30px 20px' : '60px',
           backgroundColor: '#1a1a1a',
           border: '3px solid #ffffff',
+          maxWidth: window.innerWidth <= 768 ? '90%' : 'auto',
         }}
       >
         <h2
           style={{
-            fontSize: '48px',
+            fontSize: window.innerWidth <= 768 ? '28px' : '48px',
             color: '#ffffff',
-            marginBottom: '20px',
+            marginBottom: window.innerWidth <= 768 ? '10px' : '20px',
             textAlign: 'center',
           }}
         >
@@ -45,7 +46,7 @@ export function SettingsMenu() {
         <div>
           <label
             style={{
-              fontSize: '24px',
+              fontSize: window.innerWidth <= 768 ? '16px' : '24px',
               color: '#ffffff',
               display: 'block',
               marginBottom: '15px',
@@ -53,14 +54,14 @@ export function SettingsMenu() {
           >
             DIFFICULTY
           </label>
-          <div style={{ display: 'flex', gap: '15px' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {(['easy', 'normal', 'hard'] as const).map((diff) => (
               <button
                 key={diff}
                 onClick={() => setDifficulty(diff)}
                 style={{
-                  fontSize: '20px',
-                  padding: '15px 30px',
+                  fontSize: window.innerWidth <= 768 ? '14px' : '20px',
+                  padding: window.innerWidth <= 768 ? '12px 20px' : '15px 30px',
                   backgroundColor: difficulty === diff ? '#ffffff' : '#2a2a2a',
                   color: difficulty === diff ? '#000000' : '#ffffff',
                   border: '2px solid #ffffff',
@@ -68,6 +69,7 @@ export function SettingsMenu() {
                   fontFamily: 'monospace',
                   fontWeight: 'bold',
                   textTransform: 'uppercase',
+                  flex: window.innerWidth <= 768 ? '1' : 'auto',
                 }}
               >
                 {diff}
@@ -80,7 +82,7 @@ export function SettingsMenu() {
         <div>
           <label
             style={{
-              fontSize: '24px',
+              fontSize: window.innerWidth <= 768 ? '16px' : '24px',
               color: '#ffffff',
               display: 'block',
               marginBottom: '15px',
@@ -106,8 +108,8 @@ export function SettingsMenu() {
         <button
           onClick={startGame}
           style={{
-            fontSize: '32px',
-            padding: '20px 60px',
+            fontSize: window.innerWidth <= 768 ? '20px' : '32px',
+            padding: window.innerWidth <= 768 ? '15px 40px' : '20px 60px',
             backgroundColor: '#1a1a1a',
             color: '#ffffff',
             border: '3px solid #ffffff',

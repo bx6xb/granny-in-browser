@@ -22,12 +22,14 @@ export function MainMenu() {
     >
       <h1
         style={{
-          fontSize: '96px',
+          fontSize: window.innerWidth <= 768 ? '36px' : window.innerWidth <= 1024 ? '64px' : '96px',
           fontWeight: 'bold',
           color: '#ffffff',
-          marginBottom: '80px',
+          marginBottom: window.innerWidth <= 768 ? '40px' : '80px',
           textShadow: '0 0 20px rgba(255, 0, 0, 0.5)',
-          letterSpacing: '8px',
+          letterSpacing: window.innerWidth <= 768 ? '4px' : '8px',
+          textAlign: 'center',
+          padding: '0 20px',
         }}
       >
         HAUNTED HOUSE
@@ -36,8 +38,8 @@ export function MainMenu() {
       <button
         onClick={() => setScreen('settings')}
         style={{
-          fontSize: '32px',
-          padding: '20px 60px',
+          fontSize: window.innerWidth <= 768 ? '20px' : '32px',
+          padding: window.innerWidth <= 768 ? '15px 40px' : '20px 60px',
           backgroundColor: '#1a1a1a',
           color: '#ffffff',
           border: '3px solid #ffffff',
