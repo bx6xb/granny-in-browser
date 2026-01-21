@@ -970,14 +970,13 @@ export function HauntedHouse(props: ThreeElements['group']) {
             material={materials.walls}
             position={[12.188, 10.666, -5.132]}
           />
-          <mesh
-            name="attic_trigger"
+          {/* <mesh name="attic_trigger" 
             geometry={nodes.attic_trigger.geometry}
-            material={nodes.attic_trigger.material}
-            position={[8.114, 7.44, -8.506]}
-            scale={[1.77, 0.12, 1.77]}
+            material={nodes.attic_trigger.material} 
+            position={[8.114, 7.358, -8.506]} 
+            scale={[1.47, 0.043, 1.47]}
             visible={false}
-          />
+          /> */}
           {!atticWireCut && (
             <mesh name="attic_wire" geometry={nodes.attic_wire.geometry} material={materials.wire} position={[15.883, 10.13, -8.211]} />
           )}
@@ -2497,7 +2496,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
       
       {/* Attic trigger - sensor that triggers day transition when player falls through */}
       <RigidBody
-        position={[8.114, 7.319, -8.506]}
+        position={[8.114, 6.936, -8.506]}
         type="fixed"
         sensor
         colliders={false}
@@ -2512,7 +2511,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         <CuboidCollider args={[2, 0.5, 2]} sensor />
         <mesh
           geometry={nodes.attic_trigger.geometry}
-          scale={[1.77, 0.051, 1.77]}
+          scale={[1.47, 0.043, 1.47]}
           visible={false}
         />
       </RigidBody>
