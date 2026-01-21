@@ -21,10 +21,12 @@ interface GameSettingsState {
   screen: GameScreen;
   difficulty: Difficulty;
   volume: number;
+  sensitivity: number;
   inGameMenuOpen: boolean;
   setScreen: (screen: GameScreen) => void;
   setDifficulty: (difficulty: Difficulty) => void;
   setVolume: (volume: number) => void;
+  setSensitivity: (sensitivity: number) => void;
   setInGameMenuOpen: (open: boolean) => void;
   startGame: () => void;
   resetGame: () => void;
@@ -36,10 +38,12 @@ export const useGameSettings = create<GameSettingsState>()(
       screen: 'mainMenu',
       difficulty: 'normal',
       volume: 20,
+      sensitivity: 50,
       inGameMenuOpen: false,
       setScreen: (screen) => set({ screen }),
       setDifficulty: (difficulty) => set({ difficulty }),
       setVolume: (volume) => set({ volume }),
+      setSensitivity: (sensitivity) => set({ sensitivity }),
       setInGameMenuOpen: (open) => set({ inGameMenuOpen: open }),
       startGame: () => {
         // Reset all game state before starting
@@ -65,7 +69,7 @@ export const useGameSettings = create<GameSettingsState>()(
     }),
     {
       name: 'haunted-house-settings',
-      partialize: (state) => ({ volume: state.volume }),
+      partialize: (state) => ({ volume: state.volume, sensitivity: state.sensitivity }),
     }
   )
 );

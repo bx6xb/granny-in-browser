@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useItems } from '../store/useItems';
 import { useMobileControls } from '../store/useMobileControls';
 import { usePlayerState } from '../store/usePlayerState';
+import { useGameSettings } from '../store/useGameSettings';
 
 interface TouchPosition {
   x: number;
@@ -125,7 +126,9 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
           const deltaX = touch.clientX - cameraTouch.current.x;
           const deltaY = touch.clientY - cameraTouch.current.y;
 
-          const sensitivity = 0.002;
+          const baseSensitivity = 0.002;
+          const settingsSensitivity = useGameSettings.getState().sensitivity / 50; // normalize around 1.0
+          const sensitivity = baseSensitivity * settingsSensitivity;
           const newRotationY = lastCameraRotation.current.y - deltaX * sensitivity;
           const newRotationX = lastCameraRotation.current.x - deltaY * sensitivity;
 
@@ -195,8 +198,8 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
           width: '120px',
           height: '120px',
           borderRadius: '50%',
-          border: '3px solid rgba(255, 255, 255, 0.3)',
-          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          border: '3px solid rgba(100, 100, 100, 0.4)',
+          backgroundColor: 'rgba(20, 20, 20, 0.5)',
           transform: 'translate(-50%, -50%)',
           pointerEvents: 'none',
           zIndex: 2000,
@@ -211,7 +214,7 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
             width: '50px',
             height: '50px',
             borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backgroundColor: 'rgba(150, 150, 150, 0.7)',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
@@ -243,9 +246,9 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
             width: '70px',
             height: '70px',
             borderRadius: '50%',
-            border: '3px solid rgba(255, 255, 255, 0.5)',
-            backgroundColor: 'rgba(0, 200, 0, 0.7)',
-            color: 'white',
+            border: '3px solid rgba(100, 100, 100, 0.6)',
+            backgroundColor: 'rgba(60, 60, 80, 0.8)',
+            color: '#cccccc',
             fontSize: '16px',
             fontWeight: 'bold',
             fontFamily: 'monospace',
@@ -267,9 +270,9 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
             width: '70px',
             height: '70px',
             borderRadius: '50%',
-            border: '3px solid rgba(255, 255, 255, 0.5)',
-            backgroundColor: 'rgba(0, 100, 200, 0.7)',
-            color: 'white',
+            border: '3px solid rgba(100, 100, 100, 0.6)',
+            backgroundColor: 'rgba(60, 70, 90, 0.8)',
+            color: '#cccccc',
             fontSize: '16px',
             fontWeight: 'bold',
             fontFamily: 'monospace',
@@ -292,9 +295,9 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
               width: '70px',
               height: '70px',
               borderRadius: '50%',
-              border: '3px solid rgba(255, 255, 255, 0.5)',
-              backgroundColor: 'rgba(200, 100, 0, 0.7)',
-              color: 'white',
+              border: '3px solid rgba(100, 100, 100, 0.6)',
+              backgroundColor: 'rgba(80, 70, 60, 0.8)',
+              color: '#cccccc',
               fontSize: '16px',
               fontWeight: 'bold',
               fontFamily: 'monospace',
@@ -317,9 +320,9 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
             width: '70px',
             height: '70px',
             borderRadius: '50%',
-            border: '3px solid rgba(255, 255, 255, 0.5)',
-            backgroundColor: 'rgba(150, 0, 150, 0.7)',
-            color: 'white',
+            border: '3px solid rgba(100, 100, 100, 0.6)',
+            backgroundColor: 'rgba(70, 60, 80, 0.8)',
+            color: '#cccccc',
             fontSize: '16px',
             fontWeight: 'bold',
             fontFamily: 'monospace',

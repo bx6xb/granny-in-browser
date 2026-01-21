@@ -311,6 +311,36 @@ export function Player() {
     setCamera(camera);
   }, [camera, setCamera]);
 
+  // Apply custom mouse sensitivity
+  const { sensitivity } = useGameSettings();
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (document.pointerLockElement && !hasEscaped && !inGameMenuOpen && !gameOver) {
+        const sensitivityFactor = sensitivity / 50; // Normalize to 0-2 range (50 = 1.0 = default)
+        const movementX = event.movementX || 0;
+        const movementY = event.movementY || 0;
+        
+        const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+        euler.setFromQuaternion(camera.quaternion);
+        
+        euler.y -= movementX * 0.002 * sensitivityFactor;
+        euler.x -= movementY * 0.002 * sensitivityFactor;
+        
+        // Clamp vertical rotation
+        const maxVerticalRotation = Math.PI / 2 - 0.1;
+        euler.x = Math.max(-maxVerticalRotation, Math.min(maxVerticalRotation, euler.x));
+        
+        camera.quaternion.setFromEuler(euler);
+      }
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove, false);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove, false);
+    };
+  }, [sensitivity, camera, hasEscaped, inGameMenuOpen, gameOver]);
+
   // Watch for camera reset trigger
   useEffect(() => {
     if (shouldResetCamera) {
@@ -1247,7 +1277,8 @@ export function Player() {
     <>
       <PointerLockControls 
         ref={controlsRef} 
-        enabled={!hasEscaped && !inGameMenuOpen && !gameOver && canEnablePointerLock} 
+        enabled={!hasEscaped && !inGameMenuOpen && !gameOver && canEnablePointerLock}
+        pointerSpeed={0}
       />
 
       {/* Player flashlight - optimized spotlight that follows camera direction */}

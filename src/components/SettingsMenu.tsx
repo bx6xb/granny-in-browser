@@ -1,7 +1,7 @@
 import { useGameSettings } from '../store/useGameSettings';
 
 export function SettingsMenu() {
-  const { difficulty, volume, setDifficulty, setVolume, startGame } = useGameSettings();
+  const { difficulty, volume, sensitivity, setDifficulty, setVolume, setSensitivity, startGame } = useGameSettings();
 
   return (
     <div
@@ -47,7 +47,7 @@ export function SettingsMenu() {
           <label
             style={{
               fontSize: window.innerWidth <= 768 ? '16px' : '24px',
-              color: '#ffffff',
+              color: '#9a9a9a',
               display: 'block',
               marginBottom: '15px',
             }}
@@ -62,14 +62,15 @@ export function SettingsMenu() {
                 style={{
                   fontSize: window.innerWidth <= 768 ? '14px' : '20px',
                   padding: window.innerWidth <= 768 ? '12px 20px' : '15px 30px',
-                  backgroundColor: difficulty === diff ? '#ffffff' : '#2a2a2a',
-                  color: difficulty === diff ? '#000000' : '#ffffff',
-                  border: '2px solid #ffffff',
+                  backgroundColor: difficulty === diff ? '#666666' : '#2a2a2a',
+                  color: difficulty === diff ? '#ffffff' : '#888888',
+                  border: '2px solid #555555',
                   cursor: 'pointer',
                   fontFamily: 'monospace',
                   fontWeight: 'bold',
                   textTransform: 'uppercase',
                   flex: window.innerWidth <= 768 ? '1' : 'auto',
+                  transition: 'all 0.2s',
                 }}
               >
                 {diff}
@@ -83,7 +84,7 @@ export function SettingsMenu() {
           <label
             style={{
               fontSize: window.innerWidth <= 768 ? '16px' : '24px',
-              color: '#ffffff',
+              color: '#9a9a9a',
               display: 'block',
               marginBottom: '15px',
             }}
@@ -100,6 +101,34 @@ export function SettingsMenu() {
               width: '100%',
               height: '8px',
               cursor: 'pointer',
+              accentColor: '#666666',
+            }}
+          />
+        </div>
+
+        {/* Sensitivity Control */}
+        <div>
+          <label
+            style={{
+              fontSize: window.innerWidth <= 768 ? '16px' : '24px',
+              color: '#9a9a9a',
+              display: 'block',
+              marginBottom: '15px',
+            }}
+          >
+            SENSITIVITY: {sensitivity}%
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={sensitivity}
+            onChange={(e) => setSensitivity(Number(e.target.value))}
+            style={{
+              width: '100%',
+              height: '8px',
+              cursor: 'pointer',
+              accentColor: '#666666',
             }}
           />
         </div>
@@ -111,8 +140,8 @@ export function SettingsMenu() {
             fontSize: window.innerWidth <= 768 ? '20px' : '32px',
             padding: window.innerWidth <= 768 ? '15px 40px' : '20px 60px',
             backgroundColor: '#1a1a1a',
-            color: '#ffffff',
-            border: '3px solid #ffffff',
+            color: '#888888',
+            border: '3px solid #555555',
             cursor: 'pointer',
             fontFamily: 'monospace',
             fontWeight: 'bold',
@@ -120,12 +149,14 @@ export function SettingsMenu() {
             transition: 'all 0.3s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#ffffff';
-            e.currentTarget.style.color = '#000000';
+            e.currentTarget.style.backgroundColor = '#333333';
+            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.borderColor = '#888888';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = '#1a1a1a';
-            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.color = '#888888';
+            e.currentTarget.style.borderColor = '#555555';
           }}
         >
           START
