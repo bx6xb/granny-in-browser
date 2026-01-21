@@ -17,6 +17,7 @@ import { useSafe } from '../store/useSafe';
 import { useWell } from '../store/useWell';
 import { useGameSettings } from '../store/useGameSettings';
 import { useDayState } from '../store/useDayState';
+import { useBedHiding } from '../store/useBedHiding';
 import type { SpotLight as ThreeSpotLight } from 'three';
 
 const PLAYER_HEIGHT = 1.7;
@@ -44,6 +45,7 @@ export function Player() {
   const { setNearShaft, setNearHandle, setHandle, startUsingWell, stopUsingWell } = useWell();
   const { inGameMenuOpen, setInGameMenuOpen } = useGameSettings();
   const { nextDay, showDayMessage, gameOver } = useDayState();
+  const { setNearBed, hideInBed, standUp, isHiding, originalPosition, bedPosition, shouldRestorePosition, clearRestoreFlag } = useBedHiding();
   const [isCrouching, setIsCrouching] = useState(false);
   const lastPointerLockExit = useRef(0);
   const [canEnablePointerLock, setCanEnablePointerLock] = useState(true);
@@ -267,6 +269,15 @@ export function Player() {
             obj.traverse((child) => child.layers.enable(1));
           }
         }
+        
+        // Check for beds
+        if (obj.name === 'bed001' || obj.name === 'bed002' || obj.name === 'bed003') {
+          if (!addedIds.has(obj.name)) {
+            interactives.push(obj);
+            addedIds.add(obj.name);
+            obj.traverse((child) => child.layers.enable(1));
+          }
+        }
       });
       
       interactiveObjects.current = interactives;
@@ -447,6 +458,23 @@ export function Player() {
             break;
           }
           
+          // Check if near bed for hiding
+          const nearBed = useBedHiding.getState().nearBed;
+          const isCurrentlyHiding = useBedHiding.getState().isHiding;
+          
+          if (nearBed && !isCurrentlyHiding && playerRef.current && currentBedObject.current) {
+            // Hide under bed - get bed's center position
+            const pos = playerRef.current.translation();
+            const bedWorldPos = new THREE.Vector3();
+            currentBedObject.current.getWorldPosition(bedWorldPos);
+            hideInBed(nearBed, [pos.x, pos.y, pos.z], [bedWorldPos.x, bedWorldPos.y, bedWorldPos.z]);
+            break;
+          } else if (isCurrentlyHiding) {
+            // Stand up from bed
+            standUp();
+            break;
+          }
+          
           // Interact with nearby door
           const nearbyDoorId = useDoors.getState().nearbyDoor;
           if (nearbyDoorId) {
@@ -590,6 +618,8 @@ export function Player() {
   const lastNearShaft = useRef<boolean>(false);
   const lastNearHandle = useRef<boolean>(false);
   const lastNearPlankSlot = useRef<boolean>(false);
+  const lastNearBed = useRef<string | null>(null);
+  const currentBedObject = useRef<THREE.Object3D | null>(null);
 
   // Configure raycaster to only check layer 1 (interactive objects)
   useEffect(() => {
@@ -705,6 +735,7 @@ export function Player() {
     let foundWellShaft = false;
     let foundWellHandle = false;
     let foundPlankSlot = false;
+    let foundBed: string | null = null;
 
     for (let i = 0; i < intersects.length; i++) {
       const intersect = intersects[i];
@@ -792,6 +823,13 @@ export function Player() {
               break;
             }
           }
+          // Check for beds - only if not already hiding
+          const currentlyHiding = useBedHiding.getState().isHiding;
+          if (!currentlyHiding && (obj.name === 'bed001' || obj.name === 'bed002' || obj.name === 'bed003')) {
+            foundBed = obj.name;
+            currentBedObject.current = obj;
+            break;
+          }
           // Check for guillotine blade - only if holding watermelon
           if (heldItem === 'watermelon' && obj.name === 'Cube091') {
             // Check if looking at the watermelon placement position
@@ -803,7 +841,7 @@ export function Player() {
           }
           obj = obj.parent;
         }
-        if (foundDoor || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock || foundMainDoor || foundWellShaft || foundWellHandle || foundPlankSlot) break;
+        if (foundDoor || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock || foundMainDoor || foundWellShaft || foundWellHandle || foundPlankSlot || foundBed) break;
       }
     }
 
@@ -866,6 +904,15 @@ export function Player() {
       setNearPlankSlot(foundPlankSlot);
       lastNearPlankSlot.current = foundPlankSlot;
     }
+    
+    // Update bed proximity
+    if (foundBed !== lastNearBed.current) {
+      setNearBed(foundBed);
+      lastNearBed.current = foundBed;
+      if (!foundBed) {
+        currentBedObject.current = null;
+      }
+    }
 
     // Adjust Y position when transitioning between crouch states to keep feet on ground
     if (isActuallyCrouching !== prevCrouchState.current) {
@@ -894,6 +941,63 @@ export function Player() {
       }
 
       prevCrouchState.current = isActuallyCrouching;
+    }
+
+    // Handle bed hiding position
+    if (isHiding && bedPosition) {
+      // Move player to bed center at y: 3.1
+      player.setTranslation(
+        {
+          x: bedPosition[0],
+          y: 3.1,
+          z: bedPosition[2],
+        },
+        true
+      );
+      // Stop movement when hiding
+      player.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      
+      // Update camera position
+      camera.position.set(
+        bedPosition[0],
+        3.1,
+        bedPosition[2]
+      );
+      
+      // Lock vertical rotation (no up/down look), allow 360° horizontal
+      camera.rotation.order = 'YXZ'; // Set rotation order for proper 360° horizontal rotation
+      camera.rotation.x = 0;
+      camera.rotation.z = 0;
+      
+      // Update flashlight to follow camera direction when hiding
+      if (flashlightRef.current) {
+        const flashlight = flashlightRef.current;
+        
+        // Position flashlight higher when hiding to avoid lighting just the floor
+        flashlightOffset.current.set(0, 0.1, 0); // Raised from -0.2 to 0.1
+        flashlightOffset.current.applyQuaternion(camera.quaternion);
+        flashlight.position.copy(camera.position).add(flashlightOffset.current);
+        
+        // Point flashlight in the direction camera is looking
+        camera.getWorldDirection(lookDirection.current);
+        flashlight.target.position.copy(flashlight.position).add(lookDirection.current.multiplyScalar(5));
+        flashlight.target.updateMatrixWorld();
+      }
+      
+      return; // Skip movement logic when hiding
+    }
+    
+    // Restore position when standing up from bed
+    if (shouldRestorePosition && originalPosition) {
+      player.setTranslation(
+        {
+          x: originalPosition[0],
+          y: originalPosition[1],
+          z: originalPosition[2],
+        },
+        true
+      );
+      clearRestoreFlag();
     }
 
     // ===== OPTIMIZED MOVEMENT CALCULATION (reusing vectors) =====

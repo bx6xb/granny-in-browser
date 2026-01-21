@@ -11,6 +11,7 @@ import { useSafe } from '../store/useSafe';
 import { useWell } from '../store/useWell';
 import { useDayState } from '../store/useDayState';
 import { useGameSettings } from '../store/useGameSettings';
+import { useBedHiding } from '../store/useBedHiding';
 
 export function GameUI() {
   const { nearbyDoor, getDoorState } = useDoors();
@@ -25,6 +26,7 @@ export function GameUI() {
   const { nearShaft, nearHandle, handleSet, bucketHeight } = useWell();
   const { currentDay, showDayMessage, gameOver, hideDayMessage } = useDayState();
   const { setScreen } = useGameSettings();
+  const { nearBed, isHiding } = useBedHiding();
   const doorState = nearbyDoor ? getDoorState(nearbyDoor) : null;
 
   // Auto-hide day message after 3 seconds
@@ -323,6 +325,56 @@ export function GameUI() {
         </div>
       )}
 
+      {/* Bed hiding interaction prompt */}
+      {nearBed && !isHiding && !nearMainDoor && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: '#9370DB',
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '15px 25px',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            textAlign: 'center',
+            border: '2px solid rgba(147, 112, 219, 0.5)',
+          }}
+        >
+          Press [E] to hide under bed
+        </div>
+      )}
+
+      {/* Stand up from bed prompt */}
+      {isHiding && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: '#9370DB',
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '15px 25px',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            textAlign: 'center',
+            border: '2px solid rgba(147, 112, 219, 0.5)',
+          }}
+        >
+          Press [E] to stand up
+        </div>
+      )}
+
       {/* Lock interaction prompt */}
       {nearLock && heldItem === 'padlock_key' && !lockOpened && !nearMainDoor && (
         <div
@@ -478,7 +530,7 @@ export function GameUI() {
       )}
 
       {/* Door interaction prompt */}
-      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
+      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && !nearBed && !isHiding && (
         nearbyDoor === 'safe_door001' ? (
           !safeOpened && heldItem !== 'safe_key' ? (
             <div
@@ -551,7 +603,7 @@ export function GameUI() {
       )}
 
       {/* Item interaction prompt */}
-      {nearbyItem && !nearbyDoor && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && (
+      {nearbyItem && !nearbyDoor && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && !nearBed && !isHiding && (
         <div
           style={{
             position: 'fixed',
