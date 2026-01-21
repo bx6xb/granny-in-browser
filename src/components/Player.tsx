@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { RigidBody, CapsuleCollider } from '@react-three/rapier';
 import { PointerLockControls } from '@react-three/drei';
@@ -1096,7 +1096,7 @@ export function Player() {
   const spawnPosition: [number, number, number] = playerSpawnArray || [0, 2, 0];
 
   // Mobile control callbacks
-  const handleInteract = () => {
+  const handleInteract = useCallback(() => {
     if (hasEscaped || inGameMenuOpen) return;
     
     const currentHeldItem = useItems.getState().heldItem;
@@ -1203,9 +1203,9 @@ export function Player() {
         toggleDoor(nearbyDoorId);
       }
     }
-  };
+  }, [hasEscaped, inGameMenuOpen, toggleDoor, placePlank, setHandle, escape, openLock, cutWire, chipOffPlank, swipeCard, placeWatermelon, hideInBed, standUp, openSafe]);
 
-  const handleGrab = () => {
+  const handleGrab = useCallback(() => {
     if (hasEscaped || inGameMenuOpen) return;
     
     const nearbyItemName = useItems.getState().nearbyItem;
@@ -1217,31 +1217,31 @@ export function Player() {
       }
       grabItem(nearbyItemName);
     }
-  };
+  }, [hasEscaped, inGameMenuOpen, grabItem, dropItem]);
 
-  const handleDrop = () => {
+  const handleDrop = useCallback(() => {
     if (hasEscaped || inGameMenuOpen) return;
     
     if (useItems.getState().heldItem && playerRef.current) {
       const pos = playerRef.current.translation();
       dropItem([pos.x, pos.y - 0.5, pos.z]);
     }
-  };
+  }, [hasEscaped, inGameMenuOpen, dropItem]);
 
-  const handleCrouch = () => {
+  const handleCrouch = useCallback(() => {
     if (hasEscaped || inGameMenuOpen) return;
     
     movement.current.crouch = !movement.current.crouch;
     setIsCrouching(!isCrouching);
-  };
+  }, [hasEscaped, inGameMenuOpen, isCrouching]);
 
   // Register mobile control handlers
   useEffect(() => {
-    setInteract(() => handleInteract);
-    setGrab(() => handleGrab);
-    setDrop(() => handleDrop);
-    setCrouch(() => handleCrouch);
-  }, [setInteract, setGrab, setDrop, setCrouch]);
+    setInteract(handleInteract);
+    setGrab(handleGrab);
+    setDrop(handleDrop);
+    setCrouch(handleCrouch);
+  }, [setInteract, setGrab, setDrop, setCrouch, handleInteract, handleGrab, handleDrop, handleCrouch]);
 
   return (
     <>
