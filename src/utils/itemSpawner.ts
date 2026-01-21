@@ -36,6 +36,20 @@ const SEEDS: Record<number, Seed> = {
 const SLOT_LG_RANGE = { start: 10, end: 97 }; // slot_lg.010 to slot_lg.097
 const SLOT_SM_RANGE = { start: 1, end: 3 }; // slot_sm.001 to slot_sm.003
 
+// Priority slots that must have at least one item
+const PRIORITY_SLOTS = [
+  'slot_lg040',
+  'slot_lg051',
+  'slot_lg052',
+  'slot_lg057',
+  'slot_lg058',
+  'slot_lg071',
+  'slot_lg072',
+  'slot_lg073',
+  'slot_lg076',
+  'slot_lg079',
+];
+
 // Item constraints
 const SMALL_ITEMS: ItemName[] = ['card', 'safe_key', 'master_key', 'padlock_key', 'cut_pliers'];
 const LARGE_ITEMS: ItemName[] = ['watermelon', 'hammer'];
@@ -89,8 +103,27 @@ export function generateItemSpawns(seedNumber: 1 | 2 | 3 = 1): {
   // Shuffle slots for randomness
   const shuffledSlots = shuffleArray(availableSlots);
 
-  // Assign house items to available slots
-  for (const item of seed.houseItems) {
+  // Ensure at least one item spawns in priority slots
+  const prioritySlots = shuffleArray(PRIORITY_SLOTS);
+  let itemsToAssign = [...seed.houseItems];
+  let priorityItemAssigned = false;
+
+  for (const prioritySlot of prioritySlots) {
+    if (priorityItemAssigned) break;
+    for (let i = 0; i < itemsToAssign.length; i++) {
+      const item = itemsToAssign[i];
+      if (canSpawnInSlot(item, 'lg')) {
+        itemSlots[item] = prioritySlot;
+        usedSlots.add(prioritySlot);
+        itemsToAssign.splice(i, 1);
+        priorityItemAssigned = true;
+        break;
+      }
+    }
+  }
+
+  // Assign remaining house items to available slots
+  for (const item of itemsToAssign) {
     let assigned = false;
     for (const slot of shuffledSlots) {
       if (!usedSlots.has(slot.name) && canSpawnInSlot(item, slot.type)) {
