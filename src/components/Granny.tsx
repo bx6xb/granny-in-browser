@@ -15,13 +15,10 @@ import type { RapierRigidBody } from '@react-three/rapier';
 
 type GLTFResult = GLTF & {
   nodes: {
-    leg: THREE.Mesh;
-    leg_2: THREE.Mesh;
-    head: THREE.Mesh;
-    body: THREE.Mesh;
-    arm: THREE.Mesh;
-    weapon: THREE.Mesh;
-    arm_2: THREE.Mesh;
+    Cube050: THREE.Mesh;
+    Cube050_1: THREE.Mesh;
+    Cube050_2: THREE.Mesh;
+    Cube050_3: THREE.Mesh;
   };
   materials: {
     body: THREE.MeshStandardMaterial;
@@ -65,7 +62,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     <RigidBody
       ref={grannyRef}
       type="fixed"
-      position={grannySpawnArray || [0, 0, 0]}
+      position={grannySpawnArray || [-17.524, -0.774, -24.650]}
       colliders="cuboid"
       sensor
       onIntersectionEnter={(e) => {
@@ -75,60 +72,13 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
       }}
     >
       <group {...props} dispose={null}>
-      <mesh
-        name="leg"
-        geometry={nodes.leg.geometry}
-        material={materials.body}
-        position={[-36.104, 2.786, -1.837]}
-        scale={[0.097, 0.183, 0.097]}
-      />
-      <mesh
-        name="leg_2"
-        geometry={nodes.leg_2.geometry}
-        material={materials.body}
-        position={[-35.609, 2.786, -1.837]}
-        scale={[0.097, 0.183, 0.097]}
-      />
-      <mesh
-        name="head"
-        geometry={nodes.head.geometry}
-        material={materials['Material.017']}
-        position={[-35.857, 5.717, -1.838]}
-        rotation={[0, -Math.PI / 2, 0]}
-        scale={[0.413, 0.47, 0.413]}
-      />
-      <mesh
-        name="body"
-        geometry={nodes.body.geometry}
-        material={materials.dress}
-        position={[-35.857, 4.217, -1.838]}
-        scale={[0.619, 0.705, 0.619]}
-      />
-      <mesh
-        name="arm"
-        geometry={nodes.arm.geometry}
-        material={materials.body}
-        position={[-35.357, 4.698, -1.838]}
-        rotation={[0, 0, 0.848]}
-        scale={[0.075, 0.569, 0.069]}
-      />
-      <mesh
-        name="weapon"
-        geometry={nodes.weapon.geometry}
-        material={materials.wood2}
-        position={[-35.135, 4.77, -1.607]}
-        rotation={[0.714, -0.509, 0.4]}
-        scale={[0.089, 0.68, 0.093]}
-      />
-      <mesh
-        name="arm_2"
-        geometry={nodes.arm_2.geometry}
-        material={materials.body}
-        position={[-36.367, 4.698, -1.838]}
-        rotation={[Math.PI, 0, -2.293]}
-        scale={[0.075, 0.569, 0.069]}
-      />
-    </group>
+        <group name="granny">
+          <mesh name="Cube050" geometry={nodes.Cube050.geometry} material={materials.body} />
+          <mesh name="Cube050_1" geometry={nodes.Cube050_1.geometry} material={materials['Material.017']} />
+          <mesh name="Cube050_2" geometry={nodes.Cube050_2.geometry} material={materials.dress} />
+          <mesh name="Cube050_3" geometry={nodes.Cube050_3.geometry} material={materials.wood2} />
+        </group>
+      </group>
     </RigidBody>
   );
 }
