@@ -10,8 +10,10 @@ import { RigidBody } from '@react-three/rapier';
 import { useGrannyState } from '../store/useGrannyState';
 import { useDayState } from '../store/useDayState';
 import { usePlayerState } from '../store/usePlayerState';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import type { RapierRigidBody } from '@react-three/rapier';
+import { useFrame } from '@react-three/fiber';
+import { navigationSystem } from '../utils/navigation';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -31,11 +33,115 @@ type GLTFResult = GLTF & {
 
 export function Granny(props: JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/granny.glb') as GLTFResult;
-  const { grannySpawnArray } = useGrannyState();
+  const { 
+    grannySpawnArray, 
+    currentPath, 
+    currentTargetIndex, 
+    targetPoint,
+    speed,
+    setCurrentPath, 
+    setCurrentTargetIndex, 
+    setTargetPoint,
+    resetPath 
+  } = useGrannyState();
   const { nextDay } = useDayState();
   const { playerSpawnArray } = usePlayerState();
   const grannyRef = useRef<RapierRigidBody>(null);
+  const groupRef = useRef<THREE.Group>(null);
   const [isCatching, setIsCatching] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize patrol on mount
+  useEffect(() => {
+    const initPatrol = () => {
+      if (!isInitialized && grannyRef.current) {
+        const currentPos = grannyRef.current.translation();
+        console.log('Granny current position:', currentPos);
+        
+        const randomPoint = navigationSystem.getRandomPointOnNavMesh();
+        console.log('Random point on navmesh:', randomPoint);
+        
+        if (randomPoint) {
+          setTargetPoint(randomPoint);
+          const path = navigationSystem.findPath(
+            new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z),
+            randomPoint
+          );
+          console.log('Path found:', path);
+          if (path.length > 0) {
+            setCurrentPath(path);
+          }
+        }
+        setIsInitialized(true);
+      }
+    };
+
+    const timeout = setTimeout(initPatrol, 2000);
+    return () => clearTimeout(timeout);
+  }, [isInitialized, setCurrentPath, setTargetPoint]);
+
+  // Patrol logic
+  useFrame((_, delta) => {
+    if (!grannyRef.current || !isInitialized || isCatching) return;
+
+    const currentPos = grannyRef.current.translation();
+    const currentPosition = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
+
+    // If we have a path, follow it
+    if (currentPath.length > 0 && currentTargetIndex < currentPath.length) {
+      const waypoint = currentPath[currentTargetIndex];
+      const direction = new THREE.Vector3().subVectors(waypoint, currentPosition);
+      const distance = direction.length();
+      
+      if (currentTargetIndex === 0) {
+        console.log('Following path. Waypoint:', waypoint, 'Distance:', distance);
+      }
+
+      // Check if reached waypoint
+      if (distance < 0.3) {
+        if (currentTargetIndex < currentPath.length - 1) {
+          setCurrentTargetIndex(currentTargetIndex + 1);
+        } else {
+          // Reached final destination, pick new random point
+          resetPath();
+          const randomPoint = navigationSystem.getRandomPointOnNavMesh();
+          if (randomPoint) {
+            setTargetPoint(randomPoint);
+            const path = navigationSystem.findPath(currentPosition, randomPoint);
+            if (path.length > 0) {
+              setCurrentPath(path);
+            }
+          }
+        }
+      } else {
+        // Move towards waypoint
+        direction.normalize();
+        const movement = direction.multiplyScalar(speed * delta);
+        
+        grannyRef.current.setNextKinematicTranslation({
+          x: currentPos.x + movement.x,
+          y: currentPos.y + movement.y,
+          z: currentPos.z + movement.z,
+        });
+
+        // Rotate to face movement direction
+        if (groupRef.current && movement.length() > 0.001) {
+          const angle = Math.atan2(movement.x, movement.z);
+          groupRef.current.rotation.y = angle;
+        }
+      }
+    } else if (!targetPoint) {
+      // No path and no target, pick new random point
+      const randomPoint = navigationSystem.getRandomPointOnNavMesh();
+      if (randomPoint) {
+        setTargetPoint(randomPoint);
+        const path = navigationSystem.findPath(currentPosition, randomPoint);
+        if (path.length > 0) {
+          setCurrentPath(path);
+        }
+      }
+    }
+  });
 
   const handlePlayerCollision = (playerRigidBody: any) => {
     if (isCatching) return;
@@ -54,32 +160,52 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
           playerRigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
         }
         setIsCatching(false);
+        resetPath();
+        setIsInitialized(false);
       }, 500);
     }, 1000);
   };
 
   return (
-    <RigidBody
-      ref={grannyRef}
-      type="fixed"
-      position={grannySpawnArray || [-17.524, -0.774, -24.650]}
-      colliders="cuboid"
-      sensor
-      onIntersectionEnter={(e) => {
-        if (e.other.rigidBodyObject?.name === 'player') {
-          handlePlayerCollision(e.other.rigidBody);
-        }
-      }}
-    >
-      <group {...props} dispose={null}>
-        <group name="granny">
-          <mesh name="Cube050" geometry={nodes.Cube050.geometry} material={materials.body} />
-          <mesh name="Cube050_1" geometry={nodes.Cube050_1.geometry} material={materials['Material.017']} />
-          <mesh name="Cube050_2" geometry={nodes.Cube050_2.geometry} material={materials.dress} />
-          <mesh name="Cube050_3" geometry={nodes.Cube050_3.geometry} material={materials.wood2} />
+    <>
+      <RigidBody
+        ref={grannyRef}
+        type="kinematicPosition"
+        position={grannySpawnArray || [-17.524, -0.774, -24.650]}
+        colliders="cuboid"
+        sensor
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handlePlayerCollision(e.other.rigidBody);
+          }
+        }}
+      >
+        <group ref={groupRef} {...props} dispose={null}>
+          <group name="granny">
+            <mesh name="Cube050" geometry={nodes.Cube050.geometry} material={materials.body} />
+            <mesh name="Cube050_1" geometry={nodes.Cube050_1.geometry} material={materials['Material.017']} />
+            <mesh name="Cube050_2" geometry={nodes.Cube050_2.geometry} material={materials.dress} />
+            <mesh name="Cube050_3" geometry={nodes.Cube050_3.geometry} material={materials.wood2} />
+          </group>
         </group>
-      </group>
-    </RigidBody>
+      </RigidBody>
+      
+      {/* Debug: Visualize path */}
+      {currentPath.map((point, index) => (
+        <mesh key={index} position={[point.x, point.y, point.z]}>
+          <sphereGeometry args={[0.1, 8, 8]} />
+          <meshBasicMaterial color={index === currentTargetIndex ? "red" : "yellow"} />
+        </mesh>
+      ))}
+      
+      {/* Debug: Visualize target point */}
+      {targetPoint && (
+        <mesh position={[targetPoint.x, targetPoint.y, targetPoint.z]}>
+          <sphereGeometry args={[0.2, 8, 8]} />
+          <meshBasicMaterial color="green" />
+        </mesh>
+      )}
+    </>
   );
 }
 

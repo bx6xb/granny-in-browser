@@ -24,6 +24,7 @@ import type { RapierRigidBody } from '@react-three/rapier';
 import { useGameSettings } from '../store/useGameSettings';
 import { useDayState } from '../store/useDayState';
 import { usePlayerState } from '../store/usePlayerState';
+import { navigationSystem } from '../utils/navigation';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -450,6 +451,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const plankAnimationStartedRef = useRef(false);
   const bucketRef = useRef<RapierRigidBody>(null);
   const atticTriggerActivated = useRef(false);
+  const navmeshRef = useRef<THREE.Mesh>(null);
   
   const box1LastSound = useRef(0);
   const box2LastSound = useRef(0);
@@ -463,6 +465,14 @@ export function HauntedHouse(props: ThreeElements['group']) {
   useEffect(() => {
     initializeActiveShield();
   }, [initializeActiveShield]);
+
+  // Initialize navigation system with navmesh
+  useEffect(() => {
+    if (navmeshRef.current) {
+      navmeshRef.current.updateMatrixWorld(true);
+      navigationSystem.setNavMesh(navmeshRef.current);
+    }
+  }, []);
 
   // Disable startup grace period after 2 seconds
   useEffect(() => {
@@ -602,6 +612,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
     <>
       {/* Navmesh - no physics, hidden, available for AI pathfinding */}
       <mesh
+        ref={navmeshRef}
         name="navmesh"
         geometry={nodes.navmesh.geometry}
         material={materials.navmesh}
