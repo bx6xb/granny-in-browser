@@ -105,51 +105,60 @@ export class NavigationSystem {
   }
 
   findPath(start: THREE.Vector3, target: THREE.Vector3): THREE.Vector3[] {
-    // Process start position
-    let startGroupID = this.pathfinding.getGroup(this.zone, start);
-    let clampedStart = start;
+    const zone = this.zone;
+  
+    // 1. Находим группы (используем true для поиска ближайшей, если точка вне меша)
+    const startGroupID = this.pathfinding.getGroup(zone, start);
+    const targetGroupID = this.pathfinding.getGroup(zone, target);
     
-    if (!startGroupID) {
-      clampedStart = this.getClosestPointOnNavMesh(start);
-      startGroupID = this.pathfinding.getGroup(this.zone, clampedStart);
+    const groupID = targetGroupID !== null ? targetGroupID : startGroupID;
+    if (groupID === null) return [];
+  
+    // 2. Находим ближайшие ноды
+    const startNode = this.pathfinding.getClosestNode(start, zone, groupID);
+    const targetNode = this.pathfinding.getClosestNode(target, zone, groupID);
+  
+    if (!startNode || !targetNode) return [];
+  
+    // 3. Функция для "вталкивания" точки внутрь меша
+    const getSafePoint = (point: THREE.Vector3, node: any) => {
+      // node.centroid - это либо Vector3, либо массив [x, y, z] в зависимости от версии
+      const centroid = Array.isArray(node.centroid) 
+        ? new THREE.Vector3(node.centroid[0], node.centroid[1], node.centroid[2])
+        : node.centroid;
+  
+      const safePoint = point.clone();
+      
+      // Снапим Y к высоте центроида, чтобы не было "висения" в воздухе
+      safePoint.y = centroid.y;
+  
+      // Сдвигаем точку на 2см к центру треугольника, чтобы уйти от края
+      const toCentroid = new THREE.Vector3()
+        .subVectors(centroid, safePoint)
+        .normalize()
+        .multiplyScalar(0.02);
+  
+      return safePoint.add(toCentroid);
+    };
+  
+    const safeStart = getSafePoint(start, startNode);
+    const safeTarget = getSafePoint(target, targetNode);
+  
+    // 4. Основная попытка поиска
+    let path = this.pathfinding.findPath(safeStart, safeTarget, zone, groupID);
+  
+    // 5. Если все равно null (крайне редкий случай теперь), пробуем по центроидам
+    if (!path) {
+      const startCentroid = Array.isArray(startNode.centroid) 
+        ? new THREE.Vector3().fromArray(startNode.centroid) 
+        : startNode.centroid;
+      const targetCentroid = Array.isArray(targetNode.centroid) 
+        ? new THREE.Vector3().fromArray(targetNode.centroid) 
+        : targetNode.centroid;
+        
+      path = this.pathfinding.findPath(startCentroid, targetCentroid, zone, groupID);
     }
-    
-    if (startGroupID) {
-      const closestNode = this.pathfinding.getClosestNode(clampedStart, this.zone, startGroupID);
-      if (closestNode) {
-        clampedStart = closestNode.centroid;
-      }
-    }
-    
-    // Process target position
-    let targetGroupID = this.pathfinding.getGroup(this.zone, target);
-    let clampedTarget = target;
-    
-    if (!targetGroupID) {
-      clampedTarget = this.getClosestPointOnNavMesh(target);
-      targetGroupID = this.pathfinding.getGroup(this.zone, clampedTarget);
-    }
-    
-    if (targetGroupID) {
-      const closestNode = this.pathfinding.getClosestNode(clampedTarget, this.zone, targetGroupID);
-      if (closestNode) {
-        clampedTarget = closestNode.centroid;
-      }
-    }
-    
-    // Use the same group ID for pathfinding (prefer target's group)
-    const groupID = targetGroupID || startGroupID;
-    
-    console.log({
-      original: start, 
-      clamped: clampedStart, 
-      target: clampedTarget, 
-      startGroup: startGroupID,
-      targetGroup: targetGroupID,
-      groupID
-    });
-    
-    const path = this.pathfinding.findPath(clampedStart, clampedTarget, this.zone, groupID);
+  
     return path || [];
   }
 
@@ -173,7 +182,7 @@ export class NavigationSystem {
       return position;
     }
 
-    let closestPoint = new THREE.Vector3();
+    const closestPoint = new THREE.Vector3();
     let minDistance = Infinity;
 
     // Check all triangles in navmesh
