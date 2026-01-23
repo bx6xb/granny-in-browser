@@ -51,7 +51,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     resetPath 
   } = useGrannyState();
   const { nextDay } = useDayState();
-  const { playerSpawnArray } = usePlayerState();
+  const { playerSpawnArray, triggerCameraReset } = usePlayerState();
   const grannyRef = useRef<RapierRigidBody>(null);
   const groupRef = useRef<THREE.Group>(null);
   const [isCatching, setIsCatching] = useState(false);
@@ -204,6 +204,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
           playerRigidBody.setTranslation({ x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] }, true);
           playerRigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
           playerRigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+          triggerCameraReset();
         }
         setIsCatching(false);
         resetPath();

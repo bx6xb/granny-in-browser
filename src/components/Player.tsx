@@ -682,7 +682,7 @@ export function Player() {
     const velocity = player.linvel();
     const playerPosition = player.translation();
 
-    // Check if player fell through the attic (Y position below -5)
+    // Check if player fell through the attic (Y position below -10)
     if (playerPosition.y < -10 && !isDying) {
       setIsDying(true);
       
