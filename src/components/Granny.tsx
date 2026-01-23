@@ -10,6 +10,7 @@ import { RigidBody } from '@react-three/rapier';
 import { useGrannyState } from '../store/useGrannyState';
 import { useDayState } from '../store/useDayState';
 import { usePlayerState } from '../store/usePlayerState';
+import { useGameSettings } from '../store/useGameSettings';
 import { useRef, useState, useEffect } from 'react';
 import type { RapierRigidBody } from '@react-three/rapier';
 import { useFrame } from '@react-three/fiber';
@@ -52,6 +53,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
   } = useGrannyState();
   const { nextDay } = useDayState();
   const { playerSpawnArray, triggerCameraReset } = usePlayerState();
+  const { inGameMenuOpen } = useGameSettings();
   const grannyRef = useRef<RapierRigidBody>(null);
   const groupRef = useRef<THREE.Group>(null);
   const [isCatching, setIsCatching] = useState(false);
@@ -95,7 +97,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
 
   // Patrol and investigation logic
   useFrame((_, delta) => {
-    if (!grannyRef.current || !isInitialized || isCatching) return;
+    if (!grannyRef.current || !isInitialized || isCatching || inGameMenuOpen) return;
 
     const currentPos = grannyRef.current.translation();
     const currentPosition = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
