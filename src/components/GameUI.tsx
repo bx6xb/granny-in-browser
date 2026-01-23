@@ -364,9 +364,9 @@ export function GameUI() {
         <div
           style={{
             position: 'fixed',
-            top: '50%',
+            bottom: '80px',
             left: '50%',
-            transform: 'translate(-50%, -50%)',
+            transform: 'translateX(-50%)',
             color: '#9370DB',
             fontFamily: 'monospace',
             fontSize: '18px',
