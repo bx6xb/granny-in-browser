@@ -11,6 +11,7 @@ import { useGrannyState } from '../store/useGrannyState';
 import { useDayState } from '../store/useDayState';
 import { usePlayerState } from '../store/usePlayerState';
 import { useGameSettings } from '../store/useGameSettings';
+import { useScreamer } from '../store/useScreamer';
 import { useRef, useState, useEffect } from 'react';
 import type { RapierRigidBody } from '@react-three/rapier';
 import { useFrame } from '@react-three/fiber';
@@ -53,11 +54,13 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
   } = useGrannyState();
   const { nextDay } = useDayState();
   const { playerSpawnArray, triggerCameraReset } = usePlayerState();
-  const { inGameMenuOpen } = useGameSettings();
+  const { inGameMenuOpen, volume } = useGameSettings();
+  const { isScreamerActive, startScreamer, endScreamer } = useScreamer();
   const grannyRef = useRef<RapierRigidBody>(null);
   const groupRef = useRef<THREE.Group>(null);
   const [isCatching, setIsCatching] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const screamerTriggered = useRef(false);
 
   // Initialize patrol on mount
   useEffect(() => {
@@ -97,7 +100,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
 
   // Patrol and investigation logic
   useFrame((_, delta) => {
-    if (!grannyRef.current || !isInitialized || isCatching || inGameMenuOpen) return;
+    if (!grannyRef.current || !isInitialized || isCatching || inGameMenuOpen || isScreamerActive) return;
 
     const currentPos = grannyRef.current.translation();
     const currentPosition = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
@@ -192,12 +195,28 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
   });
 
   const handlePlayerCollision = (playerRigidBody: any) => {
-    if (isCatching) return;
+    if (isCatching || screamerTriggered.current) return;
     
     setIsCatching(true);
+    screamerTriggered.current = true;
     
-    // Wait 1 second, then trigger next day and respawn
+    // Get Granny position for camera look-at
+    const grannyPos = grannyRef.current?.translation();
+    if (grannyPos) {
+      const grannyPosition = new THREE.Vector3(grannyPos.x, grannyPos.y, grannyPos.z);
+      startScreamer(grannyPosition);
+    }
+    
+    // Play scream sound
+    const audio = new Audio('/sounds/granny_scream.mp3');
+    audio.volume = (volume / 100) * 0.7;
+    audio.play().catch(err => console.warn('Scream sound play failed:', err));
+    
+    // After 3 seconds, trigger next day and respawn
     setTimeout(() => {
+      // End screamer before next day
+      endScreamer();
+      
       nextDay();
       
       // Reset player position after short delay
@@ -209,10 +228,11 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
           triggerCameraReset();
         }
         setIsCatching(false);
+        screamerTriggered.current = false;
         resetPath();
         setIsInitialized(false);
       }, 500);
-    }, 1000);
+    }, 3000);
   };
 
   return (

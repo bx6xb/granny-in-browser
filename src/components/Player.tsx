@@ -18,6 +18,7 @@ import { useWell } from '../store/useWell';
 import { useGameSettings } from '../store/useGameSettings';
 import { useDayState } from '../store/useDayState';
 import { useBedHiding } from '../store/useBedHiding';
+import { useScreamer } from '../store/useScreamer';
 import type { SpotLight as ThreeSpotLight } from 'three';
 import { useMobileControls } from '../store/useMobileControls';
 import { mobileMovement } from './MobileControls';
@@ -52,6 +53,8 @@ export function Player() {
   const lastPointerLockExit = useRef(0);
   const [canEnablePointerLock, setCanEnablePointerLock] = useState(true);
   const [isDying, setIsDying] = useState(false);
+  const { isScreamerActive, grannyPosition } = useScreamer();
+  const screamerCameraLocked = useRef(false);
 
   // Initialize walk audio
   useEffect(() => {
@@ -315,7 +318,7 @@ export function Player() {
   const { sensitivity } = useGameSettings();
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
-      if (document.pointerLockElement && !hasEscaped && !inGameMenuOpen && !gameOver) {
+      if (document.pointerLockElement && !hasEscaped && !inGameMenuOpen && !gameOver && !isScreamerActive) {
         const sensitivityFactor = sensitivity / 50; // Normalize to 0-2 range (50 = 1.0 = default)
         const movementX = event.movementX || 0;
         const movementY = event.movementY || 0;
@@ -339,7 +342,7 @@ export function Player() {
     return () => {
       document.removeEventListener('mousemove', handleMouseMove, false);
     };
-  }, [sensitivity, camera, hasEscaped, inGameMenuOpen, gameOver]);
+  }, [sensitivity, camera, hasEscaped, inGameMenuOpen, gameOver, isScreamerActive]);
 
   // Watch for camera reset trigger
   useEffect(() => {
@@ -349,29 +352,29 @@ export function Player() {
     }
   }, [shouldResetCamera, camera, clearCameraReset]);
 
-  // Disable pointer lock controls when escaped or menu is open or game over
+  // Disable pointer lock controls when escaped or menu is open or game over or screamer is active
   useEffect(() => {
-    if ((hasEscaped || inGameMenuOpen || gameOver) && controlsRef.current) {
+    if ((hasEscaped || inGameMenuOpen || gameOver || isScreamerActive) && controlsRef.current) {
       const controls = controlsRef.current as any;
       if (controls.unlock) {
         controls.unlock();
       }
     }
-  }, [hasEscaped, inGameMenuOpen, gameOver]);
+  }, [hasEscaped, inGameMenuOpen, gameOver, isScreamerActive]);
 
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Handle ESC and ALT to toggle menu (but not during game over or victory)
       if (e.code === 'Escape' || e.code === 'AltLeft' || e.code === 'AltRight') {
-        if (!gameOver && !hasEscaped) {
+        if (!gameOver && !hasEscaped && !isScreamerActive) {
           setInGameMenuOpen(!inGameMenuOpen);
         }
         return;
       }
       
-      // Disable all input if player has escaped or menu is open
-      if (hasEscaped || inGameMenuOpen) return;
+      // Disable all input if player has escaped or menu is open or screamer is active
+      if (hasEscaped || inGameMenuOpen || isScreamerActive) return;
       
       switch (e.code) {
         case 'KeyW':
@@ -552,8 +555,8 @@ export function Player() {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      // Disable all input if player has escaped or menu is open
-      if (hasEscaped || inGameMenuOpen) return;
+      // Disable all input if player has escaped or menu is open or screamer is active
+      if (hasEscaped || inGameMenuOpen || isScreamerActive) return;
       
       switch (e.code) {
         case 'KeyW':
@@ -581,12 +584,12 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle, placePlank, inGameMenuOpen, setInGameMenuOpen, gameOver]);
+  }, [toggleDoor, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle, placePlank, inGameMenuOpen, setInGameMenuOpen, gameOver, isScreamerActive]);
   
   // Handle continuous key press for well usage
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (hasEscaped || inGameMenuOpen) return;
+      if (hasEscaped || inGameMenuOpen || isScreamerActive) return;
       
       if (e.code === 'KeyE') {
         const nearHandle = useWell.getState().nearHandle;
@@ -611,7 +614,7 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [hasEscaped, inGameMenuOpen, startUsingWell, stopUsingWell]);
+  }, [hasEscaped, inGameMenuOpen, isScreamerActive, startUsingWell, stopUsingWell]);
 
   // Track previous crouch state to detect transitions
   const prevCrouchState = useRef(false);
@@ -669,6 +672,46 @@ export function Player() {
   // Update player movement and camera
   useFrame(() => {
     if (!playerRef.current) return;
+    
+    // Handle screamer camera lock
+    if (isScreamerActive && grannyPosition) {
+      const player = playerRef.current;
+      player.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      
+      if (!screamerCameraLocked.current) {
+        screamerCameraLocked.current = true;
+      }
+      
+      // Calculate look-at point (top of Granny's mesh - head level)
+      const grannyTopPoint = grannyPosition.clone();
+      grannyTopPoint.y += 3; // Top of Granny's head
+      
+      const targetQuaternion = new THREE.Quaternion();
+      const matrix = new THREE.Matrix4().lookAt(camera.position, grannyTopPoint, camera.up);
+      targetQuaternion.setFromRotationMatrix(matrix);
+      
+      // Apply rotation
+      camera.quaternion.copy(targetQuaternion);
+      
+      // Update flashlight to point at Granny
+      if (flashlightRef.current) {
+        const flashlight = flashlightRef.current;
+        
+        // Position flashlight at camera position
+        flashlightOffset.current.set(0, -0.2, 0);
+        flashlightOffset.current.applyQuaternion(camera.quaternion);
+        flashlight.position.copy(camera.position).add(flashlightOffset.current);
+        
+        // Point flashlight at Granny's head
+        camera.getWorldDirection(lookDirection.current);
+        flashlight.target.position.copy(flashlight.position).add(lookDirection.current.multiplyScalar(5));
+        flashlight.target.updateMatrixWorld();
+      }
+      
+      return;
+    } else if (screamerCameraLocked.current) {
+      screamerCameraLocked.current = false;
+    }
     
     // Stop game if player has escaped, menu is open, game over, or showing day message
     if (hasEscaped || inGameMenuOpen || gameOver || showDayMessage) {
@@ -1277,7 +1320,7 @@ export function Player() {
     <>
       <PointerLockControls 
         ref={controlsRef} 
-        enabled={!hasEscaped && !inGameMenuOpen && !gameOver && canEnablePointerLock}
+        enabled={!hasEscaped && !inGameMenuOpen && !gameOver && !isScreamerActive && canEnablePointerLock}
         pointerSpeed={0}
       />
 
