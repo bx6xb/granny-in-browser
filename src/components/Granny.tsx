@@ -60,7 +60,14 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
   // Initialize patrol on mount
   useEffect(() => {
     const initPatrol = () => {
-      if (!isInitialized && grannyRef.current) {
+      if (!isInitialized && grannyRef.current && grannySpawnArray) {
+        // Respawn granny at spawn location
+        grannyRef.current.setTranslation({ 
+          x: grannySpawnArray[0], 
+          y: grannySpawnArray[1], 
+          z: grannySpawnArray[2] 
+        }, true);
+        
         const currentPos = grannyRef.current.translation();
         console.log('Granny current position:', currentPos);
         
@@ -84,7 +91,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
 
     const timeout = setTimeout(initPatrol, 2000);
     return () => clearTimeout(timeout);
-  }, [isInitialized, setCurrentPath, setTargetPoint]);
+  }, [isInitialized, setCurrentPath, setTargetPoint, grannySpawnArray]);
 
   // Patrol and investigation logic
   useFrame((_, delta) => {
