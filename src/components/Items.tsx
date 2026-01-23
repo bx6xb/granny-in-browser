@@ -15,6 +15,7 @@ import { useWell } from '../store/useWell';
 import { useFrame } from '@react-three/fiber';
 import { useGuillotine } from '../store/useGuillotine';
 import { useGameSettings } from '../store/useGameSettings';
+import { notifySound } from '../utils/soundEventBus';
 
 // Map item names to their drop sound files
 const itemDropSounds: Record<string, string> = {
@@ -62,13 +63,18 @@ type GLTFResult = GLTF & {
 };
 
 // Helper function to play item drop sounds
-const playItemDropSound = (itemName: string) => {
+const playItemDropSound = (itemName: string, position?: THREE.Vector3) => {
   const soundPath = itemDropSounds[itemName];
   if (soundPath) {
     const audio = new Audio(soundPath);
     const { volume } = useGameSettings.getState();
     audio.volume = (volume / 100) * 0.5;
     audio.play().catch(err => console.warn('Item drop sound play failed:', err));
+    
+    // Notify Granny about the sound
+    if (position) {
+      notifySound(position);
+    }
   }
 };
 
@@ -130,7 +136,12 @@ function ContainerItem({
 
   const handleCollision = () => {
     if (!hasPlayedDropSound.current && !isFirstFrame.current && !startupGracePeriod.current && bodyType === 'dynamic') {
-      playItemDropSound(itemName);
+      const pos = rbRef.current?.translation();
+      if (pos) {
+        playItemDropSound(itemName, new THREE.Vector3(pos.x, pos.y, pos.z));
+      } else {
+        playItemDropSound(itemName);
+      }
       hasPlayedDropSound.current = true;
     }
   };
@@ -265,17 +276,29 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
   }, [plankPosition[0], plankPosition[1], plankPosition[2]]);
   
   // Collision handler for vase
+  const vaseRbRef = React.useRef<RapierRigidBody>(null);
   const handleVaseCollision = () => {
     if (!vaseDropSoundPlayed.current && !vaseIsFirstFrame.current && !startupGracePeriod.current) {
-      playItemDropSound('vase');
+      const pos = vaseRbRef.current?.translation();
+      if (pos) {
+        playItemDropSound('vase', new THREE.Vector3(pos.x, pos.y, pos.z));
+      } else {
+        playItemDropSound('vase');
+      }
       vaseDropSoundPlayed.current = true;
     }
   };
   
   // Collision handler for plank
+  const plankRbRef = React.useRef<RapierRigidBody>(null);
   const handlePlankCollision = () => {
     if (!plankDropSoundPlayed.current && !plankIsFirstFrame.current && !startupGracePeriod.current) {
-      playItemDropSound('wood_plank_item');
+      const pos = plankRbRef.current?.translation();
+      if (pos) {
+        playItemDropSound('wood_plank_item', new THREE.Vector3(pos.x, pos.y, pos.z));
+      } else {
+        playItemDropSound('wood_plank_item');
+      }
       plankDropSoundPlayed.current = true;
     }
   };
@@ -518,6 +541,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       {/* Wood Plank - pickable after chipped off */}
       {isChippedOff && !isItemHeld('wood_plank_item') && (
         <RigidBody
+          ref={plankRbRef}
           key={`wood_plank_item-${getItemPosition('wood_plank_item', [8.036, -0.873, -3.118]).join(',')}`}
           type="dynamic"
           position={getItemPosition('wood_plank_item', [8.036, -0.873, -3.118])}
@@ -545,6 +569,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       {/* Vase - pickable decorative item */}
       {!isItemHeld('vase') && (
         <RigidBody
+          ref={vaseRbRef}
           key={`vase-${getItemPosition('vase', [1.808, 4.774, -21.72]).join(',')}`}
           type="dynamic"
           position={getItemPosition('vase', [1.808, 4.774, -21.72])}

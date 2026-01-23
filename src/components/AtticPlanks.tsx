@@ -4,6 +4,7 @@ import { useAtticPlanks } from '../store/useAtticPlanks';
 import { useGameSettings } from '../store/useGameSettings';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import { notifySound } from '../utils/soundEventBus';
 
 interface AtticPlanksProps {
   nodes: any;
@@ -58,6 +59,9 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
       sound.onEnded = () => {
         camera.parent?.remove(sound);
       };
+      
+      // Notify Granny about the sound
+      notifySound(position);
     }
   };
   

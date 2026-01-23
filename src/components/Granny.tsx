@@ -38,10 +38,16 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     currentPath, 
     currentTargetIndex, 
     targetPoint,
-    speed,
+    mode,
+    patrolSpeed,
+    investigationSpeed,
+    waitTime,
+    waitTimer,
     setCurrentPath, 
     setCurrentTargetIndex, 
     setTargetPoint,
+    setMode,
+    setWaitTimer,
     resetPath 
   } = useGrannyState();
   const { nextDay } = useDayState();
@@ -80,43 +86,68 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     return () => clearTimeout(timeout);
   }, [isInitialized, setCurrentPath, setTargetPoint]);
 
-  // Patrol logic
+  // Patrol and investigation logic
   useFrame((_, delta) => {
     if (!grannyRef.current || !isInitialized || isCatching) return;
 
     const currentPos = grannyRef.current.translation();
     const currentPosition = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
+    const currentSpeed = mode === 'investigating' ? investigationSpeed : patrolSpeed;
+
+    // Waiting mode - stand still for waitTime seconds
+    if (mode === 'waiting') {
+      if (waitTimer >= waitTime) {
+        // Finished waiting, return to patrol
+        setMode('patrol');
+        setWaitTimer(0);
+        resetPath();
+        const randomPoint = navigationSystem.getRandomPointOnNavMesh();
+        if (randomPoint) {
+          setTargetPoint(randomPoint);
+          const path = navigationSystem.findPath(currentPosition, randomPoint);
+          if (path.length > 0) {
+            setCurrentPath(path);
+          }
+        }
+      } else {
+        setWaitTimer(waitTimer + delta);
+      }
+      return;
+    }
 
     // If we have a path, follow it
     if (currentPath.length > 0 && currentTargetIndex < currentPath.length) {
       const waypoint = currentPath[currentTargetIndex];
       const direction = new THREE.Vector3().subVectors(waypoint, currentPosition);
       const distance = direction.length();
-      
-      if (currentTargetIndex === 0) {
-        console.log('Following path. Waypoint:', waypoint, 'Distance:', distance);
-      }
 
       // Check if reached waypoint
       if (distance < 0.3) {
         if (currentTargetIndex < currentPath.length - 1) {
           setCurrentTargetIndex(currentTargetIndex + 1);
         } else {
-          // Reached final destination, pick new random point
-          resetPath();
-          const randomPoint = navigationSystem.getRandomPointOnNavMesh();
-          if (randomPoint) {
-            setTargetPoint(randomPoint);
-            const path = navigationSystem.findPath(currentPosition, randomPoint);
-            if (path.length > 0) {
-              setCurrentPath(path);
+          // Reached final destination
+          if (mode === 'investigating') {
+            // Start waiting at sound location
+            setMode('waiting');
+            setWaitTimer(0);
+          } else {
+            // In patrol mode, pick new random point
+            resetPath();
+            const randomPoint = navigationSystem.getRandomPointOnNavMesh();
+            if (randomPoint) {
+              setTargetPoint(randomPoint);
+              const path = navigationSystem.findPath(currentPosition, randomPoint);
+              if (path.length > 0) {
+                setCurrentPath(path);
+              }
             }
           }
         }
       } else {
         // Move towards waypoint
         direction.normalize();
-        const movement = direction.multiplyScalar(speed * delta);
+        const movement = direction.multiplyScalar(currentSpeed * delta);
         
         grannyRef.current.setNextKinematicTranslation({
           x: currentPos.x + movement.x,
@@ -131,14 +162,22 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
         }
       }
     } else if (!targetPoint) {
-      // No path and no target, pick new random point
-      const randomPoint = navigationSystem.getRandomPointOnNavMesh();
-      if (randomPoint) {
-        setTargetPoint(randomPoint);
-        const path = navigationSystem.findPath(currentPosition, randomPoint);
-        if (path.length > 0) {
-          setCurrentPath(path);
+      // No path and no target, pick new random point (only in patrol mode)
+      if (mode === 'patrol') {
+        const randomPoint = navigationSystem.getRandomPointOnNavMesh();
+        if (randomPoint) {
+          setTargetPoint(randomPoint);
+          const path = navigationSystem.findPath(currentPosition, randomPoint);
+          if (path.length > 0) {
+            setCurrentPath(path);
+          }
         }
+      }
+    } else if (mode === 'investigating' && currentPath.length === 0) {
+      // We have a target but no path, build path (for sound investigation)
+      const path = navigationSystem.findPath(currentPosition, targetPoint);
+      if (path.length > 0) {
+        setCurrentPath(path);
       }
     }
   });

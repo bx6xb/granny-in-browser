@@ -25,6 +25,7 @@ import { useGameSettings } from '../store/useGameSettings';
 import { useDayState } from '../store/useDayState';
 import { usePlayerState } from '../store/usePlayerState';
 import { navigationSystem } from '../utils/navigation';
+import { notifySound } from '../utils/soundEventBus';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -504,7 +505,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
     }, 1000);
   };
   
-  const playBoxSound = (lastSoundRef: React.MutableRefObject<number>) => {
+  const playBoxSound = (lastSoundRef: React.MutableRefObject<number>, position: THREE.Vector3) => {
     if (startupGracePeriod.current) return;
     const now = Date.now();
     if (now - lastSoundRef.current > soundCooldown) {
@@ -512,10 +513,11 @@ export function HauntedHouse(props: ThreeElements['group']) {
       audio.volume = (volume / 100) * 0.5;
       audio.play().catch(err => console.warn('Box sound play failed:', err));
       lastSoundRef.current = now;
+      notifySound(position);
     }
   };
   
-  const playPlankSound = (lastSoundRef: React.MutableRefObject<number>) => {
+  const playPlankSound = (lastSoundRef: React.MutableRefObject<number>, position: THREE.Vector3) => {
     if (startupGracePeriod.current) return;
     const now = Date.now();
     if (now - lastSoundRef.current > soundCooldown) {
@@ -523,6 +525,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
       audio.volume = (volume / 100) * 0.5;
       audio.play().catch(err => console.warn('Plank sound play failed:', err));
       lastSoundRef.current = now;
+      notifySound(position);
     }
   };
 
@@ -2291,7 +2294,10 @@ export function HauntedHouse(props: ThreeElements['group']) {
         position={[22.352, 3.464, -23.834]}
         type="dynamic"
         colliders="cuboid"
-        onCollisionEnter={() => playBoxSound(box1LastSound)}
+        onCollisionEnter={(e) => {
+          const pos = e.target.rigidBody?.translation();
+          if (pos) playBoxSound(box1LastSound, new THREE.Vector3(pos.x, pos.y, pos.z));
+        }}
       >
         <mesh
           name="box001"
@@ -2304,7 +2310,10 @@ export function HauntedHouse(props: ThreeElements['group']) {
         position={[22.352, 4.725, -23.834]}
         type="dynamic"
         colliders="cuboid"
-        onCollisionEnter={() => playBoxSound(box2LastSound)}
+        onCollisionEnter={(e) => {
+          const pos = e.target.rigidBody?.translation();
+          if (pos) playBoxSound(box2LastSound, new THREE.Vector3(pos.x, pos.y, pos.z));
+        }}
       >
         <mesh
           name="box002"
@@ -2317,7 +2326,10 @@ export function HauntedHouse(props: ThreeElements['group']) {
         position={[22.352, 5.989, -23.834]}
         type="dynamic"
         colliders="cuboid"
-        onCollisionEnter={() => playBoxSound(box3LastSound)}
+        onCollisionEnter={(e) => {
+          const pos = e.target.rigidBody?.translation();
+          if (pos) playBoxSound(box3LastSound, new THREE.Vector3(pos.x, pos.y, pos.z));
+        }}
       >
         <mesh
           name="box003"
@@ -2342,6 +2354,8 @@ export function HauntedHouse(props: ThreeElements['group']) {
               const audio = new Audio('/sounds/metal.mp3');
               audio.volume = (volume / 100) * 0.5;
               audio.play().catch(err => console.warn('Metal sound play failed:', err));
+              const pos = hatchRef.current?.translation();
+              if (pos) notifySound(new THREE.Vector3(pos.x, pos.y, pos.z));
               setHatchFallen(true);
             }
           }}
@@ -2364,7 +2378,10 @@ export function HauntedHouse(props: ThreeElements['group']) {
         gravityScale={1}
         linearDamping={0.5}
         angularDamping={0.5}
-        onCollisionEnter={() => playPlankSound(plank1LastSound)}
+        onCollisionEnter={(e) => {
+          const pos = e.target.rigidBody?.translation();
+          if (pos) playPlankSound(plank1LastSound, new THREE.Vector3(pos.x, pos.y, pos.z));
+        }}
       >
         <mesh
           name="plank001"
@@ -2381,7 +2398,10 @@ export function HauntedHouse(props: ThreeElements['group']) {
         gravityScale={1}
         linearDamping={0.5}
         angularDamping={0.5}
-        onCollisionEnter={() => playPlankSound(plank2LastSound)}
+        onCollisionEnter={(e) => {
+          const pos = e.target.rigidBody?.translation();
+          if (pos) playPlankSound(plank2LastSound, new THREE.Vector3(pos.x, pos.y, pos.z));
+        }}
       >
         <mesh
           name="plank002"

@@ -114,6 +114,54 @@ export class NavigationSystem {
     const groupID = this.pathfinding.getGroup(this.zone, position);
     return this.pathfinding.getClosestNode(position, this.zone, groupID);
   }
+
+  getClosestPointOnNavMesh(position: THREE.Vector3): THREE.Vector3 {
+    if (!this.navMesh) {
+      console.log('No navmesh set!');
+      return position;
+    }
+
+    const geometry = this.navMesh.geometry;
+    const positionAttr = geometry.attributes.position;
+    const faces = geometry.index;
+
+    if (!faces) {
+      console.log('No faces in navmesh geometry!');
+      return position;
+    }
+
+    let closestPoint = new THREE.Vector3();
+    let minDistance = Infinity;
+
+    // Check all triangles in navmesh
+    for (let i = 0; i < faces.count; i += 3) {
+      const i0 = faces.getX(i);
+      const i1 = faces.getX(i + 1);
+      const i2 = faces.getX(i + 2);
+
+      const v0 = new THREE.Vector3(positionAttr.getX(i0), positionAttr.getY(i0), positionAttr.getZ(i0));
+      const v1 = new THREE.Vector3(positionAttr.getX(i1), positionAttr.getY(i1), positionAttr.getZ(i1));
+      const v2 = new THREE.Vector3(positionAttr.getX(i2), positionAttr.getY(i2), positionAttr.getZ(i2));
+
+      // Apply navmesh world matrix
+      v0.applyMatrix4(this.navMesh.matrixWorld);
+      v1.applyMatrix4(this.navMesh.matrixWorld);
+      v2.applyMatrix4(this.navMesh.matrixWorld);
+
+      // Find closest point on triangle
+      const triangle = new THREE.Triangle(v0, v1, v2);
+      const point = new THREE.Vector3();
+      triangle.closestPointToPoint(position, point);
+
+      const distance = position.distanceTo(point);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestPoint.copy(point);
+      }
+    }
+
+    return closestPoint;
+  }
 }
 
 export const navigationSystem = new NavigationSystem();
