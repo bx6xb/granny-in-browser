@@ -485,6 +485,22 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const plank2LastSound = useRef(0);
   const soundCooldown = 500; // milliseconds
   const startupGracePeriod = useRef(true);
+  
+  // Floor trigger states - track if player is inside each trigger
+  const floorTriggerStates = useRef<Record<string, boolean>>({
+    floor_trigger: false,
+    floor_trigger001: false,
+    floor_trigger002: false,
+    floor_trigger003: false,
+    floor_trigger004: false,
+    floor_trigger005: false,
+    floor_trigger006: false,
+    floor_trigger007: false,
+    floor_trigger008: false,
+    floor_trigger009: false,
+    floor_trigger010: false,
+    floor_trigger011: false,
+  });
 
   // Initialize random shield selection on mount
   useEffect(() => {
@@ -550,6 +566,24 @@ export function HauntedHouse(props: ThreeElements['group']) {
       audio.play().catch(err => console.warn('Plank sound play failed:', err));
       lastSoundRef.current = now;
       notifySound(position);
+    }
+  };
+  
+  const playFloorSound = (position: THREE.Vector3) => {
+    const audio = new Audio('/sounds/floor.mp3');
+    audio.volume = (volume / 100) * 0.5;
+    audio.play().catch(err => console.warn('Floor sound play failed:', err));
+    notifySound(position);
+  };
+  
+  const handleFloorTrigger = (triggerName: string, isEntering: boolean, position: THREE.Vector3) => {
+    if (isEntering && !floorTriggerStates.current[triggerName]) {
+      // Player entered trigger - play sound
+      floorTriggerStates.current[triggerName] = true;
+      playFloorSound(position);
+    } else if (!isEntering && floorTriggerStates.current[triggerName]) {
+      // Player exited trigger - update state
+      floorTriggerStates.current[triggerName] = false;
     }
   };
 
@@ -923,18 +957,6 @@ export function HauntedHouse(props: ThreeElements['group']) {
 
       <RigidBody type="fixed" colliders="trimesh">
         <group {...props} dispose={null}>
-        <mesh name="floor_trigger" geometry={nodes.floor_trigger.geometry} material={materials.cracking_floor} position={[15.629, -2.06, -13.249]} scale={[1, 0.123, 1]} />
-        <mesh name="floor_trigger001" geometry={nodes.floor_trigger001.geometry} material={materials['cracking_floor.002']} position={[9.69, -2.06, -5.302]} scale={[1, 0.123, 1]} />
-        <mesh name="floor_trigger002" geometry={nodes.floor_trigger002.geometry} material={materials['cracking_floor.003']} position={[-5.512, -2.06, -19.225]} scale={[1, 0.123, 1]} />
-        <mesh name="floor_trigger003" geometry={nodes.floor_trigger003.geometry} material={materials['cracking_floor.004']} position={[7.979, -2.06, -18.201]} scale={[1, 0.123, 1]} />
-        <mesh name="floor_trigger004" geometry={nodes.floor_trigger004.geometry} material={materials['cracking_floor.005']} position={[-2.501, -2.06, -4.169]} scale={[1, 0.123, 1]} />
-        <mesh name="floor_trigger005" geometry={nodes.floor_trigger005.geometry} material={materials['cracking_floor.006']} position={[0.711, 2.898, -10.67]} scale={[1, 0.123, 1]} />
-        <mesh name="floor_trigger006" geometry={nodes.floor_trigger006.geometry} material={materials['cracking_floor.007']} position={[8.457, 2.898, -14.487]} scale={[1, 0.123, 0.741]} />
-        <mesh name="floor_trigger007" geometry={nodes.floor_trigger007.geometry} material={materials['cracking_floor.010']} position={[21.695, 2.898, -13.077]} scale={[1, 0.123, 1]} />
-        <mesh name="floor_trigger008" geometry={nodes.floor_trigger008.geometry} material={materials['cracking_floor.011']} position={[3.714, 7.95, -10.268]} scale={[1, 0.123, 1]} />
-        <mesh name="floor_trigger009" geometry={nodes.floor_trigger009.geometry} material={materials['cracking_floor.013']} position={[7.994, 7.95, -16.054]} scale={[1, 0.123, 1]} />
-        <mesh name="floor_trigger010" geometry={nodes.floor_trigger010.geometry} material={materials['cracking_floor.014']} position={[20.465, 2.801, -32.637]} scale={[1, 0.123, 1]} />
-        <mesh name="floor_trigger011" geometry={nodes.floor_trigger011.geometry} material={materials['cracking_floor.015']} position={[10.648, -4.276, -32.86]} scale={[1, 0.123, 1]} />
           <mesh
             name="Plane005"
             geometry={nodes.Plane005.geometry}
@@ -2582,6 +2604,199 @@ export function HauntedHouse(props: ThreeElements['group']) {
           scale={[1.47, 0.043, 1.47]}
           visible={false}
         />
+      </RigidBody>
+      
+      {/* Floor triggers - invisible sensors that play sound when stepped on */}
+      <RigidBody position={[15.629, -2.06, -13.249]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger', true, new THREE.Vector3(15.629, -2.06, -13.249));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger', false, new THREE.Vector3(15.629, -2.06, -13.249));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
+        <mesh name="floor_trigger" geometry={nodes.floor_trigger.geometry} visible={false} />
+      </RigidBody>
+      
+      <RigidBody position={[9.69, -2.06, -5.302]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger001', true, new THREE.Vector3(9.69, -2.06, -5.302));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger001', false, new THREE.Vector3(9.69, -2.06, -5.302));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
+        <mesh name="floor_trigger001" geometry={nodes.floor_trigger001.geometry} visible={false} />
+      </RigidBody>
+      
+      <RigidBody position={[-5.512, -2.06, -19.225]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger002', true, new THREE.Vector3(-5.512, -2.06, -19.225));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger002', false, new THREE.Vector3(-5.512, -2.06, -19.225));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
+        <mesh name="floor_trigger002" geometry={nodes.floor_trigger002.geometry} visible={false} />
+      </RigidBody>
+      
+      <RigidBody position={[7.979, -2.06, -18.201]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger003', true, new THREE.Vector3(7.979, -2.06, -18.201));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger003', false, new THREE.Vector3(7.979, -2.06, -18.201));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
+        <mesh name="floor_trigger003" geometry={nodes.floor_trigger003.geometry} visible={false} />
+      </RigidBody>
+      
+      <RigidBody position={[-2.501, -2.06, -4.169]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger004', true, new THREE.Vector3(-2.501, -2.06, -4.169));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger004', false, new THREE.Vector3(-2.501, -2.06, -4.169));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
+        <mesh name="floor_trigger004" geometry={nodes.floor_trigger004.geometry} visible={false} />
+      </RigidBody>
+      
+      <RigidBody position={[0.711, 2.898, -10.67]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger005', true, new THREE.Vector3(0.711, 2.898, -10.67));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger005', false, new THREE.Vector3(0.711, 2.898, -10.67));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
+        <mesh name="floor_trigger005" geometry={nodes.floor_trigger005.geometry} visible={false} />
+      </RigidBody>
+      
+      <RigidBody position={[8.457, 2.898, -14.487]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger006', true, new THREE.Vector3(8.457, 2.898, -14.487));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger006', false, new THREE.Vector3(8.457, 2.898, -14.487));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.1]} sensor />
+        <mesh name="floor_trigger006" geometry={nodes.floor_trigger006.geometry} visible={false} />
+      </RigidBody>
+      
+      <RigidBody position={[21.695, 2.898, -13.077]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger007', true, new THREE.Vector3(21.695, 2.898, -13.077));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger007', false, new THREE.Vector3(21.695, 2.898, -13.077));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
+        <mesh name="floor_trigger007" geometry={nodes.floor_trigger007.geometry} visible={false} />
+      </RigidBody>
+      
+      <RigidBody position={[3.714, 7.95, -10.268]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger008', true, new THREE.Vector3(3.714, 7.95, -10.268));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger008', false, new THREE.Vector3(3.714, 7.95, -10.268));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
+        <mesh name="floor_trigger008" geometry={nodes.floor_trigger008.geometry} visible={false} />
+      </RigidBody>
+      
+      <RigidBody position={[7.994, 7.95, -16.054]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger009', true, new THREE.Vector3(7.994, 7.95, -16.054));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger009', false, new THREE.Vector3(7.994, 7.95, -16.054));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
+        <mesh name="floor_trigger009" geometry={nodes.floor_trigger009.geometry} visible={false} />
+      </RigidBody>
+      
+      <RigidBody position={[20.465, 2.801, -32.637]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger010', true, new THREE.Vector3(20.465, 2.801, -32.637));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger010', false, new THREE.Vector3(20.465, 2.801, -32.637));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
+        <mesh name="floor_trigger010" geometry={nodes.floor_trigger010.geometry} visible={false} />
+      </RigidBody>
+      
+      <RigidBody position={[10.648, -4.276, -32.86]} type="fixed" sensor colliders={false}
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger011', true, new THREE.Vector3(10.648, -4.276, -32.86));
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            handleFloorTrigger('floor_trigger011', false, new THREE.Vector3(10.648, -4.276, -32.86));
+          }
+        }}
+      >
+        <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
+        <mesh name="floor_trigger011" geometry={nodes.floor_trigger011.geometry} visible={false} />
       </RigidBody>
     </>
   );
