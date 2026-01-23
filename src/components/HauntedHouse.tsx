@@ -29,6 +29,18 @@ import { notifySound } from '../utils/soundEventBus';
 
 type GLTFResult = GLTF & {
   nodes: {
+    floor_trigger: THREE.Mesh;
+    floor_trigger001: THREE.Mesh;
+    floor_trigger002: THREE.Mesh;
+    floor_trigger003: THREE.Mesh;
+    floor_trigger004: THREE.Mesh;
+    floor_trigger005: THREE.Mesh;
+    floor_trigger006: THREE.Mesh;
+    floor_trigger007: THREE.Mesh;
+    floor_trigger008: THREE.Mesh;
+    floor_trigger009: THREE.Mesh;
+    floor_trigger010: THREE.Mesh;
+    floor_trigger011: THREE.Mesh;
     navmesh: THREE.Mesh;
     attic_trigger: THREE.Mesh;
     Plane005: THREE.Mesh;
@@ -352,6 +364,18 @@ type GLTFResult = GLTF & {
     Cube039_2: THREE.Mesh;
   };
   materials: {
+    cracking_floor: THREE.MeshStandardMaterial;
+    ['cracking_floor.002']: THREE.MeshStandardMaterial;
+    ['cracking_floor.003']: THREE.MeshStandardMaterial;
+    ['cracking_floor.004']: THREE.MeshStandardMaterial;
+    ['cracking_floor.005']: THREE.MeshStandardMaterial;
+    ['cracking_floor.006']: THREE.MeshStandardMaterial;
+    ['cracking_floor.007']: THREE.MeshStandardMaterial;
+    ['cracking_floor.013']: THREE.MeshStandardMaterial;
+    ['cracking_floor.014']: THREE.MeshStandardMaterial;
+    ['cracking_floor.010']: THREE.MeshStandardMaterial;
+    ['cracking_floor.011']: THREE.MeshStandardMaterial;
+    ['cracking_floor.015']: THREE.MeshStandardMaterial;
     navmesh: THREE.MeshStandardMaterial;
     floor: THREE.MeshStandardMaterial;
     walls: THREE.MeshStandardMaterial;
@@ -899,6 +923,18 @@ export function HauntedHouse(props: ThreeElements['group']) {
 
       <RigidBody type="fixed" colliders="trimesh">
         <group {...props} dispose={null}>
+        <mesh name="floor_trigger" geometry={nodes.floor_trigger.geometry} material={materials.cracking_floor} position={[15.629, -2.06, -13.249]} scale={[1, 0.123, 1]} />
+        <mesh name="floor_trigger001" geometry={nodes.floor_trigger001.geometry} material={materials['cracking_floor.002']} position={[9.69, -2.06, -5.302]} scale={[1, 0.123, 1]} />
+        <mesh name="floor_trigger002" geometry={nodes.floor_trigger002.geometry} material={materials['cracking_floor.003']} position={[-5.512, -2.06, -19.225]} scale={[1, 0.123, 1]} />
+        <mesh name="floor_trigger003" geometry={nodes.floor_trigger003.geometry} material={materials['cracking_floor.004']} position={[7.979, -2.06, -18.201]} scale={[1, 0.123, 1]} />
+        <mesh name="floor_trigger004" geometry={nodes.floor_trigger004.geometry} material={materials['cracking_floor.005']} position={[-2.501, -2.06, -4.169]} scale={[1, 0.123, 1]} />
+        <mesh name="floor_trigger005" geometry={nodes.floor_trigger005.geometry} material={materials['cracking_floor.006']} position={[0.711, 2.898, -10.67]} scale={[1, 0.123, 1]} />
+        <mesh name="floor_trigger006" geometry={nodes.floor_trigger006.geometry} material={materials['cracking_floor.007']} position={[8.457, 2.898, -14.487]} scale={[1, 0.123, 0.741]} />
+        <mesh name="floor_trigger007" geometry={nodes.floor_trigger007.geometry} material={materials['cracking_floor.010']} position={[21.695, 2.898, -13.077]} scale={[1, 0.123, 1]} />
+        <mesh name="floor_trigger008" geometry={nodes.floor_trigger008.geometry} material={materials['cracking_floor.011']} position={[3.714, 7.95, -10.268]} scale={[1, 0.123, 1]} />
+        <mesh name="floor_trigger009" geometry={nodes.floor_trigger009.geometry} material={materials['cracking_floor.013']} position={[7.994, 7.95, -16.054]} scale={[1, 0.123, 1]} />
+        <mesh name="floor_trigger010" geometry={nodes.floor_trigger010.geometry} material={materials['cracking_floor.014']} position={[20.465, 2.801, -32.637]} scale={[1, 0.123, 1]} />
+        <mesh name="floor_trigger011" geometry={nodes.floor_trigger011.geometry} material={materials['cracking_floor.015']} position={[10.648, -4.276, -32.86]} scale={[1, 0.123, 1]} />
           <mesh
             name="Plane005"
             geometry={nodes.Plane005.geometry}
