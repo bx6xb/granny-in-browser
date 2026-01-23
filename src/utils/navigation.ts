@@ -105,8 +105,51 @@ export class NavigationSystem {
   }
 
   findPath(start: THREE.Vector3, target: THREE.Vector3): THREE.Vector3[] {
-    const groupID = this.pathfinding.getGroup(this.zone, start);
-    const path = this.pathfinding.findPath(start, target, this.zone, groupID);
+    // Process start position
+    let startGroupID = this.pathfinding.getGroup(this.zone, start);
+    let clampedStart = start;
+    
+    if (!startGroupID) {
+      clampedStart = this.getClosestPointOnNavMesh(start);
+      startGroupID = this.pathfinding.getGroup(this.zone, clampedStart);
+    }
+    
+    if (startGroupID) {
+      const closestNode = this.pathfinding.getClosestNode(clampedStart, this.zone, startGroupID);
+      if (closestNode) {
+        clampedStart = closestNode.centroid;
+      }
+    }
+    
+    // Process target position
+    let targetGroupID = this.pathfinding.getGroup(this.zone, target);
+    let clampedTarget = target;
+    
+    if (!targetGroupID) {
+      clampedTarget = this.getClosestPointOnNavMesh(target);
+      targetGroupID = this.pathfinding.getGroup(this.zone, clampedTarget);
+    }
+    
+    if (targetGroupID) {
+      const closestNode = this.pathfinding.getClosestNode(clampedTarget, this.zone, targetGroupID);
+      if (closestNode) {
+        clampedTarget = closestNode.centroid;
+      }
+    }
+    
+    // Use the same group ID for pathfinding (prefer target's group)
+    const groupID = targetGroupID || startGroupID;
+    
+    console.log({
+      original: start, 
+      clamped: clampedStart, 
+      target: clampedTarget, 
+      startGroup: startGroupID,
+      targetGroup: targetGroupID,
+      groupID
+    });
+    
+    const path = this.pathfinding.findPath(clampedStart, clampedTarget, this.zone, groupID);
     return path || [];
   }
 
