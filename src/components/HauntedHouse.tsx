@@ -2351,12 +2351,13 @@ export function HauntedHouse(props: ThreeElements['group']) {
           angularDamping={0.3}
           onCollisionEnter={(e) => {
             if (!hatchFallen && e.other.rigidBodyObject?.name === 'player') {
+              setHatchFallen(true);
+            } else if (hatchFallen && e.other.rigidBodyObject?.name !== 'player') {
               const audio = new Audio('/sounds/metal.mp3');
               audio.volume = (volume / 100) * 0.5;
               audio.play().catch(err => console.warn('Metal sound play failed:', err));
               const pos = hatchRef.current?.translation();
               if (pos) notifySound(new THREE.Vector3(pos.x, pos.y, pos.z));
-              setHatchFallen(true);
             }
           }}
         >
