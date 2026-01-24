@@ -684,14 +684,15 @@ export function HauntedHouse(props: ThreeElements['group']) {
   return (
     <>
       {/* Navmesh - no physics, hidden, available for AI pathfinding */}
-      <mesh
+      {/* <mesh
         ref={navmeshRef}
         name="navmesh"
         geometry={nodes.navmesh.geometry}
         material={materials.navmesh}
         position={[-13.92, -3.029, -24.248]}
         visible={false}
-      />
+      /> */}
+      <mesh ref={navmeshRef} name="navmesh" geometry={nodes.navmesh.geometry} material={materials.navmesh} position={[-13.92, -3.029, -24.248]} />
 
       {/* Interactive Doors - outside fixed RigidBody */}
       {/* Main door - escape door */}
