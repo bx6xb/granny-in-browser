@@ -19,6 +19,7 @@ import { useGameSettings } from '../store/useGameSettings';
 import { useDayState } from '../store/useDayState';
 import { useBedHiding } from '../store/useBedHiding';
 import { useScreamer } from '../store/useScreamer';
+import { useGrannyState } from '../store/useGrannyState';
 import type { SpotLight as ThreeSpotLight } from 'three';
 import { useMobileControls } from '../store/useMobileControls';
 import { mobileMovement } from './MobileControls';
@@ -1381,9 +1382,16 @@ export function Player() {
       const pos = playerRef.current.translation();
       const bedWorldPos = new THREE.Vector3();
       currentBedObject.current.getWorldPosition(bedWorldPos);
+      
       hideInBed(nearBed, [pos.x, pos.y, pos.z], [bedWorldPos.x, bedWorldPos.y, bedWorldPos.z]);
       return;
     } else if (isCurrentlyHiding) {
+      // When standing up, reset hasSeenPlayer if Granny hadn't seen player while hiding
+      const grannyHasSeenPlayer = useGrannyState.getState().hasSeenPlayer;
+      if (!grannyHasSeenPlayer) {
+        useGrannyState.getState().setHasSeenPlayer(false);
+      }
+      
       standUp();
       return;
     }

@@ -13,11 +13,13 @@ import { usePlayerState } from '../store/usePlayerState';
 import { useGameSettings } from '../store/useGameSettings';
 import { useScreamer } from '../store/useScreamer';
 import { useDoors } from '../store/useDoors';
+import { useBedHiding } from '../store/useBedHiding';
 import { useRef, useState, useEffect } from 'react';
 import type { RapierRigidBody } from '@react-three/rapier';
 import { useFrame, useThree } from '@react-three/fiber';
 import { navigationSystem } from '../utils/navigation';
 import type { Difficulty } from '../store/useGameSettings';
+import type React from 'react';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -32,7 +34,6 @@ type GLTFResult = GLTF & {
     dress: THREE.MeshStandardMaterial;
     wood2: THREE.MeshStandardMaterial;
   };
-  animations: GLTFAction[];
 };
 
 const difficultySettings: Record<Difficulty, { investigationSpeed: number }> = {
@@ -42,8 +43,8 @@ const difficultySettings: Record<Difficulty, { investigationSpeed: number }> = {
   hard: { investigationSpeed: 13 },
 };
 
-export function Granny(props: JSX.IntrinsicElements['group']) {
-  const { nodes, materials } = useGLTF('/models/granny.glb') as GLTFResult;
+export function Granny(props: React.JSX.IntrinsicElements['group']) {
+  const { nodes, materials } = useGLTF('/models/granny.glb') as unknown as GLTFResult;
   const {
     grannySpawnArray,
     currentPath,
@@ -54,6 +55,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     investigationSpeed,
     waitTime,
     waitTimer,
+    hasSeenPlayer,
     setCurrentPath,
     setCurrentTargetIndex,
     setTargetPoint,
@@ -61,12 +63,14 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     setWaitTimer,
     resetPath,
     setInvestigationSpeed,
+    setHasSeenPlayer,
   } = useGrannyState();
   const { nextDay } = useDayState();
   const { playerSpawnArray, triggerCameraReset } = usePlayerState();
   const { inGameMenuOpen, volume, difficulty } = useGameSettings();
   const { isScreamerActive, startScreamer, endScreamer } = useScreamer();
   const { openDoor, doors } = useDoors();
+  const { isHiding } = useBedHiding();
   const { scene } = useThree();
   const grannyRef = useRef<RapierRigidBody>(null);
   const groupRef = useRef<THREE.Group>(null);
@@ -140,9 +144,11 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     }
 
     // Vision logic - check if player is visible (works in any mode)
+    // If player is hiding and wasn't seen before hiding, skip vision check
+    const shouldCheckVision = !(isHiding && !hasSeenPlayer);
+
     const playerRigidBody = playerRigidBodyRef.current;
-    console.log({ playerRigidBody });
-    if (playerRigidBody) {
+    if (playerRigidBody && shouldCheckVision) {
       const playerPosition = new THREE.Vector3(
         playerRigidBody.position.x,
         playerRigidBody.position.y,
@@ -150,7 +156,6 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
       );
       const distanceToPlayer = currentPosition.distanceTo(playerPosition);
 
-      console.log({ distance: distanceToPlayer < 30 });
       // Check distance (15-20 meters)
       if (distanceToPlayer < 30) {
         // Check angle - 90 degrees cone in front of Granny
@@ -163,7 +168,6 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
         );
         const angle = grannyForward.angleTo(directionToPlayer);
 
-        console.log({ deg: angle < Math.PI });
         // 180 degrees = PI (full front hemisphere vision)
         if (angle < Math.PI) {
           // Check for obstacles using raycaster
@@ -266,9 +270,13 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
             }
           }
 
-          console.log({ blocked });
           // If player is visible, chase them
           if (!blocked) {
+            // Mark that Granny has seen the player
+            if (!hasSeenPlayer) {
+              setHasSeenPlayer(true);
+            }
+            
             // Use player floor position (subtract player height to get floor level)
             const playerFloorPosition = playerPosition.clone();
             playerFloorPosition.y -= 1.7; // Player height
