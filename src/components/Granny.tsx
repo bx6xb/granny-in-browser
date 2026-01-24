@@ -14,6 +14,7 @@ import { useGameSettings } from '../store/useGameSettings';
 import { useScreamer } from '../store/useScreamer';
 import { useDoors } from '../store/useDoors';
 import { useBedHiding } from '../store/useBedHiding';
+import { useClosetHiding } from '../store/useClosetHiding';
 import { useRef, useState, useEffect } from 'react';
 import type { RapierRigidBody } from '@react-three/rapier';
 import { useFrame, useThree } from '@react-three/fiber';
@@ -70,7 +71,8 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
   const { inGameMenuOpen, volume, difficulty } = useGameSettings();
   const { isScreamerActive, startScreamer, endScreamer } = useScreamer();
   const { openDoor, doors } = useDoors();
-  const { isHiding } = useBedHiding();
+  const { isHiding: isHidingInBed } = useBedHiding();
+  const { isHiding: isHidingInCloset } = useClosetHiding();
   const { scene } = useThree();
   const grannyRef = useRef<RapierRigidBody>(null);
   const groupRef = useRef<THREE.Group>(null);
@@ -80,6 +82,10 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
   const doorObjectsCache = useRef<Map<string, THREE.Object3D>>(new Map());
   const cacheInitialized = useRef(false);
   const playerRigidBodyRef = useRef<any>(null);
+
+  const isHiding = isHidingInBed || isHidingInCloset;
+
+  console.log(isHiding);
 
   // Set investigation speed based on difficulty
   useEffect(() => {
@@ -205,7 +211,6 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
               objName.includes('bed') ||
               objName.includes('box') ||
               objName.includes('black_wall') ||
-              objName.includes('closet') ||
               objName.includes('table') ||
               [
                 'Walls004',
