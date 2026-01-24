@@ -167,11 +167,23 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
         // 180 degrees = PI (full front hemisphere vision)
         if (angle < Math.PI) {
           // Check for obstacles using raycaster
+          // Add eye-level offset to Granny's position for better vision detection
+          const grannyEyePosition = currentPosition.clone();
+          grannyEyePosition.y += 1.5; // Granny's eye level
+          
+          const playerEyePosition = playerPosition.clone();
+          playerEyePosition.y += 0.5; // Player's torso level
+          
+          const directionToPlayerEyes = new THREE.Vector3()
+            .subVectors(playerEyePosition, grannyEyePosition)
+            .normalize();
+          const distanceToPlayerEyes = grannyEyePosition.distanceTo(playerEyePosition);
+          
           const raycaster = new THREE.Raycaster(
-            currentPosition,
-            directionToPlayer,
+            grannyEyePosition,
+            directionToPlayerEyes,
             0,
-            distanceToPlayer
+            distanceToPlayerEyes
           );
           const intersects = raycaster.intersectObjects(scene.children, true);
 
@@ -247,7 +259,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
               ].includes(objName);
 
             // Check if wall is between Granny and player
-            if (isWall && intersect.distance < distanceToPlayer - 0.5) {
+            if (isWall && intersect.distance < distanceToPlayerEyes - 0.5) {
               blocked = true;
               console.log('Vision blocked by:', obj.name, 'at distance:', intersect.distance);
               break;
