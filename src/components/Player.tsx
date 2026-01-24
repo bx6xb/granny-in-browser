@@ -144,6 +144,22 @@ export function Player() {
     };
   }, [hasEscaped, inGameMenuOpen, setInGameMenuOpen]);
 
+  // Open menu when pointer lock exits
+  useEffect(() => {
+    const handlePointerLockChange = () => {
+      // If pointer lock was released and game is active, open menu
+      if (!document.pointerLockElement && !hasEscaped && !gameOver && !isScreamerActive) {
+        setInGameMenuOpen(true);
+      }
+    };
+
+    document.addEventListener('pointerlockchange', handlePointerLockChange);
+    
+    return () => {
+      document.removeEventListener('pointerlockchange', handlePointerLockChange);
+    };
+  }, [hasEscaped, gameOver, isScreamerActive, setInGameMenuOpen]);
+
   // ===== PERFORMANCE: Dedicated array for interactive objects =====
   const interactiveObjects = useRef<THREE.Object3D[]>([]);
 
@@ -365,10 +381,24 @@ export function Player() {
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Handle ESC and ALT to toggle menu (but not during game over or victory)
-      if (e.code === 'Escape' || e.code === 'AltLeft' || e.code === 'AltRight') {
+      // Handle ALT to toggle menu (but not during game over or victory)
+      if (e.code === 'AltLeft' || e.code === 'AltRight') {
         if (!gameOver && !hasEscaped && !isScreamerActive) {
+          // Exit pointer lock if active
+          if (document.pointerLockElement) {
+            document.exitPointerLock();
+          }
           setInGameMenuOpen(!inGameMenuOpen);
+        }
+        return;
+      }
+      
+      // Handle ESC to exit pointer lock (menu will open via pointerlockchange event)
+      if (e.code === 'Escape') {
+        if (!gameOver && !hasEscaped && !isScreamerActive) {
+          if (document.pointerLockElement) {
+            document.exitPointerLock();
+          }
         }
         return;
       }
