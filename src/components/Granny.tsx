@@ -75,6 +75,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
   const screamerTriggered = useRef(false);
   const doorObjectsCache = useRef<Map<string, THREE.Object3D>>(new Map());
   const cacheInitialized = useRef(false);
+  const playerRigidBodyRef = useRef<any>(null);
 
   // Set investigation speed based on difficulty
   useEffect(() => {
@@ -129,6 +130,160 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     const currentPosition = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
     const currentSpeed = mode === 'investigating' ? investigationSpeed : patrolSpeed;
 
+    // Cache player rigid body reference
+    if (!playerRigidBodyRef.current) {
+      scene.traverse((obj) => {
+        if (obj.name === 'player') {
+          playerRigidBodyRef.current = obj;
+        }
+      });
+    }
+
+    // Vision logic - check if player is visible (works in any mode)
+    const playerRigidBody = playerRigidBodyRef.current;
+    console.log({ playerRigidBody });
+    if (playerRigidBody) {
+      const playerPosition = new THREE.Vector3(
+        playerRigidBody.position.x,
+        playerRigidBody.position.y,
+        playerRigidBody.position.z
+      );
+      const distanceToPlayer = currentPosition.distanceTo(playerPosition);
+
+      console.log({ distance: distanceToPlayer < 30 });
+      // Check distance (15-20 meters)
+      if (distanceToPlayer < 30) {
+        // Check angle - 90 degrees cone in front of Granny
+        const directionToPlayer = new THREE.Vector3()
+          .subVectors(playerPosition, currentPosition)
+          .normalize();
+        const grannyForward = new THREE.Vector3(0, 0, 1).applyAxisAngle(
+          new THREE.Vector3(0, 1, 0),
+          groupRef.current?.rotation.y || 0
+        );
+        const angle = grannyForward.angleTo(directionToPlayer);
+
+        console.log({ deg: angle < Math.PI });
+        // 180 degrees = PI (full front hemisphere vision)
+        if (angle < Math.PI) {
+          // Check for obstacles using raycaster
+          const raycaster = new THREE.Raycaster(
+            currentPosition,
+            directionToPlayer,
+            0,
+            distanceToPlayer
+          );
+          const intersects = raycaster.intersectObjects(scene.children, true);
+
+          // Check if vision is blocked by walls/floors/ceilings
+          let blocked = false;
+          for (const intersect of intersects) {
+            const obj = intersect.object;
+            const objName = obj.name; // Don't use toLowerCase, compare original names
+
+            // Only walls, floors, and ceilings block vision
+            const isWall =
+              objName.includes('attic_plank') ||
+              objName.includes('room_door') ||
+              objName.includes('barn_door') ||
+              objName.includes('bed') ||
+              objName.includes('box') ||
+              objName.includes('black_wall') ||
+              objName.includes('closet') ||
+              objName.includes('table') ||
+              [
+                'Walls004',
+                'Walls011',
+                'Cube115',
+                'Cube105',
+                'Cube101',
+                'Cube112',
+                'Cube130',
+                'Cube035',
+                'Cube036',
+                'Cube125',
+                'Cube124',
+                'Cube126',
+                'Cube116',
+                'Plane013',
+                'Plane016',
+                'Plane015',
+                'Plane014',
+                'Floor',
+                'Floor005',
+                'Floor001',
+                'Floor002',
+                'Floor003',
+                'Floor004',
+                'Walls008',
+                'Walls010',
+                'Walls009',
+                'Cube053',
+                'Cube052',
+                'Cube095',
+                'Cube096',
+                'Cube093',
+                'Cube057',
+                'Cube111',
+                'Cube079',
+                'Cube081',
+                'Plane006',
+                'Cube051',
+                'Cube056',
+                'Cube047',
+                'Cube049',
+                'Cube054',
+                'Walls005',
+                'Walls003',
+                'Walls002',
+                'Walls006',
+                'Walls007',
+                'Plane012',
+                'Plane011',
+                'Plane010',
+                'Plane001',
+                'Walls',
+                'Plane005',
+              ].includes(objName);
+
+            // Check if wall is between Granny and player
+            if (isWall && intersect.distance < distanceToPlayer - 0.5) {
+              blocked = true;
+              console.log('Vision blocked by:', obj.name, 'at distance:', intersect.distance);
+              break;
+            }
+          }
+
+          console.log({ blocked });
+          // If player is visible, chase them
+          if (!blocked) {
+            // Use player floor position (subtract player height to get floor level)
+            const playerFloorPosition = playerPosition.clone();
+            playerFloorPosition.y -= 1.7; // Player height
+
+            // Find closest point on navmesh to player floor position
+            let closestPoint = navigationSystem.getClosestPointOnNavMesh(playerFloorPosition);
+
+            // If no point found on navmesh, try original player position
+            if (!closestPoint) {
+              closestPoint = navigationSystem.getClosestPointOnNavMesh(playerPosition);
+            }
+
+            // Always update path when player is visible (regardless of current mode)
+            if (closestPoint) {
+              const path = navigationSystem.findPath(currentPosition, closestPoint);
+              if (path.length > 0) {
+                setMode('investigating');
+                setTargetPoint(closestPoint);
+                setCurrentPath(path);
+                setCurrentTargetIndex(0);
+              }
+            }
+          }
+        }
+      }
+    }
+
     // Build door objects cache once
     if (!cacheInitialized.current) {
       scene.traverse((object) => {
@@ -162,7 +317,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
       }
     });
 
-    // Waiting mode - stand still for waitTime seconds
+    // Waiting mode - stand still for waitTime seconds (but still check for player vision above)
     if (mode === 'waiting') {
       if (waitTimer >= waitTime) {
         // Finished waiting, return to patrol
@@ -180,7 +335,9 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
       } else {
         setWaitTimer(waitTimer + delta);
       }
-      return;
+      // Don't return here - let vision logic override waiting if player is spotted
+      // Only skip movement logic if still in waiting mode after vision check
+      if (mode === 'waiting') return;
     }
 
     // If we have a path, follow it

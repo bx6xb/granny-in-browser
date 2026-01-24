@@ -702,7 +702,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         geometry={nodes.navmesh.geometry}
         material={materials.navmesh}
         position={[-13.92, -3.029, -24.248]}
-        visible={false}
+        // visible={false}
       />
 
       {/* Interactive Doors - outside fixed RigidBody */}
