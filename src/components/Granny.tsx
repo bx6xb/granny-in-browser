@@ -139,7 +139,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
 
     // Check for nearby closed doors and open them
     doorObjectsCache.current.forEach((doorObject, doorId) => {
-      if (!doorId.includes('room_door')) return
+      if (!doorId.includes('room_door') && !doorId.includes('barn_door')) return
 
       const doorState = doors.get(doorId);
 
