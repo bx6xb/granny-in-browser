@@ -451,9 +451,11 @@ export function HauntedHouse(props: ThreeElements['group']) {
 
   useHauntedHouse(nodes);
   
-  const { volume } = useGameSettings();
+  const { volume, difficulty } = useGameSettings();
   const { nextDay } = useDayState();
   const { playerSpawnArray, triggerCameraReset } = usePlayerState();
+  
+  const creakingFloorsEnabled = difficulty !== 'easy';
 
   const { watermelonPlaced, bladeDropped, itemRevealed, dropBlade, revealItem } = useGuillotine();
   const { itemInsideWatermelon } = useItems();
@@ -577,6 +579,8 @@ export function HauntedHouse(props: ThreeElements['group']) {
   };
   
   const handleFloorTrigger = (triggerName: string, isEntering: boolean, position: THREE.Vector3) => {
+    if (!creakingFloorsEnabled) return;
+    
     if (isEntering && !floorTriggerStates.current[triggerName]) {
       // Player entered trigger - play sound
       floorTriggerStates.current[triggerName] = true;

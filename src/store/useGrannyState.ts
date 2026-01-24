@@ -22,6 +22,7 @@ interface GrannyState {
   setWaitTimer: (time: number) => void;
   resetPath: () => void;
   startInvestigation: (soundPosition: THREE.Vector3) => void;
+  setInvestigationSpeed: (speed: number) => void;
 }
 
 export const useGrannyState = create<GrannyState>((set) => ({
@@ -48,4 +49,5 @@ export const useGrannyState = create<GrannyState>((set) => ({
     currentPath: [],
     currentTargetIndex: 0
   }),
+  setInvestigationSpeed: (speed) => set({ investigationSpeed: speed }),
 }));

@@ -17,6 +17,7 @@ import { useRef, useState, useEffect } from 'react';
 import type { RapierRigidBody } from '@react-three/rapier';
 import { useFrame, useThree } from '@react-three/fiber';
 import { navigationSystem } from '../utils/navigation';
+import type { Difficulty } from '../store/useGameSettings';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -32,6 +33,13 @@ type GLTFResult = GLTF & {
     wood2: THREE.MeshStandardMaterial;
   };
   animations: GLTFAction[];
+};
+
+const difficultySettings: Record<Difficulty, { investigationSpeed: number }> = {
+  practice: { investigationSpeed: 0 },
+  easy: { investigationSpeed: 7 },
+  normal: { investigationSpeed: 10 },
+  hard: { investigationSpeed: 13 },
 };
 
 export function Granny(props: JSX.IntrinsicElements['group']) {
@@ -51,11 +59,12 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     setTargetPoint,
     setMode,
     setWaitTimer,
-    resetPath 
+    resetPath,
+    setInvestigationSpeed
   } = useGrannyState();
   const { nextDay } = useDayState();
   const { playerSpawnArray, triggerCameraReset } = usePlayerState();
-  const { inGameMenuOpen, volume } = useGameSettings();
+  const { inGameMenuOpen, volume, difficulty } = useGameSettings();
   const { isScreamerActive, startScreamer, endScreamer } = useScreamer();
   const { openDoor, doors } = useDoors();
   const { scene } = useThree();
@@ -66,6 +75,11 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
   const screamerTriggered = useRef(false);
   const doorObjectsCache = useRef<Map<string, THREE.Object3D>>(new Map());
   const cacheInitialized = useRef(false);
+
+  // Set investigation speed based on difficulty
+  useEffect(() => {
+    setInvestigationSpeed(difficultySettings[difficulty].investigationSpeed);
+  }, [difficulty, setInvestigationSpeed]);
 
   // Initialize patrol on mount
   useEffect(() => {
@@ -125,16 +139,14 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
 
     // Check for nearby closed doors and open them
     doorObjectsCache.current.forEach((doorObject, doorId) => {
+      if (!doorId.includes('room_door')) return
+
       const doorState = doors.get(doorId);
 
       if (doorState && !doorState.isOpen && !doorState.isRotating) {
         const doorPos = new THREE.Vector3();
         doorObject.getWorldPosition(doorPos);
         const distanceToDoor = currentPosition.distanceTo(doorPos);
-
-        if (doorId === 'room_door001') {
-          console.log(distanceToDoor);
-        }
 
         if (distanceToDoor < 3) {
           openDoor(doorId);

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { useGrannyState } from '../store/useGrannyState';
+import { useGameSettings } from '../store/useGameSettings';
 import { navigationSystem } from './navigation';
 
 type SoundCallback = (position: THREE.Vector3) => void;
@@ -23,6 +24,11 @@ export const soundEventBus = new SoundEventBus();
 
 // Helper function to notify Granny about a sound
 export const notifySound = (position: THREE.Vector3) => {
+  const { difficulty } = useGameSettings.getState();
+  
+  // In practice mode, skip all sound processing
+  if (difficulty === 'practice') return;
+  
   // Find closest point on navmesh
   const closestPoint = navigationSystem.getClosestPointOnNavMesh(position);
   

@@ -15,7 +15,7 @@ import { useDayState } from './store/useDayState';
 import { useEscapeDoor } from './store/useEscapeDoor';
 
 export default function App() {
-  const { screen, inGameMenuOpen } = useGameSettings();
+  const { screen, inGameMenuOpen, difficulty } = useGameSettings();
   const { gameOver } = useDayState();
   const { hasEscaped } = useEscapeDoor();
 
@@ -61,7 +61,7 @@ export default function App() {
             <Physics gravity={[0, -9.81, 0]}>
               <Suspense fallback={null}>
                 <HauntedHouse scale={1} />
-                <Granny />
+                {difficulty !== 'practice' && <Granny />}
                 <Player />
               </Suspense>
             </Physics>

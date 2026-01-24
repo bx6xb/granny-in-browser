@@ -55,7 +55,7 @@ export function SettingsMenu() {
             DIFFICULTY
           </label>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            {(['easy', 'normal', 'hard'] as const).map((diff) => (
+            {(['practice', 'easy', 'normal', 'hard'] as const).map((diff) => (
               <button
                 key={diff}
                 onClick={() => setDifficulty(diff)}

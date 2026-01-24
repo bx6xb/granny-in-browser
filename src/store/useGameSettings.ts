@@ -14,7 +14,7 @@ import { useTerminal } from './useTerminal';
 import { useWell } from './useWell';
 import { useDayState } from './useDayState';
 
-export type Difficulty = 'easy' | 'normal' | 'hard';
+export type Difficulty = 'practice' | 'easy' | 'normal' | 'hard';
 export type GameScreen = 'mainMenu' | 'settings' | 'game';
 
 interface GameSettingsState {
