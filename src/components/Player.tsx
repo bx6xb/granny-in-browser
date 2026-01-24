@@ -409,6 +409,18 @@ export function Player() {
     }
   }, [hasEscaped, inGameMenuOpen, gameOver, isScreamerActive]);
 
+  // Reset movement when screamer starts or day changes
+  useEffect(() => {
+    if (isScreamerActive || showDayMessage) {
+      movement.current.forward = false;
+      movement.current.backward = false;
+      movement.current.left = false;
+      movement.current.right = false;
+      movement.current.crouch = false;
+      crouchKeyHeld.current = false;
+    }
+  }, [isScreamerActive, showDayMessage]);
+
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
