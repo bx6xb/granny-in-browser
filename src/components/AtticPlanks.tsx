@@ -21,6 +21,11 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
   const plank3Ref = useRef<RapierRigidBody>(null);
   const plank4Ref = useRef<RapierRigidBody>(null);
   
+  const plank1LastSound = useRef(0);
+  const plank2LastSound = useRef(0);
+  const plank3LastSound = useRef(0);
+  const plank4LastSound = useRef(0);
+  
   const audioLoaderRef = useRef<THREE.AudioLoader | null>(null);
   const audioBufferRef = useRef<AudioBuffer | null>(null);
   const listenerRef = useRef<THREE.AudioListener | null>(null);
@@ -45,7 +50,18 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
     };
   }, [camera]);
   
-  const playPlankSound = (position: THREE.Vector3) => {
+  const playPlankSound = (lastSoundRef: React.MutableRefObject<number>, rigidBody: RapierRigidBody | null, position: THREE.Vector3) => {
+    if (!rigidBody) return;
+    
+    const velocity = rigidBody.linvel();
+    const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2 + velocity.z ** 2);
+    
+    // Play sound only if falling with significant speed AND cooldown passed
+    if (speed < 2) return;
+    
+    const now = Date.now();
+    if (now - lastSoundRef.current < 3000) return;
+    
     if (audioBufferRef.current && listenerRef.current) {
       const sound = new THREE.PositionalAudio(listenerRef.current);
       sound.setBuffer(audioBufferRef.current);
@@ -60,7 +76,7 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
         camera.parent?.remove(sound);
       };
       
-      // Notify Granny about the sound
+      lastSoundRef.current = now;
       notifySound(position);
     }
   };
@@ -108,7 +124,7 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
           handleCollision();
           if (plank1Ref.current) {
             const pos = plank1Ref.current.translation();
-            playPlankSound(new THREE.Vector3(pos.x, pos.y, pos.z));
+            playPlankSound(plank1LastSound, plank1Ref.current, new THREE.Vector3(pos.x, pos.y, pos.z));
           }
         }}
         mass={20}
@@ -132,7 +148,7 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
           handleCollision();
           if (plank2Ref.current) {
             const pos = plank2Ref.current.translation();
-            playPlankSound(new THREE.Vector3(pos.x, pos.y, pos.z));
+            playPlankSound(plank2LastSound, plank2Ref.current, new THREE.Vector3(pos.x, pos.y, pos.z));
           }
         }}
         mass={20}
@@ -156,7 +172,7 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
           handleCollision();
           if (plank3Ref.current) {
             const pos = plank3Ref.current.translation();
-            playPlankSound(new THREE.Vector3(pos.x, pos.y, pos.z));
+            playPlankSound(plank3LastSound, plank3Ref.current, new THREE.Vector3(pos.x, pos.y, pos.z));
           }
         }}
         mass={20}
@@ -180,7 +196,7 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
           handleCollision();
           if (plank4Ref.current) {
             const pos = plank4Ref.current.translation();
-            playPlankSound(new THREE.Vector3(pos.x, pos.y, pos.z));
+            playPlankSound(plank4LastSound, plank4Ref.current, new THREE.Vector3(pos.x, pos.y, pos.z));
           }
         }}
         mass={20}
