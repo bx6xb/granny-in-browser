@@ -2410,7 +2410,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
           onCollisionEnter={(e) => {
             if (!hatchFallen && e.other.rigidBodyObject?.name === 'player') {
               setHatchFallen(true);
-            } else if (hatchFallen && e.other.rigidBodyObject?.name !== 'player') {
+            } else if (hatchFallen && hatchFallTimeRef.current >= 0.5 && e.other.rigidBodyObject?.name !== 'player') {
               const audio = new Audio('/sounds/metal.mp3');
               audio.volume = (volume / 100) * 0.5;
               audio.play().catch(err => console.warn('Metal sound play failed:', err));
