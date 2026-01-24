@@ -44,23 +44,23 @@ const difficultySettings: Record<Difficulty, { investigationSpeed: number }> = {
 
 export function Granny(props: JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/granny.glb') as GLTFResult;
-  const { 
-    grannySpawnArray, 
-    currentPath, 
-    currentTargetIndex, 
+  const {
+    grannySpawnArray,
+    currentPath,
+    currentTargetIndex,
     targetPoint,
     mode,
     patrolSpeed,
     investigationSpeed,
     waitTime,
     waitTimer,
-    setCurrentPath, 
-    setCurrentTargetIndex, 
+    setCurrentPath,
+    setCurrentTargetIndex,
     setTargetPoint,
     setMode,
     setWaitTimer,
     resetPath,
-    setInvestigationSpeed
+    setInvestigationSpeed,
   } = useGrannyState();
   const { nextDay } = useDayState();
   const { playerSpawnArray, triggerCameraReset } = usePlayerState();
@@ -86,18 +86,21 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     const initPatrol = () => {
       if (!isInitialized && grannyRef.current && grannySpawnArray) {
         // Respawn granny at spawn location
-        grannyRef.current.setTranslation({ 
-          x: grannySpawnArray[0], 
-          y: grannySpawnArray[1], 
-          z: grannySpawnArray[2] 
-        }, true);
-        
+        grannyRef.current.setTranslation(
+          {
+            x: grannySpawnArray[0],
+            y: grannySpawnArray[1],
+            z: grannySpawnArray[2],
+          },
+          true
+        );
+
         const currentPos = grannyRef.current.translation();
         console.log('Granny current position:', currentPos);
-        
+
         const randomPoint = navigationSystem.getRandomPointOnNavMesh();
         console.log('Random point on navmesh:', randomPoint);
-        
+
         if (randomPoint) {
           setTargetPoint(randomPoint);
           const path = navigationSystem.findPath(
@@ -119,7 +122,8 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
 
   // Patrol and investigation logic
   useFrame((_, delta) => {
-    if (!grannyRef.current || !isInitialized || isCatching || inGameMenuOpen || isScreamerActive) return;
+    if (!grannyRef.current || !isInitialized || isCatching || inGameMenuOpen || isScreamerActive)
+      return;
 
     const currentPos = grannyRef.current.translation();
     const currentPosition = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
@@ -128,7 +132,11 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     // Build door objects cache once
     if (!cacheInitialized.current) {
       scene.traverse((object) => {
-        if (object.userData.isDoor && object.userData.doorId && !doorObjectsCache.current.has(object.userData.doorId)) {
+        if (
+          object.userData.isDoor &&
+          object.userData.doorId &&
+          !doorObjectsCache.current.has(object.userData.doorId)
+        ) {
           doorObjectsCache.current.set(object.userData.doorId, object);
         }
       });
@@ -139,7 +147,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
 
     // Check for nearby closed doors and open them
     doorObjectsCache.current.forEach((doorObject, doorId) => {
-      if (!doorId.includes('room_door') && !doorId.includes('barn_door')) return
+      if (!doorId.includes('room_door') && !doorId.includes('barn_door')) return;
 
       const doorState = doors.get(doorId);
 
@@ -208,7 +216,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
         // Move towards waypoint
         direction.normalize();
         const movement = direction.multiplyScalar(currentSpeed * delta);
-        
+
         grannyRef.current.setNextKinematicTranslation({
           x: currentPos.x + movement.x,
           y: currentPos.y + movement.y,
@@ -244,33 +252,36 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
 
   const handlePlayerCollision = (playerRigidBody: any) => {
     if (isCatching || screamerTriggered.current) return;
-    
+
     setIsCatching(true);
     screamerTriggered.current = true;
-    
+
     // Get Granny position for camera look-at
     const grannyPos = grannyRef.current?.translation();
     if (grannyPos) {
       const grannyPosition = new THREE.Vector3(grannyPos.x, grannyPos.y, grannyPos.z);
       startScreamer(grannyPosition);
     }
-    
+
     // Play scream sound
     const audio = new Audio('/sounds/granny_scream.mp3');
     audio.volume = (volume / 100) * 0.7;
-    audio.play().catch(err => console.warn('Scream sound play failed:', err));
-    
+    audio.play().catch((err) => console.warn('Scream sound play failed:', err));
+
     // After 3 seconds, trigger next day and respawn
     setTimeout(() => {
       // End screamer before next day
       endScreamer();
-      
+
       nextDay();
-      
+
       // Reset player position after short delay
       setTimeout(() => {
         if (playerRigidBody && playerSpawnArray) {
-          playerRigidBody.setTranslation({ x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] }, true);
+          playerRigidBody.setTranslation(
+            { x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] },
+            true
+          );
           playerRigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
           playerRigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
           triggerCameraReset();
@@ -288,7 +299,7 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
       <RigidBody
         ref={grannyRef}
         type="kinematicPosition"
-        position={grannySpawnArray || [-17.524, -0.774, -24.650]}
+        position={grannySpawnArray || [-17.524, -0.774, -24.65]}
         colliders="cuboid"
         sensor
         onIntersectionEnter={(e) => {
@@ -300,21 +311,25 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
         <group ref={groupRef} {...props} dispose={null}>
           <group name="granny">
             <mesh name="Cube050" geometry={nodes.Cube050.geometry} material={materials.body} />
-            <mesh name="Cube050_1" geometry={nodes.Cube050_1.geometry} material={materials['Material.017']} />
+            <mesh
+              name="Cube050_1"
+              geometry={nodes.Cube050_1.geometry}
+              material={materials['Material.017']}
+            />
             <mesh name="Cube050_2" geometry={nodes.Cube050_2.geometry} material={materials.dress} />
             <mesh name="Cube050_3" geometry={nodes.Cube050_3.geometry} material={materials.wood2} />
           </group>
         </group>
       </RigidBody>
-      
+
       {/* Debug: Visualize path */}
       {currentPath.map((point, index) => (
         <mesh key={index} position={[point.x, point.y, point.z]}>
           <sphereGeometry args={[0.1, 8, 8]} />
-          <meshBasicMaterial color={index === currentTargetIndex ? "red" : "yellow"} />
+          <meshBasicMaterial color={index === currentTargetIndex ? 'red' : 'yellow'} />
         </mesh>
       ))}
-      
+
       {/* Debug: Visualize target point */}
       {targetPoint && (
         <mesh position={[targetPoint.x, targetPoint.y, targetPoint.z]}>

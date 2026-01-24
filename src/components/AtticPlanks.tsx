@@ -15,53 +15,57 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
   const { activated, disappeared, activatePlanks, disappearPlanks } = useAtticPlanks();
   const { volume } = useGameSettings();
   const { camera } = useThree();
-  
+
   const plank1Ref = useRef<RapierRigidBody>(null);
   const plank2Ref = useRef<RapierRigidBody>(null);
   const plank3Ref = useRef<RapierRigidBody>(null);
   const plank4Ref = useRef<RapierRigidBody>(null);
-  
+
   const plank1LastSound = useRef(0);
   const plank2LastSound = useRef(0);
   const plank3LastSound = useRef(0);
   const plank4LastSound = useRef(0);
-  
+
   const audioLoaderRef = useRef<THREE.AudioLoader | null>(null);
   const audioBufferRef = useRef<AudioBuffer | null>(null);
   const listenerRef = useRef<THREE.AudioListener | null>(null);
-  
+
   useEffect(() => {
     if (!listenerRef.current) {
       listenerRef.current = new THREE.AudioListener();
       camera.add(listenerRef.current);
     }
-    
+
     if (!audioLoaderRef.current) {
       audioLoaderRef.current = new THREE.AudioLoader();
       audioLoaderRef.current.load('/sounds/plank.mp3', (buffer) => {
         audioBufferRef.current = buffer;
       });
     }
-    
+
     return () => {
       if (listenerRef.current) {
         camera.remove(listenerRef.current);
       }
     };
   }, [camera]);
-  
-  const playPlankSound = (lastSoundRef: React.MutableRefObject<number>, rigidBody: RapierRigidBody | null, position: THREE.Vector3) => {
+
+  const playPlankSound = (
+    lastSoundRef: React.MutableRefObject<number>,
+    rigidBody: RapierRigidBody | null,
+    position: THREE.Vector3
+  ) => {
     if (!rigidBody) return;
-    
+
     const velocity = rigidBody.linvel();
     const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2 + velocity.z ** 2);
-    
+
     // Play sound only if falling with significant speed AND cooldown passed
     if (speed < 2) return;
-    
+
     const now = Date.now();
     if (now - lastSoundRef.current < 3000) return;
-    
+
     if (audioBufferRef.current && listenerRef.current) {
       const sound = new THREE.PositionalAudio(listenerRef.current);
       sound.setBuffer(audioBufferRef.current);
@@ -71,16 +75,16 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
       sound.position.copy(position);
       camera.parent?.add(sound);
       sound.play();
-      
+
       sound.onEnded = () => {
         camera.parent?.remove(sound);
       };
-      
+
       lastSoundRef.current = now;
       notifySound(position);
     }
   };
-  
+
   // Apply impulse when activated to make them fall
   useEffect(() => {
     if (activated) {
@@ -92,27 +96,27 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
       });
     }
   }, [activated]);
-  
+
   // Start disappear timer when activated
   useEffect(() => {
     if (activated && !disappeared) {
       const timer = setTimeout(() => {
         disappearPlanks();
       }, 6000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [activated, disappeared, disappearPlanks]);
-  
+
   // Don't render if disappeared
   if (disappeared) return null;
-  
+
   const handleCollision = () => {
     if (!activated) {
       activatePlanks();
     }
   };
-  
+
   return (
     <>
       <RigidBody
@@ -124,7 +128,11 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
           handleCollision();
           if (plank1Ref.current) {
             const pos = plank1Ref.current.translation();
-            playPlankSound(plank1LastSound, plank1Ref.current, new THREE.Vector3(pos.x, pos.y, pos.z));
+            playPlankSound(
+              plank1LastSound,
+              plank1Ref.current,
+              new THREE.Vector3(pos.x, pos.y, pos.z)
+            );
           }
         }}
         mass={20}
@@ -138,7 +146,7 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
           material={materials.walls}
         />
       </RigidBody>
-      
+
       <RigidBody
         ref={plank2Ref}
         position={[8.855, 7.831, -9.159]}
@@ -148,7 +156,11 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
           handleCollision();
           if (plank2Ref.current) {
             const pos = plank2Ref.current.translation();
-            playPlankSound(plank2LastSound, plank2Ref.current, new THREE.Vector3(pos.x, pos.y, pos.z));
+            playPlankSound(
+              plank2LastSound,
+              plank2Ref.current,
+              new THREE.Vector3(pos.x, pos.y, pos.z)
+            );
           }
         }}
         mass={20}
@@ -162,7 +174,7 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
           material={materials.walls}
         />
       </RigidBody>
-      
+
       <RigidBody
         ref={plank3Ref}
         position={[9.082, 7.831, -7.73]}
@@ -172,7 +184,11 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
           handleCollision();
           if (plank3Ref.current) {
             const pos = plank3Ref.current.translation();
-            playPlankSound(plank3LastSound, plank3Ref.current, new THREE.Vector3(pos.x, pos.y, pos.z));
+            playPlankSound(
+              plank3LastSound,
+              plank3Ref.current,
+              new THREE.Vector3(pos.x, pos.y, pos.z)
+            );
           }
         }}
         mass={20}
@@ -186,7 +202,7 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
           material={materials.walls}
         />
       </RigidBody>
-      
+
       <RigidBody
         ref={plank4Ref}
         position={[7.54, 7.831, -7.811]}
@@ -196,7 +212,11 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
           handleCollision();
           if (plank4Ref.current) {
             const pos = plank4Ref.current.translation();
-            playPlankSound(plank4LastSound, plank4Ref.current, new THREE.Vector3(pos.x, pos.y, pos.z));
+            playPlankSound(
+              plank4LastSound,
+              plank4Ref.current,
+              new THREE.Vector3(pos.x, pos.y, pos.z)
+            );
           }
         }}
         mass={20}
@@ -204,9 +224,9 @@ export function AtticPlanks({ nodes, materials }: AtticPlanksProps) {
         linearDamping={0.5}
         angularDamping={0.5}
       >
-        <mesh 
+        <mesh
           name="attic_plank_4001"
-          geometry={nodes.attic_plank_4001.geometry} 
+          geometry={nodes.attic_plank_4001.geometry}
           material={materials.walls}
         />
       </RigidBody>

@@ -450,11 +450,11 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const itemsModel = useGLTF('/models/items.glb') as any; // Load items model for watermelon
 
   useHauntedHouse(nodes);
-  
+
   const { volume, difficulty } = useGameSettings();
   const { nextDay } = useDayState();
   const { playerSpawnArray, triggerCameraReset } = usePlayerState();
-  
+
   const creakingFloorsEnabled = difficulty !== 'easy';
 
   const { watermelonPlaced, bladeDropped, itemRevealed, dropBlade, revealItem } = useGuillotine();
@@ -479,7 +479,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const bucketRef = useRef<RapierRigidBody>(null);
   const atticTriggerActivated = useRef(false);
   const navmeshRef = useRef<THREE.Mesh>(null);
-  
+
   const box1LastSound = useRef(0);
   const box2LastSound = useRef(0);
   const box3LastSound = useRef(0);
@@ -487,7 +487,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const plank2LastSound = useRef(0);
   const soundCooldown = 500; // milliseconds
   const startupGracePeriod = useRef(true);
-  
+
   // Floor trigger states - track if player is inside each trigger
   const floorTriggerStates = useRef<Record<string, boolean>>({
     floor_trigger: false,
@@ -524,20 +524,23 @@ export function HauntedHouse(props: ThreeElements['group']) {
     }, 2000);
     return () => clearTimeout(timer);
   }, []);
-  
+
   // Handle attic trigger activation
   const handleAtticTrigger = (playerBody: RapierRigidBody) => {
     if (atticTriggerActivated.current) return;
     atticTriggerActivated.current = true;
-    
+
     // Wait 1 second before showing black screen and respawning
     setTimeout(() => {
       nextDay();
-      
+
       // Reset player position immediately after showing day message
       setTimeout(() => {
         if (playerSpawnArray) {
-          playerBody.setTranslation({ x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] }, true);
+          playerBody.setTranslation(
+            { x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] },
+            true
+          );
           playerBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
           playerBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
           triggerCameraReset();
@@ -546,49 +549,57 @@ export function HauntedHouse(props: ThreeElements['group']) {
       }, 100);
     }, 1000);
   };
-  
+
   const playBoxSound = (lastSoundRef: React.MutableRefObject<number>, position: THREE.Vector3) => {
     if (startupGracePeriod.current) return;
     const now = Date.now();
     if (now - lastSoundRef.current > soundCooldown) {
       const audio = new Audio('/sounds/box.mp3');
       audio.volume = (volume / 100) * 0.5;
-      audio.play().catch(err => console.warn('Box sound play failed:', err));
+      audio.play().catch((err) => console.warn('Box sound play failed:', err));
       lastSoundRef.current = now;
       notifySound(position);
     }
   };
-  
-  const playPlankSound = (lastSoundRef: React.MutableRefObject<number>, position: THREE.Vector3, rigidBody?: any) => {
+
+  const playPlankSound = (
+    lastSoundRef: React.MutableRefObject<number>,
+    position: THREE.Vector3,
+    rigidBody?: any
+  ) => {
     if (startupGracePeriod.current) return;
-    
+
     // Check velocity to ensure sound plays only when falling significantly
     if (rigidBody) {
       const velocity = rigidBody.linvel();
       const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2 + velocity.z ** 2);
       if (speed < 2) return;
     }
-    
+
     const now = Date.now();
     if (now - lastSoundRef.current > 3000) {
       const audio = new Audio('/sounds/plank.mp3');
       audio.volume = (volume / 100) * 0.5;
-      audio.play().catch(err => console.warn('Plank sound play failed:', err));
+      audio.play().catch((err) => console.warn('Plank sound play failed:', err));
       lastSoundRef.current = now;
       notifySound(position);
     }
   };
-  
+
   const playFloorSound = (position: THREE.Vector3) => {
     const audio = new Audio('/sounds/floor.mp3');
     audio.volume = (volume / 100) * 0.5;
-    audio.play().catch(err => console.warn('Floor sound play failed:', err));
+    audio.play().catch((err) => console.warn('Floor sound play failed:', err));
     notifySound(position);
   };
-  
-  const handleFloorTrigger = (triggerName: string, isEntering: boolean, position: THREE.Vector3) => {
+
+  const handleFloorTrigger = (
+    triggerName: string,
+    isEntering: boolean,
+    position: THREE.Vector3
+  ) => {
     if (!creakingFloorsEnabled) return;
-    
+
     if (isEntering && !floorTriggerStates.current[triggerName]) {
       // Player entered trigger - play sound
       floorTriggerStates.current[triggerName] = true;
@@ -605,13 +616,13 @@ export function HauntedHouse(props: ThreeElements['group']) {
       animationStartedRef.current = true;
       const audio = new Audio('/sounds/blade.mp3');
       audio.volume = (volume / 100) * 0.5;
-      audio.play().catch(err => console.warn('Blade sound play failed:', err));
-      
+      audio.play().catch((err) => console.warn('Blade sound play failed:', err));
+
       requestAnimationFrame(() => setAnimating(true));
       setTimeout(() => {
         dropBlade();
       }, 1500); // Blade takes 1.5 seconds to drop
-      
+
       // Make watermelon disappear and reveal item after blade drops
       setTimeout(() => {
         revealItem();
@@ -620,8 +631,8 @@ export function HauntedHouse(props: ThreeElements['group']) {
         useItems.setState((state) => ({
           droppedPositions: {
             ...state.droppedPositions,
-            [itemInsideWatermelon]: itemDropPosition
-          }
+            [itemInsideWatermelon]: itemDropPosition,
+          },
         }));
       }, 1600); // Slightly after blade completes drop
     }
@@ -640,14 +651,15 @@ export function HauntedHouse(props: ThreeElements['group']) {
     if (animating && !bladeDropped) {
       setBladePosition((prev) => {
         const newPos = prev - delta * 1.5; // Drop speed
-        if (newPos <= 0.083 - 1.45) { // Drop 1.45m
+        if (newPos <= 0.083 - 1.45) {
+          // Drop 1.45m
           setAnimating(false);
           return 0.083 - 1.45;
         }
         return newPos;
       });
     }
-    
+
     // Animate plank moving up
     if (plankAnimating && plankYOffset < 0.7) {
       setPlankYOffset((prev) => {
@@ -659,7 +671,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         return newOffset;
       });
     }
-    
+
     // Handle hatch falling and disappearing
     if (hatchFallen && hatchVisible) {
       hatchFallTimeRef.current += delta;
@@ -667,16 +679,16 @@ export function HauntedHouse(props: ThreeElements['group']) {
         setHatchVisible(false);
       }
     }
-    
+
     // Update well progress
     updateWellProgress(delta);
-    
+
     // Update bucket position
     if (bucketRef.current) {
-      bucketRef.current.setNextKinematicTranslation({ 
-        x: -16.202, 
-        y: -6.604 + bucketHeight, 
-        z: -30.295 
+      bucketRef.current.setNextKinematicTranslation({
+        x: -16.202,
+        y: -6.604 + bucketHeight,
+        z: -30.295,
       });
     }
   });
@@ -684,15 +696,14 @@ export function HauntedHouse(props: ThreeElements['group']) {
   return (
     <>
       {/* Navmesh - no physics, hidden, available for AI pathfinding */}
-      {/* <mesh
+      <mesh
         ref={navmeshRef}
         name="navmesh"
         geometry={nodes.navmesh.geometry}
         material={materials.navmesh}
         position={[-13.92, -3.029, -24.248]}
         visible={false}
-      /> */}
-      <mesh ref={navmeshRef} name="navmesh" geometry={nodes.navmesh.geometry} material={materials.navmesh} position={[-13.92, -3.029, -24.248]} />
+      />
 
       {/* Interactive Doors - outside fixed RigidBody */}
       {/* Main door - escape door */}
@@ -1063,10 +1074,20 @@ export function HauntedHouse(props: ThreeElements['group']) {
             visible={false}
           /> */}
           {!atticWireCut && (
-            <mesh name="attic_wire" geometry={nodes.attic_wire.geometry} material={materials.wire} position={[15.883, 10.13, -8.211]} />
+            <mesh
+              name="attic_wire"
+              geometry={nodes.attic_wire.geometry}
+              material={materials.wire}
+              position={[15.883, 10.13, -8.211]}
+            />
           )}
           {atticWireCut && (
-            <mesh name="attic_wire_cut" geometry={nodes.attic_wire_cut.geometry} material={materials.wire} position={[15.883, 10.13, -8.211]} />
+            <mesh
+              name="attic_wire_cut"
+              geometry={nodes.attic_wire_cut.geometry}
+              material={materials.wire}
+              position={[15.883, 10.13, -8.211]}
+            />
           )}
           <group name="Window001" position={[1.531, 5.801, -24.407]}>
             <mesh name="Cube011_1" geometry={nodes.Cube011_1.geometry} material={materials.wood2} />
@@ -1775,188 +1796,243 @@ export function HauntedHouse(props: ThreeElements['group']) {
             scale={1.365}
           />
           <Door
-        doorId="nightstand_box002"
-        geometry={nodes.Cube255.geometry}
-        material={materials.wood2}
-        position={[-1.69, 4.801, -23.407]}
-        rotation={[0, -Math.PI / 2, 0]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube255_1.geometry} material={materials.metal} />
-      </Door>
-      <mesh name="nightstand001" geometry={nodes.nightstand001.geometry} material={materials.wood2} position={[-2.769, 4.136, -23.863]} rotation={[0, -Math.PI / 2, 0]} scale={[1, 0.028, 0.797]} />
-            <mesh name="nightstand002" geometry={nodes.nightstand002.geometry} material={materials['wood2.012']} position={[6.886, 1.969, -32.08]} rotation={[0, 1.571, 0]} scale={[1, 0.028, 0.797]} />
-      <mesh name="nightstand003" geometry={nodes.nightstand003.geometry} material={materials['wood2.010']} position={[13.418, 4.133, -8.947]} scale={[1, 0.028, 0.797]} />
-      <mesh name="nightstand004" geometry={nodes.nightstand004.geometry} material={materials['wood2.016']} position={[-5.852, -0.807, -23.645]} rotation={[0, -Math.PI / 2, 0]} scale={[1, 0.028, 0.797]} />
-      <mesh name="nightstand006" geometry={nodes.nightstand006.geometry} material={materials['wood2.014']} position={[23.866, -0.81, -5.525]} rotation={[-Math.PI, 0, -Math.PI]} scale={[1, 0.028, 0.797]} />
-      <mesh name="nightstand007" geometry={nodes.nightstand007.geometry} material={materials['wood2.006']} position={[24.74, 4.133, -17.603]} rotation={[-Math.PI, 0, -Math.PI]} scale={[1, 0.028, 0.797]} />
-      <mesh name="nightstand008" geometry={nodes.nightstand008.geometry} material={materials['wood2.008']} position={[15.026, 4.133, -15.904]} rotation={[0, 1.571, 0]} scale={[1, 0.028, 0.797]} />
-      <mesh name="nightstand009" geometry={nodes.nightstand009.geometry} material={materials['wood2.004']} position={[13.205, 9.205, -18.301]} rotation={[0, -Math.PI / 2, 0]} scale={[1, 0.028, 0.797]} />
-      <Door
-        doorId="nightstand_box001"
-        geometry={nodes.Cube053_1.geometry}
-        material={materials['wood2.009']}
-        position={[16.106, 4.797, -16.36]}
-        rotation={[Math.PI, -1.571, 0]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube053_2.geometry} material={materials['metal.007']} />
-      </Door>
-      <Door
-        doorId="nightstand_box003"
-        geometry={nodes.Cube015.geometry}
-        material={materials['wood2.003']}
-        position={[-3.849, 4.801, -23.407]}
-        rotation={[Math.PI, Math.PI / 2, 0]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube015_1.geometry} material={materials['metal.002']} />
-      </Door>
-      <Door
-        doorId="nightstand_box004"
-        geometry={nodes.Cube057_1.geometry}
-        material={materials['wood2.011']}
-        position={[13.874, 4.797, -7.867]}
-        rotation={[Math.PI, 0, 0]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube057_2.geometry} material={materials['metal.009']} />
-      </Door>
-      <Door
-        doorId="nightstand_box005"
-        geometry={nodes.Cube059.geometry}
-        material={materials['wood2.010']}
-        position={[13.874, 4.797, -10.027]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube059_1.geometry} material={materials['metal.010']} />
-      </Door>
-      <Door
-        doorId="nightstand_box006"
-        geometry={nodes.Cube055.geometry}
-        material={materials['wood2.008']}
-        position={[13.947, 4.797, -16.36]}
-        rotation={[0, 1.571, 0]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube055_1.geometry} material={materials['metal.008']} />
-      </Door>
-      <Door
-        doorId="nightstand_box007"
-        geometry={nodes.Cube068.geometry}
-        material={materials['wood2.013']}
-        position={[7.966, 2.633, -32.536]}
-        rotation={[Math.PI, -1.571, 0]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube068_1.geometry} material={materials['metal.011']} />
-      </Door>
-      <Door
-        doorId="nightstand_box008"
-        geometry={nodes.Cube075_1.geometry}
-        material={materials['wood2.015']}
-        position={[23.409, -0.145, -6.605]}
-        rotation={[0, 0, -Math.PI]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={-1}
-      >
-        <mesh geometry={nodes.Cube075_2.geometry} material={materials['metal.013']} />
-      </Door>
-      <Door
-        doorId="nightstand_box009"
-        geometry={nodes.Cube077_1.geometry}
-        material={materials['wood2.014']}
-        position={[23.409, -0.145, -4.446]}
-        rotation={[-Math.PI, 0, -Math.PI]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={-1}
-      >
-        <mesh geometry={nodes.Cube077_2.geometry} material={materials['metal.014']} />
-      </Door>
-      <Door
-        doorId="nightstand_box010"
-        geometry={nodes.Cube079_1.geometry}
-        material={materials['wood2.017']}
-        position={[-6.932, -0.143, -23.189]}
-        rotation={[Math.PI, Math.PI / 2, 0]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube079_2.geometry} material={materials['metal.015']} />
-      </Door>
-      <Door
-        doorId="nightstand_box011"
-        geometry={nodes.Cube080_1.geometry}
-        material={materials['wood2.016']}
-        position={[-4.772, -0.143, -23.189]}
-        rotation={[0, -Math.PI / 2, 0]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube080_2.geometry} material={materials['metal.016']} />
-      </Door>
-      <Door
-        doorId="nightstand_box012"
-        geometry={nodes.Cube070.geometry}
-        material={materials['wood2.012']}
-        position={[5.806, 2.633, -32.536]}
-        rotation={[0, 1.571, 0]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube070_1.geometry} material={materials['metal.012']} />
-      </Door>
-      <Door
-        doorId="nightstand_box014"
-        geometry={nodes.Cube041_1.geometry}
-        material={materials['wood2.006']}
-        position={[24.283, 4.797, -16.523]}
-        rotation={[-Math.PI, 0, -Math.PI]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={-1}
-      >
-        <mesh geometry={nodes.Cube041_2.geometry} material={materials['metal.005']} />
-      </Door>
-      <Door
-        doorId="nightstand_box015"
-        geometry={nodes.Cube045_1.geometry}
-        material={materials['wood2.007']}
-        position={[24.283, 4.797, -18.683]}
-        rotation={[0, 0, -Math.PI]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={-1}
-      >
-        <mesh geometry={nodes.Cube045_2.geometry} material={materials['metal.006']} />
-      </Door>
-      <Door
-        doorId="nightstand_box017"
-        geometry={nodes.Cube037_1.geometry}
-        material={materials['wood2.005']}
-        position={[12.125, 9.869, -17.845]}
-        rotation={[Math.PI, Math.PI / 2, 0]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube037_2.geometry} material={materials['metal.003']} />
-      </Door>
-      <Door
-        doorId="nightstand_box018"
-        geometry={nodes.Cube039_1.geometry}
-        material={materials['wood2.004']}
-        position={[14.285, 9.869, -17.845]}
-        rotation={[0, -Math.PI / 2, 0]}
-        scale={[0.03, 0.037, 0.127]}
-        openDirection={1}
-      >
-        <mesh geometry={nodes.Cube039_2.geometry} material={materials['metal.004']} />
-      </Door>
+            doorId="nightstand_box002"
+            geometry={nodes.Cube255.geometry}
+            material={materials.wood2}
+            position={[-1.69, 4.801, -23.407]}
+            rotation={[0, -Math.PI / 2, 0]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube255_1.geometry} material={materials.metal} />
+          </Door>
+          <mesh
+            name="nightstand001"
+            geometry={nodes.nightstand001.geometry}
+            material={materials.wood2}
+            position={[-2.769, 4.136, -23.863]}
+            rotation={[0, -Math.PI / 2, 0]}
+            scale={[1, 0.028, 0.797]}
+          />
+          <mesh
+            name="nightstand002"
+            geometry={nodes.nightstand002.geometry}
+            material={materials['wood2.012']}
+            position={[6.886, 1.969, -32.08]}
+            rotation={[0, 1.571, 0]}
+            scale={[1, 0.028, 0.797]}
+          />
+          <mesh
+            name="nightstand003"
+            geometry={nodes.nightstand003.geometry}
+            material={materials['wood2.010']}
+            position={[13.418, 4.133, -8.947]}
+            scale={[1, 0.028, 0.797]}
+          />
+          <mesh
+            name="nightstand004"
+            geometry={nodes.nightstand004.geometry}
+            material={materials['wood2.016']}
+            position={[-5.852, -0.807, -23.645]}
+            rotation={[0, -Math.PI / 2, 0]}
+            scale={[1, 0.028, 0.797]}
+          />
+          <mesh
+            name="nightstand006"
+            geometry={nodes.nightstand006.geometry}
+            material={materials['wood2.014']}
+            position={[23.866, -0.81, -5.525]}
+            rotation={[-Math.PI, 0, -Math.PI]}
+            scale={[1, 0.028, 0.797]}
+          />
+          <mesh
+            name="nightstand007"
+            geometry={nodes.nightstand007.geometry}
+            material={materials['wood2.006']}
+            position={[24.74, 4.133, -17.603]}
+            rotation={[-Math.PI, 0, -Math.PI]}
+            scale={[1, 0.028, 0.797]}
+          />
+          <mesh
+            name="nightstand008"
+            geometry={nodes.nightstand008.geometry}
+            material={materials['wood2.008']}
+            position={[15.026, 4.133, -15.904]}
+            rotation={[0, 1.571, 0]}
+            scale={[1, 0.028, 0.797]}
+          />
+          <mesh
+            name="nightstand009"
+            geometry={nodes.nightstand009.geometry}
+            material={materials['wood2.004']}
+            position={[13.205, 9.205, -18.301]}
+            rotation={[0, -Math.PI / 2, 0]}
+            scale={[1, 0.028, 0.797]}
+          />
+          <Door
+            doorId="nightstand_box001"
+            geometry={nodes.Cube053_1.geometry}
+            material={materials['wood2.009']}
+            position={[16.106, 4.797, -16.36]}
+            rotation={[Math.PI, -1.571, 0]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube053_2.geometry} material={materials['metal.007']} />
+          </Door>
+          <Door
+            doorId="nightstand_box003"
+            geometry={nodes.Cube015.geometry}
+            material={materials['wood2.003']}
+            position={[-3.849, 4.801, -23.407]}
+            rotation={[Math.PI, Math.PI / 2, 0]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube015_1.geometry} material={materials['metal.002']} />
+          </Door>
+          <Door
+            doorId="nightstand_box004"
+            geometry={nodes.Cube057_1.geometry}
+            material={materials['wood2.011']}
+            position={[13.874, 4.797, -7.867]}
+            rotation={[Math.PI, 0, 0]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube057_2.geometry} material={materials['metal.009']} />
+          </Door>
+          <Door
+            doorId="nightstand_box005"
+            geometry={nodes.Cube059.geometry}
+            material={materials['wood2.010']}
+            position={[13.874, 4.797, -10.027]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube059_1.geometry} material={materials['metal.010']} />
+          </Door>
+          <Door
+            doorId="nightstand_box006"
+            geometry={nodes.Cube055.geometry}
+            material={materials['wood2.008']}
+            position={[13.947, 4.797, -16.36]}
+            rotation={[0, 1.571, 0]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube055_1.geometry} material={materials['metal.008']} />
+          </Door>
+          <Door
+            doorId="nightstand_box007"
+            geometry={nodes.Cube068.geometry}
+            material={materials['wood2.013']}
+            position={[7.966, 2.633, -32.536]}
+            rotation={[Math.PI, -1.571, 0]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube068_1.geometry} material={materials['metal.011']} />
+          </Door>
+          <Door
+            doorId="nightstand_box008"
+            geometry={nodes.Cube075_1.geometry}
+            material={materials['wood2.015']}
+            position={[23.409, -0.145, -6.605]}
+            rotation={[0, 0, -Math.PI]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={-1}
+          >
+            <mesh geometry={nodes.Cube075_2.geometry} material={materials['metal.013']} />
+          </Door>
+          <Door
+            doorId="nightstand_box009"
+            geometry={nodes.Cube077_1.geometry}
+            material={materials['wood2.014']}
+            position={[23.409, -0.145, -4.446]}
+            rotation={[-Math.PI, 0, -Math.PI]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={-1}
+          >
+            <mesh geometry={nodes.Cube077_2.geometry} material={materials['metal.014']} />
+          </Door>
+          <Door
+            doorId="nightstand_box010"
+            geometry={nodes.Cube079_1.geometry}
+            material={materials['wood2.017']}
+            position={[-6.932, -0.143, -23.189]}
+            rotation={[Math.PI, Math.PI / 2, 0]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube079_2.geometry} material={materials['metal.015']} />
+          </Door>
+          <Door
+            doorId="nightstand_box011"
+            geometry={nodes.Cube080_1.geometry}
+            material={materials['wood2.016']}
+            position={[-4.772, -0.143, -23.189]}
+            rotation={[0, -Math.PI / 2, 0]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube080_2.geometry} material={materials['metal.016']} />
+          </Door>
+          <Door
+            doorId="nightstand_box012"
+            geometry={nodes.Cube070.geometry}
+            material={materials['wood2.012']}
+            position={[5.806, 2.633, -32.536]}
+            rotation={[0, 1.571, 0]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube070_1.geometry} material={materials['metal.012']} />
+          </Door>
+          <Door
+            doorId="nightstand_box014"
+            geometry={nodes.Cube041_1.geometry}
+            material={materials['wood2.006']}
+            position={[24.283, 4.797, -16.523]}
+            rotation={[-Math.PI, 0, -Math.PI]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={-1}
+          >
+            <mesh geometry={nodes.Cube041_2.geometry} material={materials['metal.005']} />
+          </Door>
+          <Door
+            doorId="nightstand_box015"
+            geometry={nodes.Cube045_1.geometry}
+            material={materials['wood2.007']}
+            position={[24.283, 4.797, -18.683]}
+            rotation={[0, 0, -Math.PI]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={-1}
+          >
+            <mesh geometry={nodes.Cube045_2.geometry} material={materials['metal.006']} />
+          </Door>
+          <Door
+            doorId="nightstand_box017"
+            geometry={nodes.Cube037_1.geometry}
+            material={materials['wood2.005']}
+            position={[12.125, 9.869, -17.845]}
+            rotation={[Math.PI, Math.PI / 2, 0]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube037_2.geometry} material={materials['metal.003']} />
+          </Door>
+          <Door
+            doorId="nightstand_box018"
+            geometry={nodes.Cube039_1.geometry}
+            material={materials['wood2.004']}
+            position={[14.285, 9.869, -17.845]}
+            rotation={[0, -Math.PI / 2, 0]}
+            scale={[0.03, 0.037, 0.127]}
+            openDirection={1}
+          >
+            <mesh geometry={nodes.Cube039_2.geometry} material={materials['metal.004']} />
+          </Door>
 
           <mesh
             name="table001"
@@ -1988,8 +2064,18 @@ export function HauntedHouse(props: ThreeElements['group']) {
               material={materials['bed 2']}
             />
           </group>
-          <mesh name="table002" geometry={nodes.table002.geometry} material={materials.wood2} position={[18.694, 3.743, -13.758]} />
-          <mesh name="table004" geometry={nodes.table004.geometry} material={materials.wood2} position={[20.952, -1.224, -13.71]} />
+          <mesh
+            name="table002"
+            geometry={nodes.table002.geometry}
+            material={materials.wood2}
+            position={[18.694, 3.743, -13.758]}
+          />
+          <mesh
+            name="table004"
+            geometry={nodes.table004.geometry}
+            material={materials.wood2}
+            position={[20.952, -1.224, -13.71]}
+          />
 
           <group name="bed003" position={[11.064, 3.456, -22.577]} rotation={[0, -Math.PI / 2, 0]}>
             <mesh name="Cube272" geometry={nodes.Cube272.geometry} material={materials.wood2} />
@@ -2001,15 +2087,21 @@ export function HauntedHouse(props: ThreeElements['group']) {
             />
           </group>
 
-
-
           <group name="well001" position={[-16.204, -2.538, -30.298]} rotation={[0, -0.617, 0]}>
             <mesh name="Cone002" geometry={nodes.Cone002.geometry} material={materials.well} />
             <mesh name="Cone002_1" geometry={nodes.Cone002_1.geometry} material={materials.wood2} />
           </group>
           <group name="shaft001" position={[-16.196, -1.079, -30.3]} rotation={[0, -0.619, 0]}>
-            <mesh name="Cylinder024" geometry={nodes.Cylinder024.geometry} material={materials.wood2} />
-            <mesh name="Cylinder024_1" geometry={nodes.Cylinder024_1.geometry} material={materials.rope} />
+            <mesh
+              name="Cylinder024"
+              geometry={nodes.Cylinder024.geometry}
+              material={materials.wood2}
+            />
+            <mesh
+              name="Cylinder024_1"
+              geometry={nodes.Cylinder024_1.geometry}
+              material={materials.rope}
+            />
           </group>
           <mesh
             name="rope001"
@@ -2120,7 +2212,6 @@ export function HauntedHouse(props: ThreeElements['group']) {
             rotation={[0, Math.PI / 2, 0]}
           />
 
-
           {/* Shield 1 - Only render if active */}
           {activeShieldId === 1 && (
             <>
@@ -2148,7 +2239,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
               )}
             </>
           )}
-          
+
           {/* Shield 2 - Only render if active */}
           {activeShieldId === 2 && (
             <>
@@ -2179,7 +2270,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
               )}
             </>
           )}
-          
+
           {/* Shield 3 - Only render if active */}
           {activeShieldId === 3 && (
             <>
@@ -2208,8 +2299,6 @@ export function HauntedHouse(props: ThreeElements['group']) {
             </>
           )}
 
-
-
           <mesh
             name="cut_indicators"
             geometry={nodes.cut_indicators.geometry}
@@ -2223,8 +2312,8 @@ export function HauntedHouse(props: ThreeElements['group']) {
             position={[6.131, 0.145, -3.018]}
             scale={0.075}
           >
-            <meshStandardMaterial 
-              color={wiresCut >= 1 ? '#00ff00' : '#ff0000'} 
+            <meshStandardMaterial
+              color={wiresCut >= 1 ? '#00ff00' : '#ff0000'}
               emissive={wiresCut >= 1 ? '#00ff00' : '#ff0000'}
               emissiveIntensity={1}
             />
@@ -2235,8 +2324,8 @@ export function HauntedHouse(props: ThreeElements['group']) {
             position={[6.131, 0.349, -3.018]}
             scale={0.075}
           >
-            <meshStandardMaterial 
-              color={wiresCut >= 2 ? '#00ff00' : '#ff0000'} 
+            <meshStandardMaterial
+              color={wiresCut >= 2 ? '#00ff00' : '#ff0000'}
               emissive={wiresCut >= 2 ? '#00ff00' : '#ff0000'}
               emissiveIntensity={1}
             />
@@ -2262,20 +2351,28 @@ export function HauntedHouse(props: ThreeElements['group']) {
             />
           )}
           {!plankPlaced && (
-            <mesh 
-              name="wood_plank_slot" 
-              geometry={nodes.wood_plank001.geometry} 
-              material={materials.wood2} 
-              position={[8.106, 7.94, -8.589]} 
-              rotation={[-Math.PI, 0, 0]} 
-              scale={[0.8, 0.3, 0.8]} 
+            <mesh
+              name="wood_plank_slot"
+              geometry={nodes.wood_plank001.geometry}
+              material={materials.wood2}
+              position={[8.106, 7.94, -8.589]}
+              rotation={[-Math.PI, 0, 0]}
+              scale={[0.8, 0.3, 0.8]}
               visible={false}
             />
           )}
           {!lockOpened && (
             <group name="door_lock" position={[6.996, 0.675, -3.215]} scale={[0.366, 0.099, 0.037]}>
-              <mesh name="Cube038_1" geometry={nodes.Cube038_1.geometry} material={materials.wood2} />
-              <mesh name="Cube038_2" geometry={nodes.Cube038_2.geometry} material={materials.metal} />
+              <mesh
+                name="Cube038_1"
+                geometry={nodes.Cube038_1.geometry}
+                material={materials.wood2}
+              />
+              <mesh
+                name="Cube038_2"
+                geometry={nodes.Cube038_2.geometry}
+                material={materials.metal}
+              />
               <mesh
                 name="Cube038_3"
                 geometry={nodes.Cube038_3.geometry}
@@ -2296,8 +2393,8 @@ export function HauntedHouse(props: ThreeElements['group']) {
             position={[9.875, 0.573, -3.066]}
             scale={0.056}
           >
-            <meshStandardMaterial 
-              color={cardSwiped ? '#00ff00' : '#ff0000'} 
+            <meshStandardMaterial
+              color={cardSwiped ? '#00ff00' : '#ff0000'}
               emissive={cardSwiped ? '#00ff00' : '#ff0000'}
               emissiveIntensity={1}
             />
@@ -2339,7 +2436,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
 
       {/* Items placed on table001 */}
       <Items />
-      
+
       {/* Wood plank placed on attic hole - with collision */}
       {plankPlaced && (
         <RigidBody
@@ -2348,18 +2445,18 @@ export function HauntedHouse(props: ThreeElements['group']) {
           type="fixed"
           colliders="cuboid"
         >
-          <mesh 
-            name="wood_plank001" 
-            geometry={nodes.wood_plank001.geometry} 
-            material={materials.wood2} 
-            scale={[0.273, 0.025, 0.273]} 
+          <mesh
+            name="wood_plank001"
+            geometry={nodes.wood_plank001.geometry}
+            material={materials.wood2}
+            scale={[0.273, 0.025, 0.273]}
           />
         </RigidBody>
       )}
-      
+
       {/* Attic planks with physics */}
       <AtticPlanks nodes={nodes} materials={materials} />
-      
+
       {/* Boxes with physics */}
       <RigidBody
         position={[22.352, 3.464, -23.834]}
@@ -2370,13 +2467,9 @@ export function HauntedHouse(props: ThreeElements['group']) {
           if (pos) playBoxSound(box1LastSound, new THREE.Vector3(pos.x, pos.y, pos.z));
         }}
       >
-        <mesh
-          name="box001"
-          geometry={nodes.box001.geometry}
-          material={materials.box}
-        />
+        <mesh name="box001" geometry={nodes.box001.geometry} material={materials.box} />
       </RigidBody>
-      
+
       <RigidBody
         position={[22.352, 4.725, -23.834]}
         type="dynamic"
@@ -2386,13 +2479,9 @@ export function HauntedHouse(props: ThreeElements['group']) {
           if (pos) playBoxSound(box2LastSound, new THREE.Vector3(pos.x, pos.y, pos.z));
         }}
       >
-        <mesh
-          name="box002"
-          geometry={nodes.box002.geometry}
-          material={materials.box}
-        />
+        <mesh name="box002" geometry={nodes.box002.geometry} material={materials.box} />
       </RigidBody>
-      
+
       <RigidBody
         position={[22.352, 5.989, -23.834]}
         type="dynamic"
@@ -2402,19 +2491,15 @@ export function HauntedHouse(props: ThreeElements['group']) {
           if (pos) playBoxSound(box3LastSound, new THREE.Vector3(pos.x, pos.y, pos.z));
         }}
       >
-        <mesh
-          name="box003"
-          geometry={nodes.box003.geometry}
-          material={materials.box}
-        />
+        <mesh name="box003" geometry={nodes.box003.geometry} material={materials.box} />
       </RigidBody>
-      
+
       {/* Hatch with physics - falls when stepped on */}
       {hatchVisible && (
         <RigidBody
           ref={hatchRef}
           position={[-2.784, 7.832, -12.5]}
-          type={hatchFallen ? "dynamic" : "fixed"}
+          type={hatchFallen ? 'dynamic' : 'fixed'}
           colliders="cuboid"
           mass={20}
           gravityScale={1}
@@ -2423,10 +2508,14 @@ export function HauntedHouse(props: ThreeElements['group']) {
           onCollisionEnter={(e) => {
             if (!hatchFallen && e.other.rigidBodyObject?.name === 'player') {
               setHatchFallen(true);
-            } else if (hatchFallen && hatchFallTimeRef.current >= 0.5 && e.other.rigidBodyObject?.name !== 'player') {
+            } else if (
+              hatchFallen &&
+              hatchFallTimeRef.current >= 0.5 &&
+              e.other.rigidBodyObject?.name !== 'player'
+            ) {
               const audio = new Audio('/sounds/metal.mp3');
               audio.volume = (volume / 100) * 0.5;
-              audio.play().catch(err => console.warn('Metal sound play failed:', err));
+              audio.play().catch((err) => console.warn('Metal sound play failed:', err));
               const pos = hatchRef.current?.translation();
               if (pos) notifySound(new THREE.Vector3(pos.x, pos.y, pos.z));
             }
@@ -2439,7 +2528,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
           />
         </RigidBody>
       )}
-      
+
       {/* Planks with physics */}
       <RigidBody
         position={[-1.02, 8.885, -12.485]}
@@ -2452,16 +2541,17 @@ export function HauntedHouse(props: ThreeElements['group']) {
         angularDamping={0.5}
         onCollisionEnter={(e) => {
           const pos = e.target.rigidBody?.translation();
-          if (pos) playPlankSound(plank1LastSound, new THREE.Vector3(pos.x, pos.y, pos.z), e.target.rigidBody);
+          if (pos)
+            playPlankSound(
+              plank1LastSound,
+              new THREE.Vector3(pos.x, pos.y, pos.z),
+              e.target.rigidBody
+            );
         }}
       >
-        <mesh
-          name="plank001"
-          geometry={nodes.plank001.geometry}
-          material={materials.wood2}
-        />
+        <mesh name="plank001" geometry={nodes.plank001.geometry} material={materials.wood2} />
       </RigidBody>
-      
+
       <RigidBody
         position={[11.714, -6.194, -17.935]}
         type="dynamic"
@@ -2472,16 +2562,17 @@ export function HauntedHouse(props: ThreeElements['group']) {
         angularDamping={0.5}
         onCollisionEnter={(e) => {
           const pos = e.target.rigidBody?.translation();
-          if (pos) playPlankSound(plank2LastSound, new THREE.Vector3(pos.x, pos.y, pos.z), e.target.rigidBody);
+          if (pos)
+            playPlankSound(
+              plank2LastSound,
+              new THREE.Vector3(pos.x, pos.y, pos.z),
+              e.target.rigidBody
+            );
         }}
       >
-        <mesh
-          name="plank002"
-          geometry={nodes.plank002.geometry}
-          material={materials.wood2}
-        />
+        <mesh name="plank002" geometry={nodes.plank002.geometry} material={materials.wood2} />
       </RigidBody>
-      
+
       {/* Vase table with physics */}
       <RigidBody
         position={[1.791, 4.087, -21.712]}
@@ -2499,7 +2590,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
           scale={[0.099, 0.518, 0.099]}
         />
       </RigidBody>
-      
+
       {/* Lamp with physics */}
       <RigidBody
         position={[9.185, 4.362, -18.753]}
@@ -2523,7 +2614,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
           />
         </group>
       </RigidBody>
-      
+
       {/* Chairs */}
       <RigidBody position={[18.692, 3.788, -12.527]} type="fixed" colliders="hull">
         <mesh
@@ -2533,7 +2624,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
           scale={[1, 0.612, 1]}
         />
       </RigidBody>
-      
+
       <RigidBody position={[20.877, -1.174, -12.329]} type="fixed" colliders="hull">
         <mesh
           name="chair002"
@@ -2542,8 +2633,13 @@ export function HauntedHouse(props: ThreeElements['group']) {
           scale={[1, 0.612, 1]}
         />
       </RigidBody>
-      
-      <RigidBody position={[15.722, -1.174, -17.182]} rotation={[0, -0.198, 0]} type="fixed" colliders="hull">
+
+      <RigidBody
+        position={[15.722, -1.174, -17.182]}
+        rotation={[0, -0.198, 0]}
+        type="fixed"
+        colliders="hull"
+      >
         <mesh
           name="chair003"
           geometry={nodes.chair003.geometry}
@@ -2551,8 +2647,13 @@ export function HauntedHouse(props: ThreeElements['group']) {
           scale={[1, 0.612, 1]}
         />
       </RigidBody>
-      
-      <RigidBody position={[19.63, -1.174, -17.182]} rotation={[0, 0.29, 0]} type="fixed" colliders="hull">
+
+      <RigidBody
+        position={[19.63, -1.174, -17.182]}
+        rotation={[0, 0.29, 0]}
+        type="fixed"
+        colliders="hull"
+      >
         <mesh
           name="chair004"
           geometry={nodes.chair004.geometry}
@@ -2560,8 +2661,13 @@ export function HauntedHouse(props: ThreeElements['group']) {
           scale={[1, 0.612, 1]}
         />
       </RigidBody>
-      
-      <RigidBody position={[22.904, -1.174, -19.653]} rotation={[-Math.PI, 1.565, -Math.PI]} type="fixed" colliders="hull">
+
+      <RigidBody
+        position={[22.904, -1.174, -19.653]}
+        rotation={[-Math.PI, 1.565, -Math.PI]}
+        type="fixed"
+        colliders="hull"
+      >
         <mesh
           name="chair005"
           geometry={nodes.chair005.geometry}
@@ -2569,8 +2675,13 @@ export function HauntedHouse(props: ThreeElements['group']) {
           scale={[1, 0.612, 1]}
         />
       </RigidBody>
-      
-      <RigidBody position={[19.63, -1.174, -22.073]} rotation={[-Math.PI, 0.269, -Math.PI]} type="fixed" colliders="hull">
+
+      <RigidBody
+        position={[19.63, -1.174, -22.073]}
+        rotation={[-Math.PI, 0.269, -Math.PI]}
+        type="fixed"
+        colliders="hull"
+      >
         <mesh
           name="chair006"
           geometry={nodes.chair006.geometry}
@@ -2578,8 +2689,13 @@ export function HauntedHouse(props: ThreeElements['group']) {
           scale={[1, 0.612, 1]}
         />
       </RigidBody>
-      
-      <RigidBody position={[15.89, -1.174, -22.125]} rotation={[Math.PI, -0.112, Math.PI]} type="fixed" colliders="hull">
+
+      <RigidBody
+        position={[15.89, -1.174, -22.125]}
+        rotation={[Math.PI, -0.112, Math.PI]}
+        type="fixed"
+        colliders="hull"
+      >
         <mesh
           name="chair007"
           geometry={nodes.chair007.geometry}
@@ -2587,8 +2703,13 @@ export function HauntedHouse(props: ThreeElements['group']) {
           scale={[1, 0.612, 1]}
         />
       </RigidBody>
-      
-      <RigidBody position={[12.085, -1.174, -19.615]} rotation={[0, -1.57, 0]} type="fixed" colliders="hull">
+
+      <RigidBody
+        position={[12.085, -1.174, -19.615]}
+        rotation={[0, -1.57, 0]}
+        type="fixed"
+        colliders="hull"
+      >
         <mesh
           name="chair008"
           geometry={nodes.chair008.geometry}
@@ -2596,7 +2717,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
           scale={[1, 0.612, 1]}
         />
       </RigidBody>
-      
+
       {/* Attic trigger - sensor that triggers day transition when player falls through */}
       <RigidBody
         position={[8.114, 6.936, -8.506]}
@@ -2612,15 +2733,15 @@ export function HauntedHouse(props: ThreeElements['group']) {
         }}
       >
         <CuboidCollider args={[2, 0.5, 2]} sensor />
-        <mesh
-          geometry={nodes.attic_trigger.geometry}
-          scale={[1.47, 0.043, 1.47]}
-          visible={false}
-        />
+        <mesh geometry={nodes.attic_trigger.geometry} scale={[1.47, 0.043, 1.47]} visible={false} />
       </RigidBody>
-      
+
       {/* Floor triggers - invisible sensors that play sound when stepped on */}
-      <RigidBody position={[15.629, -2.06, -13.249]} type="fixed" sensor colliders={false}
+      <RigidBody
+        position={[15.629, -2.06, -13.249]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger', true, new THREE.Vector3(15.629, -2.06, -13.249));
@@ -2635,8 +2756,12 @@ export function HauntedHouse(props: ThreeElements['group']) {
         <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
         <mesh name="floor_trigger" geometry={nodes.floor_trigger.geometry} visible={false} />
       </RigidBody>
-      
-      <RigidBody position={[9.69, -2.06, -5.302]} type="fixed" sensor colliders={false}
+
+      <RigidBody
+        position={[9.69, -2.06, -5.302]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger001', true, new THREE.Vector3(9.69, -2.06, -5.302));
@@ -2651,8 +2776,12 @@ export function HauntedHouse(props: ThreeElements['group']) {
         <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
         <mesh name="floor_trigger001" geometry={nodes.floor_trigger001.geometry} visible={false} />
       </RigidBody>
-      
-      <RigidBody position={[-5.512, -2.06, -19.225]} type="fixed" sensor colliders={false}
+
+      <RigidBody
+        position={[-5.512, -2.06, -19.225]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger002', true, new THREE.Vector3(-5.512, -2.06, -19.225));
@@ -2660,15 +2789,23 @@ export function HauntedHouse(props: ThreeElements['group']) {
         }}
         onIntersectionExit={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
-            handleFloorTrigger('floor_trigger002', false, new THREE.Vector3(-5.512, -2.06, -19.225));
+            handleFloorTrigger(
+              'floor_trigger002',
+              false,
+              new THREE.Vector3(-5.512, -2.06, -19.225)
+            );
           }
         }}
       >
         <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
         <mesh name="floor_trigger002" geometry={nodes.floor_trigger002.geometry} visible={false} />
       </RigidBody>
-      
-      <RigidBody position={[7.979, -2.06, -18.201]} type="fixed" sensor colliders={false}
+
+      <RigidBody
+        position={[7.979, -2.06, -18.201]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger003', true, new THREE.Vector3(7.979, -2.06, -18.201));
@@ -2683,8 +2820,12 @@ export function HauntedHouse(props: ThreeElements['group']) {
         <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
         <mesh name="floor_trigger003" geometry={nodes.floor_trigger003.geometry} visible={false} />
       </RigidBody>
-      
-      <RigidBody position={[-2.501, -2.06, -4.169]} type="fixed" sensor colliders={false}
+
+      <RigidBody
+        position={[-2.501, -2.06, -4.169]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger004', true, new THREE.Vector3(-2.501, -2.06, -4.169));
@@ -2699,8 +2840,12 @@ export function HauntedHouse(props: ThreeElements['group']) {
         <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
         <mesh name="floor_trigger004" geometry={nodes.floor_trigger004.geometry} visible={false} />
       </RigidBody>
-      
-      <RigidBody position={[0.711, 2.898, -10.67]} type="fixed" sensor colliders={false}
+
+      <RigidBody
+        position={[0.711, 2.898, -10.67]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger005', true, new THREE.Vector3(0.711, 2.898, -10.67));
@@ -2715,8 +2860,12 @@ export function HauntedHouse(props: ThreeElements['group']) {
         <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
         <mesh name="floor_trigger005" geometry={nodes.floor_trigger005.geometry} visible={false} />
       </RigidBody>
-      
-      <RigidBody position={[8.457, 2.898, -14.487]} type="fixed" sensor colliders={false}
+
+      <RigidBody
+        position={[8.457, 2.898, -14.487]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger006', true, new THREE.Vector3(8.457, 2.898, -14.487));
@@ -2731,8 +2880,12 @@ export function HauntedHouse(props: ThreeElements['group']) {
         <CuboidCollider args={[1.5, 0.1, 1.1]} sensor />
         <mesh name="floor_trigger006" geometry={nodes.floor_trigger006.geometry} visible={false} />
       </RigidBody>
-      
-      <RigidBody position={[21.695, 2.898, -13.077]} type="fixed" sensor colliders={false}
+
+      <RigidBody
+        position={[21.695, 2.898, -13.077]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger007', true, new THREE.Vector3(21.695, 2.898, -13.077));
@@ -2740,15 +2893,23 @@ export function HauntedHouse(props: ThreeElements['group']) {
         }}
         onIntersectionExit={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
-            handleFloorTrigger('floor_trigger007', false, new THREE.Vector3(21.695, 2.898, -13.077));
+            handleFloorTrigger(
+              'floor_trigger007',
+              false,
+              new THREE.Vector3(21.695, 2.898, -13.077)
+            );
           }
         }}
       >
         <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
         <mesh name="floor_trigger007" geometry={nodes.floor_trigger007.geometry} visible={false} />
       </RigidBody>
-      
-      <RigidBody position={[3.714, 7.95, -10.268]} type="fixed" sensor colliders={false}
+
+      <RigidBody
+        position={[3.714, 7.95, -10.268]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger008', true, new THREE.Vector3(3.714, 7.95, -10.268));
@@ -2763,8 +2924,12 @@ export function HauntedHouse(props: ThreeElements['group']) {
         <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
         <mesh name="floor_trigger008" geometry={nodes.floor_trigger008.geometry} visible={false} />
       </RigidBody>
-      
-      <RigidBody position={[7.994, 7.95, -16.054]} type="fixed" sensor colliders={false}
+
+      <RigidBody
+        position={[7.994, 7.95, -16.054]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger009', true, new THREE.Vector3(7.994, 7.95, -16.054));
@@ -2779,8 +2944,12 @@ export function HauntedHouse(props: ThreeElements['group']) {
         <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
         <mesh name="floor_trigger009" geometry={nodes.floor_trigger009.geometry} visible={false} />
       </RigidBody>
-      
-      <RigidBody position={[20.465, 2.801, -32.637]} type="fixed" sensor colliders={false}
+
+      <RigidBody
+        position={[20.465, 2.801, -32.637]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger010', true, new THREE.Vector3(20.465, 2.801, -32.637));
@@ -2788,15 +2957,23 @@ export function HauntedHouse(props: ThreeElements['group']) {
         }}
         onIntersectionExit={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
-            handleFloorTrigger('floor_trigger010', false, new THREE.Vector3(20.465, 2.801, -32.637));
+            handleFloorTrigger(
+              'floor_trigger010',
+              false,
+              new THREE.Vector3(20.465, 2.801, -32.637)
+            );
           }
         }}
       >
         <CuboidCollider args={[1.5, 0.1, 1.5]} sensor />
         <mesh name="floor_trigger010" geometry={nodes.floor_trigger010.geometry} visible={false} />
       </RigidBody>
-      
-      <RigidBody position={[10.648, -4.276, -32.86]} type="fixed" sensor colliders={false}
+
+      <RigidBody
+        position={[10.648, -4.276, -32.86]}
+        type="fixed"
+        sensor
+        colliders={false}
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
             handleFloorTrigger('floor_trigger011', true, new THREE.Vector3(10.648, -4.276, -32.86));
@@ -2804,7 +2981,11 @@ export function HauntedHouse(props: ThreeElements['group']) {
         }}
         onIntersectionExit={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
-            handleFloorTrigger('floor_trigger011', false, new THREE.Vector3(10.648, -4.276, -32.86));
+            handleFloorTrigger(
+              'floor_trigger011',
+              false,
+              new THREE.Vector3(10.648, -4.276, -32.86)
+            );
           }
         }}
       >

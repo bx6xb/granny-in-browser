@@ -31,7 +31,7 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
   const thumbRef = useRef<HTMLDivElement>(null);
   const [joystickActive, setJoystickActive] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  
+
   const joystickTouch = useRef<TouchPosition | null>(null);
   const cameraTouch = useRef<TouchPosition | null>(null);
   const lastCameraRotation = useRef({ x: 0, y: 0 });
@@ -43,7 +43,7 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
       const isSmallScreen = window.innerWidth <= 1024;
       setIsMobile(isTouchDevice && isSmallScreen);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -63,7 +63,7 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
         if (x < window.innerWidth / 2 && !joystickTouch.current) {
           joystickTouch.current = { x, y, id: touch.identifier };
           setJoystickActive(true);
-          
+
           if (joystickRef.current) {
             joystickRef.current.style.left = `${x}px`;
             joystickRef.current.style.top = `${y}px`;
@@ -154,7 +154,7 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
         if (joystickTouch.current && touch.identifier === joystickTouch.current.id) {
           joystickTouch.current = null;
           setJoystickActive(false);
-          
+
           if (joystickRef.current) {
             joystickRef.current.style.opacity = '0';
           }
@@ -256,7 +256,7 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
             touchAction: 'none',
           }}
         >
-          E<br/>
+          E<br />
           <span style={{ fontSize: '10px' }}>Interact</span>
         </button>
 
@@ -280,7 +280,7 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
             touchAction: 'none',
           }}
         >
-          F<br/>
+          F<br />
           <span style={{ fontSize: '10px' }}>Grab</span>
         </button>
 
@@ -305,7 +305,8 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
               touchAction: 'none',
             }}
           >
-            Space<br/>
+            Space
+            <br />
             <span style={{ fontSize: '10px' }}>Drop</span>
           </button>
         )}
@@ -330,7 +331,7 @@ export function MobileControls({ disabled = false }: MobileControlsProps) {
             touchAction: 'none',
           }}
         >
-          C<br/>
+          C<br />
           <span style={{ fontSize: '10px' }}>Crouch</span>
         </button>
       </div>

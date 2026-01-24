@@ -64,7 +64,7 @@ export function Door({
         // Smoothly interpolate towards target
         const newRotation = currentDoorState.currentRotation + diff * rotationSpeed;
         updateDoorRotation(doorId, newRotation);
-        
+
         // Update rotation (group or mesh)
         targetRef.rotation.y = rotation[1] + newRotation;
       } else {
@@ -106,11 +106,7 @@ export function Door({
         userData={{ isDoor: true, doorId }}
       >
         <group ref={groupRef} rotation={rotation} scale={scale}>
-          <mesh
-            ref={meshRef}
-            geometry={geometry}
-            material={material}
-          />
+          <mesh ref={meshRef} geometry={geometry} material={material} />
           {children}
         </group>
       </RigidBody>

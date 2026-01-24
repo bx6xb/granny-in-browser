@@ -16,16 +16,16 @@ export const useWires = create<WiresState>((set) => ({
   shieldWireCut: false,
   atticWireCut: false,
   nearWire: null,
-  
+
   setNearWire: (wireName) => set({ nearWire: wireName }),
-  
+
   cutWire: (wireName) => {
     // Play cut sound
     const audio = new Audio('/sounds/cut.mp3');
     const { volume } = useGameSettings.getState();
     audio.volume = (volume / 100) * 0.5;
-    audio.play().catch(err => console.warn('Cut sound play failed:', err));
-    
+    audio.play().catch((err) => console.warn('Cut sound play failed:', err));
+
     set((state) => {
       if (wireName === 'door_wire') {
         return { doorWireCut: true };
@@ -37,6 +37,7 @@ export const useWires = create<WiresState>((set) => ({
       return state;
     });
   },
-  
-  reset: () => set({ doorWireCut: false, shieldWireCut: false, atticWireCut: false, nearWire: null }),
+
+  reset: () =>
+    set({ doorWireCut: false, shieldWireCut: false, atticWireCut: false, nearWire: null }),
 }));

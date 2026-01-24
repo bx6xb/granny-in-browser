@@ -30,9 +30,10 @@ export const usePlank = create<PlankState>((set) => ({
     const audio = new Audio('/sounds/plank_attic.mp3');
     const { volume } = useGameSettings.getState();
     audio.volume = (volume / 100) * 0.5;
-    audio.play().catch(err => console.warn('Plank attic sound play failed:', err));
-    
+    audio.play().catch((err) => console.warn('Plank attic sound play failed:', err));
+
     set({ plankPlaced: true });
   },
-  reset: () => set({ isChippedOff: false, nearPlank: false, nearPlankSlot: false, plankPlaced: false }),
+  reset: () =>
+    set({ isChippedOff: false, nearPlank: false, nearPlankSlot: false, plankPlaced: false }),
 }));

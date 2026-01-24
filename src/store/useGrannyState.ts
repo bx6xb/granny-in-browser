@@ -43,11 +43,12 @@ export const useGrannyState = create<GrannyState>((set) => ({
   setMode: (mode) => set({ mode }),
   setWaitTimer: (time) => set({ waitTimer: time }),
   resetPath: () => set({ currentPath: [], currentTargetIndex: 0, targetPoint: null }),
-  startInvestigation: (soundPosition) => set({ 
-    mode: 'investigating',
-    targetPoint: soundPosition,
-    currentPath: [],
-    currentTargetIndex: 0
-  }),
+  startInvestigation: (soundPosition) =>
+    set({
+      mode: 'investigating',
+      targetPoint: soundPosition,
+      currentPath: [],
+      currentTargetIndex: 0,
+    }),
   setInvestigationSpeed: (speed) => set({ investigationSpeed: speed }),
 }));

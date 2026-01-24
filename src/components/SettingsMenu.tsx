@@ -1,7 +1,8 @@
 import { useGameSettings } from '../store/useGameSettings';
 
 export function SettingsMenu() {
-  const { difficulty, volume, sensitivity, setDifficulty, setVolume, setSensitivity, startGame } = useGameSettings();
+  const { difficulty, volume, sensitivity, setDifficulty, setVolume, setSensitivity, startGame } =
+    useGameSettings();
 
   return (
     <div

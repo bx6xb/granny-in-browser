@@ -12,7 +12,10 @@ interface ItemsState {
   grabItem: (itemName: string) => void;
   dropItem: (position: [number, number, number]) => void;
   isItemHeld: (itemName: string) => boolean;
-  getItemPosition: (itemName: string, defaultPosition: [number, number, number]) => [number, number, number];
+  getItemPosition: (
+    itemName: string,
+    defaultPosition: [number, number, number]
+  ) => [number, number, number];
   setSpawnPosition: (itemName: string, position: [number, number, number]) => void;
   reset: () => void;
 }
@@ -33,47 +36,47 @@ export const useItems = create<ItemsState>((set, get) => ({
   itemInsideWatermelon: initialSpawns.watermelonItem,
   itemSlots: initialSpawns.itemSlots,
   spawnPositions: {},
-  
+
   setNearbyItem: (itemName) => set({ nearbyItem: itemName }),
-  
+
   grabItem: (itemName) => {
     const { heldItem, droppedPositions } = get();
     // If already holding an item, drop it first
     if (heldItem) {
       // Store the old item as dropped at origin (will be repositioned by Player)
-      set({ 
+      set({
         heldItem: itemName,
         nearbyItem: null,
         droppedPositions: {
           ...droppedPositions,
-          [heldItem]: [0, -100, 0] // Temporary position, will be updated by Player
-        }
+          [heldItem]: [0, -100, 0], // Temporary position, will be updated by Player
+        },
       });
     } else {
-      set({ 
+      set({
         heldItem: itemName,
-        nearbyItem: null 
+        nearbyItem: null,
       });
     }
   },
-  
+
   dropItem: (position) => {
     const { heldItem, droppedPositions } = get();
     if (heldItem) {
-      set({ 
+      set({
         heldItem: null,
         droppedPositions: {
           ...droppedPositions,
-          [heldItem]: position
-        }
+          [heldItem]: position,
+        },
       });
     }
   },
-  
+
   isItemHeld: (itemName) => {
     return get().heldItem === itemName;
   },
-  
+
   getItemPosition: (itemName, defaultPosition) => {
     const { droppedPositions, spawnPositions } = get();
     return droppedPositions[itemName] || spawnPositions[itemName] || defaultPosition;

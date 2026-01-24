@@ -3,30 +3,37 @@
 ## Issues Fixed
 
 ### 1. React Three Fiber Error
+
 **Problem:** MobileControls component (containing HTML divs) was rendering inside the Three.js Canvas, causing:
+
 ```
 Error: R3F: Div is not part of the THREE namespace!
 ```
 
-**Solution:** 
+**Solution:**
+
 - Moved `MobileControls` outside the Canvas in `App.tsx`
 - Created `useMobileControls` store to bridge communication between Player and MobileControls
 - Player component registers action handlers that MobileControls can call
 - Touch movement syncs with keyboard movement through shared state
 
 ### 2. Main Menu Not Responsive
+
 **Problem:** Main menu had fixed font sizes and spacing that looked bad on mobile
 
 **Solution:**
+
 - Made MainMenu responsive using window.innerWidth checks
 - Adjusted font sizes: 36px (mobile), 64px (tablet), 96px (desktop)
 - Added responsive padding and margins
 - Made title text centered with proper padding
 
 ### 3. Other Menus Not Responsive
+
 **Problem:** Settings and InGame menus also needed mobile optimization
 
 **Solution:**
+
 - Updated SettingsMenu with responsive sizing
 - Updated InGameMenu with responsive sizing
 - Added flexWrap to difficulty buttons
@@ -35,6 +42,7 @@ Error: R3F: Div is not part of the THREE namespace!
 ## Architecture Changes
 
 ### New Store: `useMobileControls.ts`
+
 ```typescript
 - interact: () => void
 - grab: () => void
@@ -44,17 +52,20 @@ Error: R3F: Div is not part of the THREE namespace!
 ```
 
 ### MobileControls Component
+
 - Moved from inside Player to App.tsx (outside Canvas)
 - Uses Three.js camera through `useThree()` hook
 - Exports `mobileMovement` object for movement state
 - Auto-detects mobile devices (≤1024px + touch support)
 
 ### Player Component
+
 - Registers action handlers with useMobileControls store
 - Syncs mobile movement with keyboard movement (16ms interval)
 - No longer renders MobileControls directly
 
 ### App.tsx
+
 - Renders MobileControls after Canvas
 - Passes disabled state based on game state
 - MobileControls positioned absolutely over Canvas
@@ -62,6 +73,7 @@ Error: R3F: Div is not part of the THREE namespace!
 ## Key Implementation Details
 
 ### Touch Movement Sync
+
 ```typescript
 // Player.tsx - Sync mobile movement with keyboard
 useEffect(() => {
@@ -77,6 +89,7 @@ useEffect(() => {
 ```
 
 ### Action Handler Registration
+
 ```typescript
 // Player.tsx - Register handlers on mount
 useEffect(() => {
@@ -88,8 +101,9 @@ useEffect(() => {
 ```
 
 ### Responsive Breakpoints
+
 - Mobile: ≤768px
-- Tablet: >768px and ≤1024px  
+- Tablet: >768px and ≤1024px
 - Desktop: >1024px
 
 ## Files Modified
@@ -145,6 +159,7 @@ useEffect(() => {
 ## Browser Compatibility
 
 Tested on:
+
 - Chrome DevTools (mobile emulation)
 - Safari iOS (recommended for testing)
 - Android Chrome (recommended for testing)

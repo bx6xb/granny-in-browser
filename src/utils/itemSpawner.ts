@@ -1,4 +1,12 @@
-type ItemName = 'watermelon' | 'hammer' | 'handle' | 'card' | 'safe_key' | 'master_key' | 'padlock_key' | 'cut_pliers';
+type ItemName =
+  | 'watermelon'
+  | 'hammer'
+  | 'handle'
+  | 'card'
+  | 'safe_key'
+  | 'master_key'
+  | 'padlock_key'
+  | 'cut_pliers';
 
 interface Seed {
   watermelonItem: 'safe_key' | 'card' | 'padlock_key';
@@ -92,7 +100,7 @@ export function generateItemSpawns(seedNumber: 1 | 2 | 3 = 1): {
 
   // Generate all available slots
   const availableSlots: Array<{ name: string; type: 'lg' | 'md' | 'sm' }> = [];
-  
+
   for (let i = SLOT_LG_RANGE.start; i <= SLOT_LG_RANGE.end; i++) {
     availableSlots.push({ name: getSlotName('lg', i), type: 'lg' });
   }

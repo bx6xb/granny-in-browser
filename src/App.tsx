@@ -23,18 +23,18 @@ export default function App() {
     <div style={{ width: '100vw', height: '100vh', background: '#000000' }}>
       {screen === 'mainMenu' && <MainMenu />}
       {screen === 'settings' && <SettingsMenu />}
-      
+
       {screen === 'game' && (
         <>
           <GameUI />
           {inGameMenuOpen && !gameOver && !hasEscaped && <InGameMenu />}
           <div className="crosshair" />
-          <Canvas 
-            shadows 
+          <Canvas
+            shadows
             camera={{ position: [0, 0, 0], fov: 75 }}
-            gl={{ 
+            gl={{
               antialias: false,
-              powerPreference: 'high-performance'
+              powerPreference: 'high-performance',
             }}
             onCreated={({ gl }) => {
               gl.domElement.addEventListener('webglcontextlost', (e) => {
@@ -48,10 +48,10 @@ export default function App() {
             }}
           >
             <ambientLight intensity={0.05} />
-            
-            <directionalLight 
-              position={[0, 50, 0]} 
-              intensity={0.1} 
+
+            <directionalLight
+              position={[0, 50, 0]}
+              intensity={0.1}
               color="#4a5f8f"
               castShadow={false}
             />

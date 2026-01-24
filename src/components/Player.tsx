@@ -39,7 +39,8 @@ export function Player() {
   const { toggleDoor, setNearbyDoor } = useDoors();
   const { setNearbyItem, grabItem, dropItem, heldItem } = useItems();
   const { setNearGuillotine, placeWatermelon } = useGuillotine();
-  const { setNearPlank, chipOffPlank, isChippedOff, setNearPlankSlot, placePlank, plankPlaced } = usePlank();
+  const { setNearPlank, chipOffPlank, isChippedOff, setNearPlankSlot, placePlank, plankPlaced } =
+    usePlank();
   const { setNearTerminal } = useTerminal();
   const { swipeCard, cutWire, openLock, setNearMainDoor, escape, hasEscaped } = useEscapeDoor();
   const { setNearWire } = useWires();
@@ -48,7 +49,16 @@ export function Player() {
   const { setNearShaft, setNearHandle, setHandle, startUsingWell, stopUsingWell } = useWell();
   const { inGameMenuOpen, setInGameMenuOpen } = useGameSettings();
   const { nextDay, showDayMessage, gameOver } = useDayState();
-  const { setNearBed, hideInBed, standUp, isHiding, originalPosition, bedPosition, shouldRestorePosition, clearRestoreFlag } = useBedHiding();
+  const {
+    setNearBed,
+    hideInBed,
+    standUp,
+    isHiding,
+    originalPosition,
+    bedPosition,
+    shouldRestorePosition,
+    clearRestoreFlag,
+  } = useBedHiding();
   const [isCrouching, setIsCrouching] = useState(false);
   const lastPointerLockExit = useRef(0);
   const [canEnablePointerLock, setCanEnablePointerLock] = useState(true);
@@ -63,13 +73,13 @@ export function Player() {
     const initialVolume = useGameSettings.getState().volume;
     audio.volume = (initialVolume / 100) * 0.3;
     walkAudioRef.current = audio;
-    
+
     return () => {
       audio.pause();
       audio.src = '';
     };
   }, []);
-  
+
   // Update walk audio volume when settings change
   const { volume } = useGameSettings();
   useEffect(() => {
@@ -98,7 +108,7 @@ export function Player() {
         // Track when pointer lock exits and add cooldown
         lastPointerLockExit.current = Date.now();
         setCanEnablePointerLock(false);
-        
+
         // Re-enable after 300ms cooldown to avoid timing issues
         setTimeout(() => {
           setCanEnablePointerLock(true);
@@ -109,10 +119,12 @@ export function Player() {
     // Override default error handling for pointer lock
     const originalErrorHandler = window.onerror;
     window.onerror = (msg, url, line, col, error) => {
-      if (typeof msg === 'string' && 
-          (msg.includes('PointerLockControls') || 
-           msg.includes('Pointer Lock API') ||
-           (error && error.name === 'SecurityError' && error.message?.includes('lock')))) {
+      if (
+        typeof msg === 'string' &&
+        (msg.includes('PointerLockControls') ||
+          msg.includes('Pointer Lock API') ||
+          (error && error.name === 'SecurityError' && error.message?.includes('lock')))
+      ) {
         // Suppress pointer lock errors
         return true;
       }
@@ -121,7 +133,7 @@ export function Player() {
 
     document.addEventListener('pointerlockerror', handlePointerLockError);
     document.addEventListener('pointerlockchange', handlePointerLockChange);
-    
+
     return () => {
       document.removeEventListener('pointerlockerror', handlePointerLockError);
       document.removeEventListener('pointerlockchange', handlePointerLockChange);
@@ -138,7 +150,7 @@ export function Player() {
     };
 
     window.addEventListener('blur', handleBlur);
-    
+
     return () => {
       window.removeEventListener('blur', handleBlur);
     };
@@ -154,7 +166,7 @@ export function Player() {
     };
 
     document.addEventListener('pointerlockchange', handlePointerLockChange);
-    
+
     return () => {
       document.removeEventListener('pointerlockchange', handlePointerLockChange);
     };
@@ -168,7 +180,7 @@ export function Player() {
     const buildInteractiveList = () => {
       const interactives: THREE.Object3D[] = [];
       const addedIds = new Set<string>(); // Prevent duplicates
-      
+
       scene.traverse((obj) => {
         // Check for doors
         if (obj.userData?.isDoor && obj.userData?.doorId) {
@@ -186,13 +198,20 @@ export function Player() {
             target.traverse((child) => child.layers.enable(1));
           }
         }
-        
+
         // Check for items
-        if (obj.name === 'padlock_key' || obj.name === 'master_key' || 
-            obj.name === 'card' || obj.name === 'safe_key' || 
-            obj.name === 'handle' || obj.name === 'watermelon' || 
-            obj.name === 'cut' || obj.name === 'hammer' || obj.name === 'wood_plank_item' || 
-            obj.name === 'vase') {
+        if (
+          obj.name === 'padlock_key' ||
+          obj.name === 'master_key' ||
+          obj.name === 'card' ||
+          obj.name === 'safe_key' ||
+          obj.name === 'handle' ||
+          obj.name === 'watermelon' ||
+          obj.name === 'cut' ||
+          obj.name === 'hammer' ||
+          obj.name === 'wood_plank_item' ||
+          obj.name === 'vase'
+        ) {
           if (!addedIds.has(obj.name)) {
             interactives.push(obj);
             addedIds.add(obj.name);
@@ -200,7 +219,7 @@ export function Player() {
             obj.traverse((child) => child.layers.enable(1));
           }
         }
-        
+
         // Check for guillotine
         if (obj.name === 'Cube091') {
           if (!addedIds.has('guillotine')) {
@@ -209,7 +228,7 @@ export function Player() {
             obj.layers.enable(1);
           }
         }
-        
+
         // Check for wood plank on door (before chipped off)
         if (obj.name === 'wood_plank') {
           if (!addedIds.has('wood_plank')) {
@@ -218,7 +237,7 @@ export function Player() {
             obj.layers.enable(1);
           }
         }
-        
+
         // Check for wood plank slot (to place plank)
         if (obj.name === 'wood_plank_slot') {
           if (!addedIds.has('wood_plank_slot')) {
@@ -227,7 +246,7 @@ export function Player() {
             obj.layers.enable(1);
           }
         }
-        
+
         // Check for terminal
         if (obj.name === 'terminal') {
           if (!addedIds.has('terminal')) {
@@ -236,17 +255,22 @@ export function Player() {
             obj.layers.enable(1);
           }
         }
-        
+
         // Check for wires
-        if (obj.name === 'door_wire' || obj.name === 'shield_wire' || 
-            obj.name === 'shield_wire002' || obj.name === 'shield_wire003' || obj.name === 'attic_wire') {
+        if (
+          obj.name === 'door_wire' ||
+          obj.name === 'shield_wire' ||
+          obj.name === 'shield_wire002' ||
+          obj.name === 'shield_wire003' ||
+          obj.name === 'attic_wire'
+        ) {
           if (!addedIds.has(obj.name)) {
             interactives.push(obj);
             addedIds.add(obj.name);
             obj.layers.enable(1);
           }
         }
-        
+
         // Check for door lock
         if (obj.name === 'door_lock') {
           if (!addedIds.has('door_lock')) {
@@ -255,7 +279,7 @@ export function Player() {
             obj.traverse((child) => child.layers.enable(1));
           }
         }
-        
+
         // Check for main door (escape door)
         if (obj.name === 'main_door') {
           if (!addedIds.has('main_door')) {
@@ -264,7 +288,7 @@ export function Player() {
             obj.traverse((child) => child.layers.enable(1));
           }
         }
-        
+
         // Check for well shaft
         if (obj.name === 'shaft001' || obj.name === 'Cylinder024' || obj.name === 'Cylinder024_1') {
           if (!addedIds.has('shaft001')) {
@@ -281,7 +305,7 @@ export function Player() {
             target.traverse((child) => child.layers.enable(1));
           }
         }
-        
+
         // Check for well handle
         if (obj.name === 'handle001') {
           if (!addedIds.has('handle001')) {
@@ -290,7 +314,7 @@ export function Player() {
             obj.traverse((child) => child.layers.enable(1));
           }
         }
-        
+
         // Check for beds
         if (obj.name === 'bed001' || obj.name === 'bed002' || obj.name === 'bed003') {
           if (!addedIds.has(obj.name)) {
@@ -300,12 +324,12 @@ export function Player() {
           }
         }
       });
-      
+
       interactiveObjects.current = interactives;
     };
 
     buildInteractiveList();
-    
+
     // Rebuild if scene changes (e.g., items spawned/removed)
     const rebuildTimeout = setInterval(buildInteractiveList, 1000); // Rebuild every second to catch new items
     return () => clearInterval(rebuildTimeout);
@@ -334,27 +358,33 @@ export function Player() {
   const { sensitivity } = useGameSettings();
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
-      if (document.pointerLockElement && !hasEscaped && !inGameMenuOpen && !gameOver && !isScreamerActive) {
+      if (
+        document.pointerLockElement &&
+        !hasEscaped &&
+        !inGameMenuOpen &&
+        !gameOver &&
+        !isScreamerActive
+      ) {
         const sensitivityFactor = sensitivity / 50; // Normalize to 0-2 range (50 = 1.0 = default)
         const movementX = event.movementX || 0;
         const movementY = event.movementY || 0;
-        
+
         const euler = new THREE.Euler(0, 0, 0, 'YXZ');
         euler.setFromQuaternion(camera.quaternion);
-        
+
         euler.y -= movementX * 0.002 * sensitivityFactor;
         euler.x -= movementY * 0.002 * sensitivityFactor;
-        
+
         // Clamp vertical rotation
         const maxVerticalRotation = Math.PI / 2 - 0.1;
         euler.x = Math.max(-maxVerticalRotation, Math.min(maxVerticalRotation, euler.x));
-        
+
         camera.quaternion.setFromEuler(euler);
       }
     };
-    
+
     document.addEventListener('mousemove', handleMouseMove, false);
-    
+
     return () => {
       document.removeEventListener('mousemove', handleMouseMove, false);
     };
@@ -392,7 +422,7 @@ export function Player() {
         }
         return;
       }
-      
+
       // Handle ESC to exit pointer lock (menu will open via pointerlockchange event)
       if (e.code === 'Escape') {
         if (!gameOver && !hasEscaped && !isScreamerActive) {
@@ -402,10 +432,10 @@ export function Player() {
         }
         return;
       }
-      
+
       // Disable all input if player has escaped or menu is open or screamer is active
       if (hasEscaped || inGameMenuOpen || isScreamerActive) return;
-      
+
       switch (e.code) {
         case 'KeyW':
           movement.current.forward = true;
@@ -429,11 +459,11 @@ export function Player() {
           break;
         case 'KeyE': {
           const currentHeldItem = useItems.getState().heldItem;
-          
+
           // Check if holding plank and near plank slot
           const nearPlankSlot = usePlank.getState().nearPlankSlot;
           const plankPlaced = usePlank.getState().plankPlaced;
-          
+
           if (nearPlankSlot && currentHeldItem === 'wood_plank_item' && !plankPlaced) {
             // Place plank
             placePlank();
@@ -441,11 +471,11 @@ export function Player() {
             useItems.getState().dropItem([0, -100, 0]); // Drop at impossible position (will not appear)
             break;
           }
-          
+
           // Check if holding handle and near shaft
           const nearShaft = useWell.getState().nearShaft;
           const handleSet = useWell.getState().handleSet;
-          
+
           if (nearShaft && currentHeldItem === 'handle' && !handleSet) {
             // Set handle on well
             setHandle();
@@ -453,30 +483,30 @@ export function Player() {
             useItems.getState().dropItem([0, -100, 0]); // Drop at impossible position (will not appear)
             break;
           }
-          
+
           // Check if near main door with master key and all conditions met
           const nearMainDoor = useEscapeDoor.getState().nearMainDoor;
           const isDoorUnlocked = useEscapeDoor.getState().isDoorUnlocked;
-          
+
           if (nearMainDoor && currentHeldItem === 'master_key' && isDoorUnlocked) {
             escape();
             break;
           }
-          
+
           // Check if holding padlock key and near lock
           const nearLock = useLock.getState().nearLock;
           const lockOpened = useEscapeDoor.getState().lockOpened;
-          
+
           if (nearLock && currentHeldItem === 'padlock_key' && !lockOpened) {
             // Open the lock
             openLock();
             break;
           }
-          
+
           // Check if holding cut pliers and near wire
           const nearWire = useWires.getState().nearWire;
           const wiresState = useWires.getState();
-          
+
           if (nearWire && currentHeldItem === 'cut_pliers') {
             // Check if wire is not already cut
             if (nearWire === 'door_wire' && !wiresState.doorWireCut) {
@@ -492,30 +522,30 @@ export function Player() {
               break;
             }
           }
-          
+
           // Check if holding hammer and near plank
           const nearPlank = usePlank.getState().nearPlank;
           const plankChipped = usePlank.getState().isChippedOff;
-          
+
           if (nearPlank && currentHeldItem === 'hammer' && !plankChipped) {
             // Chip off the plank
             chipOffPlank();
             break;
           }
-          
+
           // Check if holding card and near terminal
           const nearTerminal = useTerminal.getState().nearTerminal;
           const cardSwiped = useEscapeDoor.getState().cardSwiped;
-          
+
           if (nearTerminal && currentHeldItem === 'card' && !cardSwiped) {
             // Swipe card in terminal
             swipeCard();
             break;
           }
-          
+
           // Check if holding watermelon and near guillotine
           const nearGuillotine = useGuillotine.getState().nearGuillotine;
-          
+
           if (nearGuillotine && currentHeldItem === 'watermelon') {
             // Place watermelon in guillotine
             placeWatermelon();
@@ -523,24 +553,28 @@ export function Player() {
             useItems.getState().dropItem([0, 0, 0]); // Dummy position, won't be used
             break;
           }
-          
+
           // Check if near bed for hiding
           const nearBed = useBedHiding.getState().nearBed;
           const isCurrentlyHiding = useBedHiding.getState().isHiding;
-          
+
           if (nearBed && !isCurrentlyHiding && playerRef.current && currentBedObject.current) {
             // Hide under bed - get bed's center position
             const pos = playerRef.current.translation();
             const bedWorldPos = new THREE.Vector3();
             currentBedObject.current.getWorldPosition(bedWorldPos);
-            hideInBed(nearBed, [pos.x, pos.y, pos.z], [bedWorldPos.x, bedWorldPos.y, bedWorldPos.z]);
+            hideInBed(
+              nearBed,
+              [pos.x, pos.y, pos.z],
+              [bedWorldPos.x, bedWorldPos.y, bedWorldPos.z]
+            );
             break;
           } else if (isCurrentlyHiding) {
             // Stand up from bed
             standUp();
             break;
           }
-          
+
           // Interact with nearby door
           const nearbyDoorId = useDoors.getState().nearbyDoor;
           if (nearbyDoorId) {
@@ -587,7 +621,7 @@ export function Player() {
     const handleKeyUp = (e: KeyboardEvent) => {
       // Disable all input if player has escaped or menu is open or screamer is active
       if (hasEscaped || inGameMenuOpen || isScreamerActive) return;
-      
+
       switch (e.code) {
         case 'KeyW':
           movement.current.forward = false;
@@ -614,32 +648,49 @@ export function Player() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [toggleDoor, grabItem, dropItem, placeWatermelon, chipOffPlank, swipeCard, cutWire, openLock, escape, hasEscaped, setHandle, placePlank, inGameMenuOpen, setInGameMenuOpen, gameOver, isScreamerActive]);
-  
+  }, [
+    toggleDoor,
+    grabItem,
+    dropItem,
+    placeWatermelon,
+    chipOffPlank,
+    swipeCard,
+    cutWire,
+    openLock,
+    escape,
+    hasEscaped,
+    setHandle,
+    placePlank,
+    inGameMenuOpen,
+    setInGameMenuOpen,
+    gameOver,
+    isScreamerActive,
+  ]);
+
   // Handle continuous key press for well usage
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (hasEscaped || inGameMenuOpen || isScreamerActive) return;
-      
+
       if (e.code === 'KeyE') {
         const nearHandle = useWell.getState().nearHandle;
         const handleSet = useWell.getState().handleSet;
-        
+
         if (nearHandle && handleSet) {
           startUsingWell();
         }
       }
     };
-    
+
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.code === 'KeyE') {
         stopUsingWell();
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-    
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
@@ -655,7 +706,7 @@ export function Player() {
   // Raycasters (reused every frame)
   const ceilingRaycaster = useRef(new THREE.Raycaster());
   const interactionRaycaster = useRef(new THREE.Raycaster());
-  
+
   // Reusable Vector3 objects
   const upDirection = useRef(new THREE.Vector3(0, 1, 0));
   const rayOrigin = useRef(new THREE.Vector3());
@@ -666,10 +717,23 @@ export function Player() {
   const flashlightOffset = useRef(new THREE.Vector3());
   const lookDirection = useRef(new THREE.Vector3());
   const guillotinePosition = useRef(new THREE.Vector3(-10.7, -1.6, -28.6));
-  
+
   // Item names as Set for O(1) lookup instead of O(n) array.includes()
-  const itemNamesSet = useRef(new Set(['padlock_key', 'master_key', 'card', 'safe_key', 'handle', 'watermelon', 'cut_pliers', 'hammer', 'wood_plank_item', 'vase']));
-  
+  const itemNamesSet = useRef(
+    new Set([
+      'padlock_key',
+      'master_key',
+      'card',
+      'safe_key',
+      'handle',
+      'watermelon',
+      'cut_pliers',
+      'hammer',
+      'wood_plank_item',
+      'vase',
+    ])
+  );
+
   const neededClearance = PLAYER_HEIGHT - CROUCH_HEIGHT + 0.2;
 
   // ===== STATE GUARDING: Track last IDs to prevent unnecessary React updates =====
@@ -686,7 +750,7 @@ export function Player() {
   const lastNearPlankSlot = useRef<boolean>(false);
   const lastNearBed = useRef<string | null>(null);
   const currentBedObject = useRef<THREE.Object3D | null>(null);
-  
+
   // Expose movement ref for mobile controls
   const { setInteract, setGrab, setDrop, setCrouch } = useMobileControls();
 
@@ -694,7 +758,7 @@ export function Player() {
   useEffect(() => {
     interactionRaycaster.current.layers.set(1);
     ceilingRaycaster.current.layers.set(0); // Default layer for ceiling/walls
-    
+
     // Enable Layer 1 on camera so it can render interactive objects
     camera.layers.enable(1);
   }, [camera]);
@@ -702,47 +766,49 @@ export function Player() {
   // Update player movement and camera
   useFrame(() => {
     if (!playerRef.current) return;
-    
+
     // Handle screamer camera lock
     if (isScreamerActive && grannyPosition) {
       const player = playerRef.current;
       player.setLinvel({ x: 0, y: 0, z: 0 }, true);
-      
+
       if (!screamerCameraLocked.current) {
         screamerCameraLocked.current = true;
       }
-      
+
       // Calculate look-at point (top of Granny's mesh - head level)
       const grannyTopPoint = grannyPosition.clone();
       grannyTopPoint.y += 3; // Top of Granny's head
-      
+
       const targetQuaternion = new THREE.Quaternion();
       const matrix = new THREE.Matrix4().lookAt(camera.position, grannyTopPoint, camera.up);
       targetQuaternion.setFromRotationMatrix(matrix);
-      
+
       // Apply rotation
       camera.quaternion.copy(targetQuaternion);
-      
+
       // Update flashlight to point at Granny
       if (flashlightRef.current) {
         const flashlight = flashlightRef.current;
-        
+
         // Position flashlight at camera position
         flashlightOffset.current.set(0, -0.2, 0);
         flashlightOffset.current.applyQuaternion(camera.quaternion);
         flashlight.position.copy(camera.position).add(flashlightOffset.current);
-        
+
         // Point flashlight at Granny's head
         camera.getWorldDirection(lookDirection.current);
-        flashlight.target.position.copy(flashlight.position).add(lookDirection.current.multiplyScalar(5));
+        flashlight.target.position
+          .copy(flashlight.position)
+          .add(lookDirection.current.multiplyScalar(5));
         flashlight.target.updateMatrixWorld();
       }
-      
+
       return;
     } else if (screamerCameraLocked.current) {
       screamerCameraLocked.current = false;
     }
-    
+
     // Stop game if player has escaped, menu is open, game over, or showing day message
     if (hasEscaped || inGameMenuOpen || gameOver || showDayMessage) {
       // Freeze player movement
@@ -758,18 +824,21 @@ export function Player() {
     // Check if player fell through the attic (Y position below -10)
     if (playerPosition.y < -10 && !isDying) {
       setIsDying(true);
-      
+
       // Wait 1 second, then trigger next day and respawn
       setTimeout(() => {
         nextDay();
-        
+
         // Reset player position after short delay
         setTimeout(() => {
           if (playerRef.current && playerSpawnArray) {
-            playerRef.current.setTranslation({ x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] }, true);
+            playerRef.current.setTranslation(
+              { x: playerSpawnArray[0], y: playerSpawnArray[1], z: playerSpawnArray[2] },
+              true
+            );
             playerRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
             playerRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
-            
+
             // Reset camera rotation to initial position
             camera.rotation.set(0, -Math.PI / 2, 0);
           }
@@ -832,7 +901,10 @@ export function Player() {
     interactionRaycaster.current.set(camera.position, cameraDirection.current);
 
     // Raycast against interactive objects AND their children (recursive: true)
-    const intersects = interactionRaycaster.current.intersectObjects(interactiveObjects.current, true);
+    const intersects = interactionRaycaster.current.intersectObjects(
+      interactiveObjects.current,
+      true
+    );
     let foundDoor: string | null = null;
     let foundItem: string | null = null;
     let foundGuillotine = false;
@@ -902,8 +974,12 @@ export function Player() {
             if (obj.name === 'door_wire' && !wiresState.doorWireCut) {
               foundWire = 'door_wire';
               break;
-            } else if ((obj.name === 'shield_wire' || obj.name === 'shield_wire002' || 
-                       obj.name === 'shield_wire003') && !wiresState.shieldWireCut) {
+            } else if (
+              (obj.name === 'shield_wire' ||
+                obj.name === 'shield_wire002' ||
+                obj.name === 'shield_wire003') &&
+              !wiresState.shieldWireCut
+            ) {
               foundWire = obj.name;
               break;
             } else if (obj.name === 'attic_wire' && !wiresState.atticWireCut) {
@@ -919,7 +995,12 @@ export function Player() {
           // Check for well shaft - only if holding handle and not set yet
           if (heldItem === 'handle') {
             const handleSet = useWell.getState().handleSet;
-            if ((obj.name === 'shaft001' || obj.name === 'Cylinder024' || obj.name === 'Cylinder024_1') && !handleSet) {
+            if (
+              (obj.name === 'shaft001' ||
+                obj.name === 'Cylinder024' ||
+                obj.name === 'Cylinder024_1') &&
+              !handleSet
+            ) {
               foundWellShaft = true;
               break;
             }
@@ -934,7 +1015,10 @@ export function Player() {
           }
           // Check for beds - only if not already hiding
           const currentlyHiding = useBedHiding.getState().isHiding;
-          if (!currentlyHiding && (obj.name === 'bed001' || obj.name === 'bed002' || obj.name === 'bed003')) {
+          if (
+            !currentlyHiding &&
+            (obj.name === 'bed001' || obj.name === 'bed002' || obj.name === 'bed003')
+          ) {
             foundBed = obj.name;
             currentBedObject.current = obj;
             break;
@@ -943,14 +1027,29 @@ export function Player() {
           if (heldItem === 'watermelon' && obj.name === 'Cube091') {
             // Check if looking at the watermelon placement position
             const distanceToGuillotine = intersect.point.distanceTo(guillotinePosition.current);
-            if (distanceToGuillotine < 0.5) { // Within 0.5 units of the placement point
+            if (distanceToGuillotine < 0.5) {
+              // Within 0.5 units of the placement point
               foundGuillotine = true;
               break;
             }
           }
           obj = obj.parent;
         }
-        if (foundDoor || foundItem || foundGuillotine || foundPlank || foundTerminal || foundWire || foundLock || foundMainDoor || foundWellShaft || foundWellHandle || foundPlankSlot || foundBed) break;
+        if (
+          foundDoor ||
+          foundItem ||
+          foundGuillotine ||
+          foundPlank ||
+          foundTerminal ||
+          foundWire ||
+          foundLock ||
+          foundMainDoor ||
+          foundWellShaft ||
+          foundWellHandle ||
+          foundPlankSlot ||
+          foundBed
+        )
+          break;
       }
     }
 
@@ -959,61 +1058,61 @@ export function Player() {
       setNearbyDoor(foundDoor);
       lastNearbyDoor.current = foundDoor;
     }
-    
+
     if (foundItem !== lastNearbyItem.current) {
       setNearbyItem(foundItem);
       lastNearbyItem.current = foundItem;
     }
-    
+
     if (foundGuillotine !== lastNearGuillotine.current) {
       setNearGuillotine(foundGuillotine);
       lastNearGuillotine.current = foundGuillotine;
     }
-    
+
     if (foundPlank !== lastNearPlank.current) {
       setNearPlank(foundPlank);
       lastNearPlank.current = foundPlank;
     }
-    
+
     if (foundTerminal !== lastNearTerminal.current) {
       setNearTerminal(foundTerminal);
       lastNearTerminal.current = foundTerminal;
     }
-    
+
     if (foundWire !== lastNearWire.current) {
       setNearWire(foundWire);
       lastNearWire.current = foundWire;
     }
-    
+
     if (foundLock !== lastNearLock.current) {
       setNearLock(foundLock);
       lastNearLock.current = foundLock;
     }
-    
+
     // Update main door proximity
     if (foundMainDoor !== lastNearMainDoor.current) {
       setNearMainDoor(foundMainDoor);
       lastNearMainDoor.current = foundMainDoor;
     }
-    
+
     // Update well shaft proximity
     if (foundWellShaft !== lastNearShaft.current) {
       setNearShaft(foundWellShaft);
       lastNearShaft.current = foundWellShaft;
     }
-    
+
     // Update well handle proximity
     if (foundWellHandle !== lastNearHandle.current) {
       setNearHandle(foundWellHandle);
       lastNearHandle.current = foundWellHandle;
     }
-    
+
     // Update plank slot proximity
     if (foundPlankSlot !== lastNearPlankSlot.current) {
       setNearPlankSlot(foundPlankSlot);
       lastNearPlankSlot.current = foundPlankSlot;
     }
-    
+
     // Update bed proximity
     if (foundBed !== lastNearBed.current) {
       setNearBed(foundBed);
@@ -1065,37 +1164,35 @@ export function Player() {
       );
       // Stop movement when hiding
       player.setLinvel({ x: 0, y: 0, z: 0 }, true);
-      
+
       // Update camera position
-      camera.position.set(
-        bedPosition[0],
-        3.1,
-        bedPosition[2]
-      );
-      
+      camera.position.set(bedPosition[0], 3.1, bedPosition[2]);
+
       // Lock vertical rotation (no up/down look), allow 360° horizontal
       camera.rotation.order = 'YXZ'; // Set rotation order for proper 360° horizontal rotation
       camera.rotation.x = 0;
       camera.rotation.z = 0;
-      
+
       // Update flashlight to follow camera direction when hiding
       if (flashlightRef.current) {
         const flashlight = flashlightRef.current;
-        
+
         // Position flashlight higher when hiding to avoid lighting just the floor
         flashlightOffset.current.set(0, 0.1, 0); // Raised from -0.2 to 0.1
         flashlightOffset.current.applyQuaternion(camera.quaternion);
         flashlight.position.copy(camera.position).add(flashlightOffset.current);
-        
+
         // Point flashlight in the direction camera is looking
         camera.getWorldDirection(lookDirection.current);
-        flashlight.target.position.copy(flashlight.position).add(lookDirection.current.multiplyScalar(5));
+        flashlight.target.position
+          .copy(flashlight.position)
+          .add(lookDirection.current.multiplyScalar(5));
         flashlight.target.updateMatrixWorld();
       }
-      
+
       return; // Skip movement logic when hiding
     }
-    
+
     // Restore position when standing up from bed
     if (shouldRestorePosition && originalPosition) {
       player.setTranslation(
@@ -1140,7 +1237,7 @@ export function Player() {
 
     const moveLength = moveDirection.current.length();
     const isMoving = moveLength > 0;
-    
+
     if (isMoving) {
       moveDirection.current.normalize();
       moveDirection.current.multiplyScalar(currentSpeed);
@@ -1171,11 +1268,7 @@ export function Player() {
     }
 
     // Update camera position based on crouch state
-    camera.position.set(
-      playerPosition.x,
-      playerPosition.y + currentHeight,
-      playerPosition.z
-    );
+    camera.position.set(playerPosition.x, playerPosition.y + currentHeight, playerPosition.z);
 
     // ===== OPTIMIZED FLASHLIGHT UPDATE (reusing vectors) =====
     if (flashlightRef.current) {
@@ -1190,7 +1283,9 @@ export function Player() {
       camera.getWorldDirection(lookDirection.current);
 
       // Set target position ahead of the flashlight in look direction
-      flashlight.target.position.copy(flashlight.position).add(lookDirection.current.multiplyScalar(5));
+      flashlight.target.position
+        .copy(flashlight.position)
+        .add(lookDirection.current.multiplyScalar(5));
       flashlight.target.updateMatrixWorld();
     }
   });
@@ -1201,45 +1296,45 @@ export function Player() {
   // Mobile control callbacks
   const handleInteract = useCallback(() => {
     if (hasEscaped || inGameMenuOpen) return;
-    
+
     const currentHeldItem = useItems.getState().heldItem;
     const nearPlankSlot = usePlank.getState().nearPlankSlot;
     const plankPlaced = usePlank.getState().plankPlaced;
-    
+
     if (nearPlankSlot && currentHeldItem === 'wood_plank_item' && !plankPlaced) {
       placePlank();
       useItems.getState().dropItem([0, -100, 0]);
       return;
     }
-    
+
     const nearShaft = useWell.getState().nearShaft;
     const handleSet = useWell.getState().handleSet;
-    
+
     if (nearShaft && currentHeldItem === 'handle' && !handleSet) {
       setHandle();
       useItems.getState().dropItem([0, -100, 0]);
       return;
     }
-    
+
     const nearMainDoor = useEscapeDoor.getState().nearMainDoor;
     const isDoorUnlocked = useEscapeDoor.getState().isDoorUnlocked;
-    
+
     if (nearMainDoor && currentHeldItem === 'master_key' && isDoorUnlocked) {
       escape();
       return;
     }
-    
+
     const nearLock = useLock.getState().nearLock;
     const lockOpened = useEscapeDoor.getState().lockOpened;
-    
+
     if (nearLock && currentHeldItem === 'padlock_key' && !lockOpened) {
       openLock();
       return;
     }
-    
+
     const nearWire = useWires.getState().nearWire;
     const wiresState = useWires.getState();
-    
+
     if (nearWire && currentHeldItem === 'cut_pliers') {
       if (nearWire === 'door_wire' && !wiresState.doorWireCut) {
         useWires.getState().cutWire('door_wire');
@@ -1254,34 +1349,34 @@ export function Player() {
         return;
       }
     }
-    
+
     const nearPlank = usePlank.getState().nearPlank;
     const plankChipped = usePlank.getState().isChippedOff;
-    
+
     if (nearPlank && currentHeldItem === 'hammer' && !plankChipped) {
       chipOffPlank();
       return;
     }
-    
+
     const nearTerminal = useTerminal.getState().nearTerminal;
     const cardSwiped = useEscapeDoor.getState().cardSwiped;
-    
+
     if (nearTerminal && currentHeldItem === 'card' && !cardSwiped) {
       swipeCard();
       return;
     }
-    
+
     const nearGuillotine = useGuillotine.getState().nearGuillotine;
-    
+
     if (nearGuillotine && currentHeldItem === 'watermelon') {
       placeWatermelon();
       useItems.getState().dropItem([0, 0, 0]);
       return;
     }
-    
+
     const nearBed = useBedHiding.getState().nearBed;
     const isCurrentlyHiding = useBedHiding.getState().isHiding;
-    
+
     if (nearBed && !isCurrentlyHiding && playerRef.current && currentBedObject.current) {
       const pos = playerRef.current.translation();
       const bedWorldPos = new THREE.Vector3();
@@ -1292,7 +1387,7 @@ export function Player() {
       standUp();
       return;
     }
-    
+
     const nearbyDoorId = useDoors.getState().nearbyDoor;
     if (nearbyDoorId) {
       if (nearbyDoorId === 'safe_door001') {
@@ -1306,11 +1401,26 @@ export function Player() {
         toggleDoor(nearbyDoorId);
       }
     }
-  }, [hasEscaped, inGameMenuOpen, toggleDoor, placePlank, setHandle, escape, openLock, cutWire, chipOffPlank, swipeCard, placeWatermelon, hideInBed, standUp, openSafe]);
+  }, [
+    hasEscaped,
+    inGameMenuOpen,
+    toggleDoor,
+    placePlank,
+    setHandle,
+    escape,
+    openLock,
+    cutWire,
+    chipOffPlank,
+    swipeCard,
+    placeWatermelon,
+    hideInBed,
+    standUp,
+    openSafe,
+  ]);
 
   const handleGrab = useCallback(() => {
     if (hasEscaped || inGameMenuOpen) return;
-    
+
     const nearbyItemName = useItems.getState().nearbyItem;
     const currentHeldItem = useItems.getState().heldItem;
     if (nearbyItemName) {
@@ -1324,7 +1434,7 @@ export function Player() {
 
   const handleDrop = useCallback(() => {
     if (hasEscaped || inGameMenuOpen) return;
-    
+
     if (useItems.getState().heldItem && playerRef.current) {
       const pos = playerRef.current.translation();
       dropItem([pos.x, pos.y - 0.5, pos.z]);
@@ -1333,7 +1443,7 @@ export function Player() {
 
   const handleCrouch = useCallback(() => {
     if (hasEscaped || inGameMenuOpen) return;
-    
+
     movement.current.crouch = !movement.current.crouch;
     setIsCrouching(!isCrouching);
   }, [hasEscaped, inGameMenuOpen, isCrouching]);
@@ -1344,13 +1454,24 @@ export function Player() {
     setGrab(handleGrab);
     setDrop(handleDrop);
     setCrouch(handleCrouch);
-  }, [setInteract, setGrab, setDrop, setCrouch, handleInteract, handleGrab, handleDrop, handleCrouch]);
+  }, [
+    setInteract,
+    setGrab,
+    setDrop,
+    setCrouch,
+    handleInteract,
+    handleGrab,
+    handleDrop,
+    handleCrouch,
+  ]);
 
   return (
     <>
-      <PointerLockControls 
-        ref={controlsRef} 
-        enabled={!hasEscaped && !inGameMenuOpen && !gameOver && !isScreamerActive && canEnablePointerLock}
+      <PointerLockControls
+        ref={controlsRef}
+        enabled={
+          !hasEscaped && !inGameMenuOpen && !gameOver && !isScreamerActive && canEnablePointerLock
+        }
         pointerSpeed={0}
       />
 

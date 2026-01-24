@@ -69,8 +69,8 @@ const playItemDropSound = (itemName: string, position?: THREE.Vector3) => {
     const audio = new Audio(soundPath);
     const { volume } = useGameSettings.getState();
     audio.volume = (volume / 100) * 0.5;
-    audio.play().catch(err => console.warn('Item drop sound play failed:', err));
-    
+    audio.play().catch((err) => console.warn('Item drop sound play failed:', err));
+
     // Notify Granny about the sound
     if (position) {
       notifySound(position);
@@ -105,14 +105,14 @@ function ContainerItem({
       // Always update kinematic position to follow container
       const [x, y, z] = position;
       rbRef.current.setNextKinematicTranslation({ x, y, z });
-      
+
       // Also reset any accumulated velocities to prevent drift
       rbRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
       rbRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
-      
+
       lastPosition.current = [x, y, z];
     }
-    
+
     // Skip first frame to avoid playing sound on initial spawn
     if (isFirstFrame.current) {
       isFirstFrame.current = false;
@@ -127,7 +127,7 @@ function ContainerItem({
     }
     lastBodyType.current = bodyType;
   }, [bodyType]);
-  
+
   // Reset sound flag when position changes (item was picked up and dropped again)
   React.useEffect(() => {
     hasPlayedDropSound.current = false;
@@ -135,7 +135,12 @@ function ContainerItem({
   }, [position[0], position[1], position[2]]);
 
   const handleCollision = () => {
-    if (!hasPlayedDropSound.current && !isFirstFrame.current && !startupGracePeriod.current && bodyType === 'dynamic') {
+    if (
+      !hasPlayedDropSound.current &&
+      !isFirstFrame.current &&
+      !startupGracePeriod.current &&
+      bodyType === 'dynamic'
+    ) {
       const pos = rbRef.current?.translation();
       if (pos) {
         playItemDropSound(itemName, new THREE.Vector3(pos.x, pos.y, pos.z));
@@ -147,10 +152,10 @@ function ContainerItem({
   };
 
   return (
-    <RigidBody 
-      ref={rbRef} 
-      type={bodyType} 
-      position={position} 
+    <RigidBody
+      ref={rbRef}
+      type={bodyType}
+      position={position}
       onCollisionEnter={handleCollision}
       {...rigidBodyProps}
     >
@@ -162,22 +167,31 @@ function ContainerItem({
 export function Items(props: React.JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/models/items.glb') as unknown as GLTFResult;
   const houseModel = useHouseGLTF('/models/hauntedHouse.glb') as any;
-  const { isItemHeld, getItemPosition, itemSlots, setSpawnPosition, itemInsideWatermelon, droppedPositions } = useItems();
+  const {
+    isItemHeld,
+    getItemPosition,
+    itemSlots,
+    setSpawnPosition,
+    itemInsideWatermelon,
+    droppedPositions,
+  } = useItems();
   const { isChippedOff } = usePlank();
   const { bucketHeight } = useWell();
   const { itemRevealed } = useGuillotine();
   const [initialized, setInitialized] = React.useState(false);
-  const [itemContainers, setItemContainers] = React.useState<Record<string, { type: 'bucket', id: string, basePos: [number, number, number] }>>({});
-  
+  const [itemContainers, setItemContainers] = React.useState<
+    Record<string, { type: 'bucket'; id: string; basePos: [number, number, number] }>
+  >({});
+
   // Startup grace period to prevent sounds during initial spawn
   const startupGracePeriod = React.useRef(true);
-  
+
   // Track which items have played their drop sound
   const vaseDropSoundPlayed = React.useRef(false);
   const vaseIsFirstFrame = React.useRef(true);
   const plankDropSoundPlayed = React.useRef(false);
   const plankIsFirstFrame = React.useRef(true);
-  
+
   // Disable startup grace period after 2 seconds
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -189,8 +203,11 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
   // Initialize spawn positions from GLTF empties and detect containers
   React.useEffect(() => {
     if (!initialized && houseModel?.nodes) {
-      const containers: Record<string, { type: 'bucket', id: string, basePos: [number, number, number] }> = {};
-      
+      const containers: Record<
+        string,
+        { type: 'bucket'; id: string; basePos: [number, number, number] }
+      > = {};
+
       Object.entries(itemSlots).forEach(([itemName, slotName]) => {
         const empty = houseModel.nodes[slotName];
         if (empty?.position) {
@@ -200,7 +217,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
             empty.position.z,
           ];
           setSpawnPosition(itemName, pos);
-          
+
           // Detect if item is in the bucket/well
           if (slotName === 'slot_well') {
             containers[itemName] = { type: 'bucket', id: 'bucket001', basePos: pos };
@@ -209,47 +226,53 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           console.warn(`Empty ${slotName} not found for item ${itemName}`);
         }
       });
-      
+
       setItemContainers(containers);
       setInitialized(true);
     }
   }, [houseModel, itemSlots, setSpawnPosition, initialized]);
 
   // Helper to get item position with container offset
-  const getContainerAdjustedPosition = React.useCallback((itemName: string, basePos: [number, number, number]): [number, number, number] => {
-    const pos = getItemPosition(itemName, basePos);
-    const container = itemContainers[itemName];
-    
-    // If item has been dropped, don't apply container offset
-    if (droppedPositions[itemName]) return pos;
-    
-    if (!container) return pos;
-    
-    if (container.type === 'bucket') {
-      // Bucket moves up along Y axis - add extra offset to keep item inside bucket
-      // The bucket bottom is at -6.604, so item should be slightly above bucket floor
-      return [pos[0], pos[1] + bucketHeight, pos[2]];
-    }
-    
-    return pos;
-  }, [getItemPosition, itemContainers, bucketHeight, droppedPositions]);
-  
+  const getContainerAdjustedPosition = React.useCallback(
+    (itemName: string, basePos: [number, number, number]): [number, number, number] => {
+      const pos = getItemPosition(itemName, basePos);
+      const container = itemContainers[itemName];
+
+      // If item has been dropped, don't apply container offset
+      if (droppedPositions[itemName]) return pos;
+
+      if (!container) return pos;
+
+      if (container.type === 'bucket') {
+        // Bucket moves up along Y axis - add extra offset to keep item inside bucket
+        // The bucket bottom is at -6.604, so item should be slightly above bucket floor
+        return [pos[0], pos[1] + bucketHeight, pos[2]];
+      }
+
+      return pos;
+    },
+    [getItemPosition, itemContainers, bucketHeight, droppedPositions]
+  );
+
   // Helper to determine if item should be dynamic or kinematic
-  const getItemBodyType = React.useCallback((itemName: string): 'dynamic' | 'kinematicPosition' => {
-    const container = itemContainers[itemName];
-    
-    // If item has been dropped, always use dynamic
-    if (droppedPositions[itemName]) return 'dynamic';
-    
-    if (!container) return 'dynamic';
-    
-    if (container.type === 'bucket') {
-      // Item stays kinematic in bucket (never becomes dynamic while in bucket)
-      return 'kinematicPosition';
-    }
-    
-    return 'dynamic';
-  }, [itemContainers, droppedPositions]);
+  const getItemBodyType = React.useCallback(
+    (itemName: string): 'dynamic' | 'kinematicPosition' => {
+      const container = itemContainers[itemName];
+
+      // If item has been dropped, always use dynamic
+      if (droppedPositions[itemName]) return 'dynamic';
+
+      if (!container) return 'dynamic';
+
+      if (container.type === 'bucket') {
+        // Item stays kinematic in bucket (never becomes dynamic while in bucket)
+        return 'kinematicPosition';
+      }
+
+      return 'dynamic';
+    },
+    [itemContainers, droppedPositions]
+  );
 
   // Track first frame for items to avoid playing sound on spawn
   useFrame(() => {
@@ -260,21 +283,21 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       plankIsFirstFrame.current = false;
     }
   });
-  
+
   // Reset vase sound flag when position changes
   const vasePosition = getItemPosition('vase', [1.808, 4.774, -21.72]);
   React.useEffect(() => {
     vaseDropSoundPlayed.current = false;
     vaseIsFirstFrame.current = true;
   }, [vasePosition[0], vasePosition[1], vasePosition[2]]);
-  
+
   // Reset plank sound flag when position changes
   const plankPosition = getItemPosition('wood_plank_item', [8.036, -0.873, -3.118]);
   React.useEffect(() => {
     plankDropSoundPlayed.current = false;
     plankIsFirstFrame.current = true;
   }, [plankPosition[0], plankPosition[1], plankPosition[2]]);
-  
+
   // Collision handler for vase
   const vaseRbRef = React.useRef<RapierRigidBody>(null);
   const handleVaseCollision = () => {
@@ -288,11 +311,15 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       vaseDropSoundPlayed.current = true;
     }
   };
-  
+
   // Collision handler for plank
   const plankRbRef = React.useRef<RapierRigidBody>(null);
   const handlePlankCollision = () => {
-    if (!plankDropSoundPlayed.current && !plankIsFirstFrame.current && !startupGracePeriod.current) {
+    if (
+      !plankDropSoundPlayed.current &&
+      !plankIsFirstFrame.current &&
+      !startupGracePeriod.current
+    ) {
       const pos = plankRbRef.current?.translation();
       if (pos) {
         playItemDropSound('wood_plank_item', new THREE.Vector3(pos.x, pos.y, pos.z));
@@ -302,7 +329,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
       plankDropSoundPlayed.current = true;
     }
   };
-  
+
   // Collision groups:
   // - Group 0 (0x0001): Static geometry (floors, walls, furniture)
   // - Group 1 (0x0002): Player
@@ -537,7 +564,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           </group>
         </ContainerItem>
       )}
-      
+
       {/* Wood Plank - pickable after chipped off */}
       {isChippedOff && !isItemHeld('wood_plank_item') && (
         <RigidBody
@@ -565,7 +592,7 @@ export function Items(props: React.JSX.IntrinsicElements['group']) {
           />
         </RigidBody>
       )}
-      
+
       {/* Vase - pickable decorative item */}
       {!isItemHeld('vase') && (
         <RigidBody

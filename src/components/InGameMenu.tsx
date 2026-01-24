@@ -1,7 +1,8 @@
 import { useGameSettings } from '../store/useGameSettings';
 
 export function InGameMenu() {
-  const { volume, sensitivity, setVolume, setSensitivity, setInGameMenuOpen, setScreen } = useGameSettings();
+  const { volume, sensitivity, setVolume, setSensitivity, setInGameMenuOpen, setScreen } =
+    useGameSettings();
 
   const handleBackToGame = () => {
     setInGameMenuOpen(false);

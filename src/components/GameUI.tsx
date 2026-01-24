@@ -104,7 +104,9 @@ export function GameUI() {
             cursor: 'default',
           }}
         >
-          <div style={{ fontSize: '64px', marginBottom: '40px', fontWeight: 'bold', color: '#ff4444' }}>
+          <div
+            style={{ fontSize: '64px', marginBottom: '40px', fontWeight: 'bold', color: '#ff4444' }}
+          >
             GAME OVER
           </div>
           <div style={{ fontSize: '28px', marginBottom: '50px', color: '#fff', opacity: 0.9 }}>
@@ -208,7 +210,13 @@ export function GameUI() {
           maxWidth: window.innerWidth <= 768 ? '160px' : 'auto',
         }}
       >
-        <div style={{ marginBottom: '10px', fontSize: window.innerWidth <= 768 ? '13px' : '16px', fontWeight: 'bold' }}>
+        <div
+          style={{
+            marginBottom: '10px',
+            fontSize: window.innerWidth <= 768 ? '13px' : '16px',
+            fontWeight: 'bold',
+          }}
+        >
           🏚️ Haunted House
         </div>
         {window.innerWidth > 1024 ? (
@@ -229,15 +237,14 @@ export function GameUI() {
             </div>
           </>
         ) : (
-          <div style={{ fontSize: '10px', opacity: 0.9 }}>
-            Touch controls enabled
-          </div>
+          <div style={{ fontSize: '10px', opacity: 0.9 }}>Touch controls enabled</div>
         )}
       </div>
 
       {/* Main door escape prompt */}
-      {nearMainDoor && heldItem === 'master_key' && (
-        isDoorUnlocked ? (
+      {nearMainDoor &&
+        heldItem === 'master_key' &&
+        (isDoorUnlocked ? (
           <div
             style={{
               position: 'fixed',
@@ -281,8 +288,7 @@ export function GameUI() {
           >
             🔒 Door is still locked. Complete all tasks first!
           </div>
-        )
-      )}
+        ))}
 
       {/* Well shaft interaction prompt */}
       {nearShaft && heldItem === 'handle' && !handleSet && !nearMainDoor && (
@@ -435,33 +441,34 @@ export function GameUI() {
       )}
 
       {/* Wire cutting prompt */}
-      {nearWire && heldItem === 'cut_pliers' && !nearMainDoor && (
-        (nearWire === 'door_wire' && !doorWireCut) || 
-        (nearWire.startsWith('shield_wire') && !shieldWireCut) ||
-        (nearWire === 'attic_wire' && !atticWireCut)
-      ) && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: '#00ffff',
-            fontFamily: 'monospace',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            padding: '15px 25px',
-            borderRadius: '8px',
-            pointerEvents: 'none',
-            zIndex: 1000,
-            textAlign: 'center',
-            border: '2px solid rgba(0, 255, 255, 0.5)',
-          }}
-        >
-          ✂️ Press [E] to cut wire
-        </div>
-      )}
+      {nearWire &&
+        heldItem === 'cut_pliers' &&
+        !nearMainDoor &&
+        ((nearWire === 'door_wire' && !doorWireCut) ||
+          (nearWire.startsWith('shield_wire') && !shieldWireCut) ||
+          (nearWire === 'attic_wire' && !atticWireCut)) && (
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: '#00ffff',
+              fontFamily: 'monospace',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: '15px 25px',
+              borderRadius: '8px',
+              pointerEvents: 'none',
+              zIndex: 1000,
+              textAlign: 'center',
+              border: '2px solid rgba(0, 255, 255, 0.5)',
+            }}
+          >
+            ✂️ Press [E] to cut wire
+          </div>
+        )}
 
       {/* Plank chipping prompt */}
       {nearPlank && heldItem === 'hammer' && !isChippedOff && !nearMainDoor && (
@@ -539,8 +546,21 @@ export function GameUI() {
       )}
 
       {/* Door interaction prompt */}
-      {nearbyDoor && doorState && !doorState.isRotating && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && !nearBed && !isHiding && (
-        nearbyDoor === 'safe_door001' ? (
+      {nearbyDoor &&
+        doorState &&
+        !doorState.isRotating &&
+        !nearGuillotine &&
+        !nearPlank &&
+        !nearPlankSlot &&
+        !nearTerminal &&
+        !nearWire &&
+        !nearLock &&
+        !nearMainDoor &&
+        !nearShaft &&
+        !nearHandle &&
+        !nearBed &&
+        !isHiding &&
+        (nearbyDoor === 'safe_door001' ? (
           !safeOpened && heldItem !== 'safe_key' ? (
             <div
               style={{
@@ -608,33 +628,46 @@ export function GameUI() {
           >
             Press [E] to {doorState.isOpen ? 'Close' : 'Open'} Door
           </div>
-        )
-      )}
+        ))}
 
       {/* Item interaction prompt */}
-      {nearbyItem && !nearbyDoor && !nearGuillotine && !nearPlank && !nearPlankSlot && !nearTerminal && !nearWire && !nearLock && !nearMainDoor && !nearShaft && !nearHandle && !nearBed && !isHiding && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: heldItem ? '#ffaa00' : 'white',
-            fontFamily: 'monospace',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            padding: '15px 25px',
-            borderRadius: '8px',
-            pointerEvents: 'none',
-            zIndex: 1000,
-            textAlign: 'center',
-            border: heldItem ? '2px solid rgba(255, 170, 0, 0.5)' : '2px solid rgba(255, 255, 255, 0.3)',
-          }}
-        >
-          Press [F] to {heldItem ? 'swap with' : 'grab'} {formatItemName(nearbyItem)}
-        </div>
-      )}
+      {nearbyItem &&
+        !nearbyDoor &&
+        !nearGuillotine &&
+        !nearPlank &&
+        !nearPlankSlot &&
+        !nearTerminal &&
+        !nearWire &&
+        !nearLock &&
+        !nearMainDoor &&
+        !nearShaft &&
+        !nearHandle &&
+        !nearBed &&
+        !isHiding && (
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: heldItem ? '#ffaa00' : 'white',
+              fontFamily: 'monospace',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: '15px 25px',
+              borderRadius: '8px',
+              pointerEvents: 'none',
+              zIndex: 1000,
+              textAlign: 'center',
+              border: heldItem
+                ? '2px solid rgba(255, 170, 0, 0.5)'
+                : '2px solid rgba(255, 255, 255, 0.3)',
+            }}
+          >
+            Press [F] to {heldItem ? 'swap with' : 'grab'} {formatItemName(nearbyItem)}
+          </div>
+        )}
 
       {/* Held item display */}
       {heldItem && (

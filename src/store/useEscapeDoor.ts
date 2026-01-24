@@ -29,10 +29,7 @@ const initialState: EscapeDoorStatus = {
 };
 
 const checkUnlocked = (state: EscapeDoorStatus): boolean => {
-  return state.wiresCut === 2 && 
-         state.boardRemoved && 
-         state.lockOpened && 
-         state.cardSwiped;
+  return state.wiresCut === 2 && state.boardRemoved && state.lockOpened && state.cardSwiped;
 };
 
 export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
@@ -73,8 +70,8 @@ export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
     const audio = new Audio('/sounds/lock.mp3');
     const { volume } = useGameSettings.getState();
     audio.volume = (volume / 100) * 0.5;
-    audio.play().catch(err => console.warn('Lock sound play failed:', err));
-    
+    audio.play().catch((err) => console.warn('Lock sound play failed:', err));
+
     set((state) => {
       const newState = {
         lockOpened: true,
@@ -88,8 +85,8 @@ export const useEscapeDoor = create<EscapeDoorState>((set, get) => ({
     const audio = new Audio('/sounds/terminal.mp3');
     const { volume } = useGameSettings.getState();
     audio.volume = (volume / 100) * 0.5;
-    audio.play().catch(err => console.warn('Terminal sound play failed:', err));
-    
+    audio.play().catch((err) => console.warn('Terminal sound play failed:', err));
+
     set((state) => {
       const newState = {
         cardSwiped: true,
