@@ -1394,7 +1394,7 @@ export function Player() {
       const pos = playerRef.current.translation();
       const bedWorldPos = new THREE.Vector3();
       currentBedObject.current.getWorldPosition(bedWorldPos);
-      
+
       hideInBed(nearBed, [pos.x, pos.y, pos.z], [bedWorldPos.x, bedWorldPos.y, bedWorldPos.z]);
       return;
     } else if (isCurrentlyHiding) {
@@ -1403,7 +1403,7 @@ export function Player() {
       if (!grannyHasSeenPlayer) {
         useGrannyState.getState().setHasSeenPlayer(false);
       }
-      
+
       standUp();
       return;
     }

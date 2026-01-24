@@ -85,8 +85,6 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
 
   const isHiding = isHidingInBed || isHidingInCloset;
 
-  console.log(isHiding);
-
   // Set investigation speed based on difficulty
   useEffect(() => {
     setInvestigationSpeed(difficultySettings[difficulty].investigationSpeed);
@@ -107,10 +105,8 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
         );
 
         const currentPos = grannyRef.current.translation();
-        console.log('Granny current position:', currentPos);
 
         const randomPoint = navigationSystem.getRandomPointOnNavMesh();
-        console.log('Random point on navmesh:', randomPoint);
 
         if (randomPoint) {
           setTargetPoint(randomPoint);
@@ -118,7 +114,6 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
             new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z),
             randomPoint
           );
-          console.log('Path found:', path);
           if (path.length > 0) {
             setCurrentPath(path);
           }
@@ -180,15 +175,15 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
           // Add eye-level offset to Granny's position for better vision detection
           const grannyEyePosition = currentPosition.clone();
           grannyEyePosition.y += 1.5; // Granny's eye level
-          
+
           const playerEyePosition = playerPosition.clone();
           playerEyePosition.y += 0.5; // Player's torso level
-          
+
           const directionToPlayerEyes = new THREE.Vector3()
             .subVectors(playerEyePosition, grannyEyePosition)
             .normalize();
           const distanceToPlayerEyes = grannyEyePosition.distanceTo(playerEyePosition);
-          
+
           const raycaster = new THREE.Raycaster(
             grannyEyePosition,
             directionToPlayerEyes,
@@ -270,7 +265,6 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
             // Check if wall is between Granny and player
             if (isWall && intersect.distance < distanceToPlayerEyes - 0.5) {
               blocked = true;
-              console.log('Vision blocked by:', obj.name, 'at distance:', intersect.distance);
               break;
             }
           }
@@ -281,7 +275,7 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
             if (!hasSeenPlayer) {
               setHasSeenPlayer(true);
             }
-            
+
             // Use player floor position (subtract player height to get floor level)
             const playerFloorPosition = playerPosition.clone();
             playerFloorPosition.y -= 1.7; // Player height
@@ -505,12 +499,13 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
       </RigidBody>
 
       {/* Debug: Visualize path */}
-      {import.meta.env.DEV && currentPath.map((point, index) => (
-        <mesh key={index} position={[point.x, point.y, point.z]}>
-          <sphereGeometry args={[0.1, 8, 8]} />
-          <meshBasicMaterial color={index === currentTargetIndex ? 'red' : 'yellow'} />
-        </mesh>
-      ))}
+      {import.meta.env.DEV &&
+        currentPath.map((point, index) => (
+          <mesh key={index} position={[point.x, point.y, point.z]}>
+            <sphereGeometry args={[0.1, 8, 8]} />
+            <meshBasicMaterial color={index === currentTargetIndex ? 'red' : 'yellow'} />
+          </mesh>
+        ))}
 
       {/* Debug: Visualize target point */}
       {import.meta.env.DEV && targetPoint && (

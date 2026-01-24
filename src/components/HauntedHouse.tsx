@@ -993,72 +993,90 @@ export function HauntedHouse(props: ThreeElements['group']) {
 
       <RigidBody type="fixed" colliders="trimesh">
         <group {...props} dispose={null}>
-        <RigidBody 
-          position={[-5.114, 3.939, -12.65]} 
-          type="fixed" 
-          sensor 
-          colliders={false}
-          onIntersectionEnter={(e) => {
-            if (e.other.rigidBodyObject?.name === 'player') {
-              closetTriggerStates.current.closet_trigger = true;
-              setHiding(true);
-            }
-          }}
-          onIntersectionExit={(e) => {
-            if (e.other.rigidBodyObject?.name === 'player') {
-              closetTriggerStates.current.closet_trigger = false;
-              const anyActive = Object.values(closetTriggerStates.current).some(v => v);
-              if (!anyActive) setHiding(false);
-            }
-          }}
-        >
-          <CuboidCollider args={[0.221, 0.221, 0.221]} sensor />
-          <mesh name="closet_trigger" geometry={nodes.closet_trigger.geometry} material={nodes.closet_trigger.material} scale={0.221} visible={false} />
-        </RigidBody>
-        <RigidBody 
-          position={[9.963, -0.912, -10.595]} 
-          type="fixed" 
-          sensor 
-          colliders={false}
-          onIntersectionEnter={(e) => {
-            if (e.other.rigidBodyObject?.name === 'player') {
-              closetTriggerStates.current.closet_trigger001 = true;
-              setHiding(true);
-            }
-          }}
-          onIntersectionExit={(e) => {
-            if (e.other.rigidBodyObject?.name === 'player') {
-              closetTriggerStates.current.closet_trigger001 = false;
-              const anyActive = Object.values(closetTriggerStates.current).some(v => v);
-              if (!anyActive) setHiding(false);
-            }
-          }}
-        >
-          <CuboidCollider args={[0.221, 0.221, 0.221]} sensor />
-          <mesh name="closet_trigger001" geometry={nodes.closet_trigger001.geometry} material={nodes.closet_trigger001.material} scale={0.221} visible={false} />
-        </RigidBody>
-        <RigidBody 
-          position={[5.805, 3.939, -23.789]} 
-          type="fixed" 
-          sensor 
-          colliders={false}
-          onIntersectionEnter={(e) => {
-            if (e.other.rigidBodyObject?.name === 'player') {
-              closetTriggerStates.current.closet_trigger002 = true;
-              setHiding(true);
-            }
-          }}
-          onIntersectionExit={(e) => {
-            if (e.other.rigidBodyObject?.name === 'player') {
-              closetTriggerStates.current.closet_trigger002 = false;
-              const anyActive = Object.values(closetTriggerStates.current).some(v => v);
-              if (!anyActive) setHiding(false);
-            }
-          }}
-        >
-          <CuboidCollider args={[0.221, 0.221, 0.221]} sensor />
-          <mesh name="closet_trigger002" geometry={nodes.closet_trigger002.geometry} material={nodes.closet_trigger002.material} scale={0.221} visible={false} />
-        </RigidBody>
+          <RigidBody
+            position={[-5.114, 3.939, -12.65]}
+            type="fixed"
+            sensor
+            colliders={false}
+            onIntersectionEnter={(e) => {
+              if (e.other.rigidBodyObject?.name === 'player') {
+                closetTriggerStates.current.closet_trigger = true;
+                setHiding(true);
+              }
+            }}
+            onIntersectionExit={(e) => {
+              if (e.other.rigidBodyObject?.name === 'player') {
+                closetTriggerStates.current.closet_trigger = false;
+                const anyActive = Object.values(closetTriggerStates.current).some((v) => v);
+                if (!anyActive) setHiding(false);
+              }
+            }}
+          >
+            <CuboidCollider args={[0.221, 0.221, 0.221]} sensor />
+            <mesh
+              name="closet_trigger"
+              geometry={nodes.closet_trigger.geometry}
+              material={nodes.closet_trigger.material}
+              scale={0.221}
+              visible={false}
+            />
+          </RigidBody>
+          <RigidBody
+            position={[9.963, -0.912, -10.595]}
+            type="fixed"
+            sensor
+            colliders={false}
+            onIntersectionEnter={(e) => {
+              if (e.other.rigidBodyObject?.name === 'player') {
+                closetTriggerStates.current.closet_trigger001 = true;
+                setHiding(true);
+              }
+            }}
+            onIntersectionExit={(e) => {
+              if (e.other.rigidBodyObject?.name === 'player') {
+                closetTriggerStates.current.closet_trigger001 = false;
+                const anyActive = Object.values(closetTriggerStates.current).some((v) => v);
+                if (!anyActive) setHiding(false);
+              }
+            }}
+          >
+            <CuboidCollider args={[0.221, 0.221, 0.221]} sensor />
+            <mesh
+              name="closet_trigger001"
+              geometry={nodes.closet_trigger001.geometry}
+              material={nodes.closet_trigger001.material}
+              scale={0.221}
+              visible={false}
+            />
+          </RigidBody>
+          <RigidBody
+            position={[5.805, 3.939, -23.789]}
+            type="fixed"
+            sensor
+            colliders={false}
+            onIntersectionEnter={(e) => {
+              if (e.other.rigidBodyObject?.name === 'player') {
+                closetTriggerStates.current.closet_trigger002 = true;
+                setHiding(true);
+              }
+            }}
+            onIntersectionExit={(e) => {
+              if (e.other.rigidBodyObject?.name === 'player') {
+                closetTriggerStates.current.closet_trigger002 = false;
+                const anyActive = Object.values(closetTriggerStates.current).some((v) => v);
+                if (!anyActive) setHiding(false);
+              }
+            }}
+          >
+            <CuboidCollider args={[0.221, 0.221, 0.221]} sensor />
+            <mesh
+              name="closet_trigger002"
+              geometry={nodes.closet_trigger002.geometry}
+              material={nodes.closet_trigger002.material}
+              scale={0.221}
+              visible={false}
+            />
+          </RigidBody>
           <mesh
             name="Plane005"
             geometry={nodes.Plane005.geometry}
@@ -2803,9 +2821,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         sensor
         colliders={false}
         onIntersectionEnter={(e) => {
-          console.log('Attic trigger hit by:', e.other.rigidBodyObject?.name);
           if (e.other.rigidBodyObject?.name === 'player' && e.other.rigidBody) {
-            console.log('Player fell through attic trigger!');
             handleAtticTrigger(e.other.rigidBody);
           }
         }}

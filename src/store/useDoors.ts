@@ -109,8 +109,6 @@ export const useDoors = create<DoorsState>((set, get) => ({
 
   openDoor: (doorId: string) => {
     set((state) => {
-      console.log(doorId);
-
       const newDoors = new Map(state.doors);
       const door = newDoors.get(doorId);
       if (door && !door.isOpen && !door.isRotating) {
