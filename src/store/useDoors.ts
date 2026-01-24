@@ -17,6 +17,7 @@ interface DoorsState {
   setDoorRotating: (doorId: string, isRotating: boolean) => void;
   updateDoorRotation: (doorId: string, rotation: number) => void;
   toggleDoor: (doorId: string) => void;
+  openDoor: (doorId: string) => void;
   setNearbyDoor: (doorId: string | null) => void;
   getDoorState: (doorId: string) => DoorState | undefined;
   closeAllDoors: () => void;
@@ -98,6 +99,28 @@ export const useDoors = create<DoorsState>((set, get) => ({
         newDoors.set(doorId, {
           ...door,
           isOpen: newIsOpen,
+          targetRotation,
+          isRotating: true,
+        });
+      }
+      return { doors: newDoors };
+    });
+  },
+
+  openDoor: (doorId: string) => {
+    set((state) => {
+      console.log(doorId);
+
+      const newDoors = new Map(state.doors);
+      const door = newDoors.get(doorId);
+      if (door && !door.isOpen && !door.isRotating) {
+        const targetRotation = (Math.PI / 2) * door.openDirection;
+        
+        playDoorSound(doorId, true);
+        
+        newDoors.set(doorId, {
+          ...door,
+          isOpen: true,
           targetRotation,
           isRotating: true,
         });

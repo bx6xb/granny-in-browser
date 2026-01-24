@@ -12,9 +12,10 @@ import { useDayState } from '../store/useDayState';
 import { usePlayerState } from '../store/usePlayerState';
 import { useGameSettings } from '../store/useGameSettings';
 import { useScreamer } from '../store/useScreamer';
+import { useDoors } from '../store/useDoors';
 import { useRef, useState, useEffect } from 'react';
 import type { RapierRigidBody } from '@react-three/rapier';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { navigationSystem } from '../utils/navigation';
 
 type GLTFResult = GLTF & {
@@ -56,11 +57,15 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
   const { playerSpawnArray, triggerCameraReset } = usePlayerState();
   const { inGameMenuOpen, volume } = useGameSettings();
   const { isScreamerActive, startScreamer, endScreamer } = useScreamer();
+  const { openDoor, doors } = useDoors();
+  const { scene } = useThree();
   const grannyRef = useRef<RapierRigidBody>(null);
   const groupRef = useRef<THREE.Group>(null);
   const [isCatching, setIsCatching] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const screamerTriggered = useRef(false);
+  const doorObjectsCache = useRef<Map<string, THREE.Object3D>>(new Map());
+  const cacheInitialized = useRef(false);
 
   // Initialize patrol on mount
   useEffect(() => {
@@ -105,6 +110,37 @@ export function Granny(props: JSX.IntrinsicElements['group']) {
     const currentPos = grannyRef.current.translation();
     const currentPosition = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
     const currentSpeed = mode === 'investigating' ? investigationSpeed : patrolSpeed;
+
+    // Build door objects cache once
+    if (!cacheInitialized.current) {
+      scene.traverse((object) => {
+        if (object.userData.isDoor && object.userData.doorId && !doorObjectsCache.current.has(object.userData.doorId)) {
+          doorObjectsCache.current.set(object.userData.doorId, object);
+        }
+      });
+      if (doorObjectsCache.current.size > 0) {
+        cacheInitialized.current = true;
+      }
+    }
+
+    // Check for nearby closed doors and open them
+    doorObjectsCache.current.forEach((doorObject, doorId) => {
+      const doorState = doors.get(doorId);
+
+      if (doorState && !doorState.isOpen && !doorState.isRotating) {
+        const doorPos = new THREE.Vector3();
+        doorObject.getWorldPosition(doorPos);
+        const distanceToDoor = currentPosition.distanceTo(doorPos);
+
+        if (doorId === 'room_door001') {
+          console.log(distanceToDoor);
+        }
+
+        if (distanceToDoor < 3) {
+          openDoor(doorId);
+        }
+      }
+    });
 
     // Waiting mode - stand still for waitTime seconds
     if (mode === 'waiting') {
