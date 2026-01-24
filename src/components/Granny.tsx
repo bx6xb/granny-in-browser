@@ -505,7 +505,7 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
       </RigidBody>
 
       {/* Debug: Visualize path */}
-      {currentPath.map((point, index) => (
+      {import.meta.env.DEV && currentPath.map((point, index) => (
         <mesh key={index} position={[point.x, point.y, point.z]}>
           <sphereGeometry args={[0.1, 8, 8]} />
           <meshBasicMaterial color={index === currentTargetIndex ? 'red' : 'yellow'} />
@@ -513,7 +513,7 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
       ))}
 
       {/* Debug: Visualize target point */}
-      {targetPoint && (
+      {import.meta.env.DEV && targetPoint && (
         <mesh position={[targetPoint.x, targetPoint.y, targetPoint.z]}>
           <sphereGeometry args={[0.2, 8, 8]} />
           <meshBasicMaterial color="green" />
