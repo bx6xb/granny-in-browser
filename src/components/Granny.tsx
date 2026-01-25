@@ -164,8 +164,6 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
     // If player is hiding and wasn't seen before hiding, skip vision check
     const shouldCheckVision = !(isHiding && !hasSeenPlayer);
 
-    console.log(hasSeenPlayer);
-
     const playerRigidBody = playerRigidBodyRef.current;
     if (playerRigidBody && shouldCheckVision) {
       const playerPosition = new THREE.Vector3(
