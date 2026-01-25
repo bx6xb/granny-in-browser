@@ -41,7 +41,7 @@ const SEEDS: Record<number, Seed> = {
 };
 
 // Slot ranges
-const SLOT_LG_RANGE = { start: 10, end: 97 }; // slot_lg.010 to slot_lg.097
+const SLOT_LG_RANGE = { start: 10, end: 95 }; // slot_lg.010 to slot_lg.097
 const SLOT_SM_RANGE = { start: 1, end: 3 }; // slot_sm.001 to slot_sm.003
 
 // Priority slots that must have at least one item
