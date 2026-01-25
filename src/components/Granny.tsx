@@ -15,6 +15,7 @@ import { useScreamer } from '../store/useScreamer';
 import { useDoors } from '../store/useDoors';
 import { useBedHiding } from '../store/useBedHiding';
 import { useClosetHiding } from '../store/useClosetHiding';
+import { useEscapeDoor } from '../store/useEscapeDoor';
 import { useRef, useState, useEffect } from 'react';
 import type { RapierRigidBody } from '@react-three/rapier';
 import { useFrame, useThree } from '@react-three/fiber';
@@ -58,6 +59,7 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
     waitTimer,
     hasSeenPlayer,
     shouldReinitialize,
+    isStopped,
     setCurrentPath,
     setCurrentTargetIndex,
     setTargetPoint,
@@ -68,13 +70,14 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
     setHasSeenPlayer,
     resetReinitializeFlag,
   } = useGrannyState();
-  const { nextDay } = useDayState();
+  const { nextDay, gameOver } = useDayState();
   const { playerSpawnArray, triggerCameraReset } = usePlayerState();
   const { inGameMenuOpen, volume, difficulty } = useGameSettings();
   const { isScreamerActive, startScreamer, endScreamer } = useScreamer();
   const { openDoor, doors } = useDoors();
   const { isHiding: isHidingInBed } = useBedHiding();
   const { isHiding: isHidingInCloset } = useClosetHiding();
+  const { hasEscaped } = useEscapeDoor();
   const { scene } = useThree();
   const grannyRef = useRef<RapierRigidBody>(null);
   const groupRef = useRef<THREE.Group>(null);
@@ -141,7 +144,7 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
 
   // Patrol and investigation logic
   useFrame((_, delta) => {
-    if (!grannyRef.current || !isInitialized || isCatching || inGameMenuOpen || isScreamerActive)
+    if (!grannyRef.current || !isInitialized || isCatching || inGameMenuOpen || isScreamerActive || isStopped || gameOver || hasEscaped)
       return;
 
     const currentPos = grannyRef.current.translation();

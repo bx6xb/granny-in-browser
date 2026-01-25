@@ -16,6 +16,7 @@ interface GrannyState {
   waitTimer: number;
   hasSeenPlayer: boolean;
   shouldReinitialize: boolean;
+  isStopped: boolean;
   setGrannySpawn: (pos: THREE.Vector3) => void;
   setCurrentPath: (path: THREE.Vector3[]) => void;
   setCurrentTargetIndex: (index: number) => void;
@@ -28,6 +29,8 @@ interface GrannyState {
   setHasSeenPlayer: (seen: boolean) => void;
   triggerReinitialize: () => void;
   resetReinitializeFlag: () => void;
+  stopGranny: () => void;
+  resumeGranny: () => void;
 }
 
 export const useGrannyState = create<GrannyState>((set) => ({
@@ -43,6 +46,7 @@ export const useGrannyState = create<GrannyState>((set) => ({
   waitTimer: 0,
   hasSeenPlayer: false,
   shouldReinitialize: false,
+  isStopped: false,
   setGrannySpawn: (pos) => set({ grannySpawn: pos, grannySpawnArray: [pos.x, pos.y, pos.z] }),
   setCurrentPath: (path) => set({ currentPath: path, currentTargetIndex: 0 }),
   setCurrentTargetIndex: (index) => set({ currentTargetIndex: index }),
@@ -61,4 +65,6 @@ export const useGrannyState = create<GrannyState>((set) => ({
   setHasSeenPlayer: (seen) => set({ hasSeenPlayer: seen }),
   triggerReinitialize: () => set({ shouldReinitialize: true }),
   resetReinitializeFlag: () => set({ shouldReinitialize: false }),
+  stopGranny: () => set({ isStopped: true }),
+  resumeGranny: () => set({ isStopped: false }),
 }));
