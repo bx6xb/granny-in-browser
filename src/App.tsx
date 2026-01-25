@@ -66,7 +66,8 @@ export default function App() {
               </Suspense>
             </Physics>
 
-            {import.meta.env.DEV && <Stats className="fps-stats" />}
+            {/* {import.meta.env.DEV && <Stats className="fps-stats" />} */}
+            <Stats className="fps-stats" />
           </Canvas>
           <MobileControls disabled={inGameMenuOpen || gameOver || hasEscaped} />
         </>
