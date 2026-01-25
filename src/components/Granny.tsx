@@ -57,6 +57,7 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
     waitTime,
     waitTimer,
     hasSeenPlayer,
+    shouldReinitialize,
     setCurrentPath,
     setCurrentTargetIndex,
     setTargetPoint,
@@ -65,6 +66,7 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
     resetPath,
     setInvestigationSpeed,
     setHasSeenPlayer,
+    resetReinitializeFlag,
   } = useGrannyState();
   const { nextDay } = useDayState();
   const { playerSpawnArray, triggerCameraReset } = usePlayerState();
@@ -89,6 +91,17 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
   useEffect(() => {
     setInvestigationSpeed(difficultySettings[difficulty].investigationSpeed);
   }, [difficulty, setInvestigationSpeed]);
+
+  // Handle external reinitialize trigger
+  useEffect(() => {
+    if (shouldReinitialize) {
+      setIsCatching(false);
+      screamerTriggered.current = false;
+      resetPath();
+      setIsInitialized(false);
+      resetReinitializeFlag(); // Reset the flag
+    }
+  }, [shouldReinitialize, resetPath, resetReinitializeFlag]);
 
   // Initialize patrol on mount
   useEffect(() => {
@@ -462,6 +475,17 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
           playerRigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
           triggerCameraReset();
         }
+        
+        // Reset granny position
+        if (grannyRef.current && grannySpawnArray) {
+          grannyRef.current.setTranslation(
+            { x: grannySpawnArray[0], y: grannySpawnArray[1], z: grannySpawnArray[2] },
+            true
+          );
+          grannyRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+          grannyRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
+        }
+        
         setIsCatching(false);
         screamerTriggered.current = false;
         resetPath();

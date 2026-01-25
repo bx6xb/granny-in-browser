@@ -27,6 +27,7 @@ import { usePlayerState } from '../store/usePlayerState';
 import { navigationSystem } from '../utils/navigation';
 import { notifySound } from '../utils/soundEventBus';
 import { useClosetHiding } from '../store/useClosetHiding';
+import { useGrannyState } from '../store/useGrannyState';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -458,6 +459,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
   const { volume, difficulty } = useGameSettings();
   const { nextDay } = useDayState();
   const { playerSpawnArray, triggerCameraReset } = usePlayerState();
+  const { triggerReinitialize } = useGrannyState();
 
   const creakingFloorsEnabled = difficulty !== 'easy';
 
@@ -557,6 +559,10 @@ export function HauntedHouse(props: ThreeElements['group']) {
           playerBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
           triggerCameraReset();
         }
+        
+        // Trigger granny respawn
+        triggerReinitialize();
+        
         atticTriggerActivated.current = false;
       }, 100);
     }, 1000);
