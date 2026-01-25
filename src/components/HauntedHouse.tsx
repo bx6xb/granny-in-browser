@@ -2256,7 +2256,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
               />
             </group>
           )}
-          <mesh 
+          <mesh
             name="closet002"
             geometry={nodes.closet002.geometry}
             material={materials.wood2}
