@@ -161,6 +161,8 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
     // If player is hiding and wasn't seen before hiding, skip vision check
     const shouldCheckVision = !(isHiding && !hasSeenPlayer);
 
+    console.log(hasSeenPlayer);
+
     const playerRigidBody = playerRigidBodyRef.current;
     if (playerRigidBody && shouldCheckVision) {
       const playerPosition = new THREE.Vector3(
@@ -311,7 +313,22 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
                 setCurrentTargetIndex(0);
               }
             }
+          } else {
+            // Player is blocked from vision - reset hasSeenPlayer to false
+            if (hasSeenPlayer) {
+              setHasSeenPlayer(false);
+            }
           }
+        } else {
+          // Player is outside cone of vision - reset hasSeenPlayer to false
+          if (hasSeenPlayer) {
+            setHasSeenPlayer(false);
+          }
+        }
+      } else {
+        // Player is too far - reset hasSeenPlayer to false
+        if (hasSeenPlayer) {
+          setHasSeenPlayer(false);
         }
       }
     }
