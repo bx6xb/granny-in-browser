@@ -916,7 +916,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         doorId="closet_door004"
         geometry={nodes.Cube290.geometry}
         material={materials.wood2}
-        position={[-4.271, -0.092, -5.81]}
+        position={[-4.271, -0.092, -5.659]}
         rotation={[-Math.PI, 0, 0]}
         openDirection={-1}
       >
@@ -926,7 +926,7 @@ export function HauntedHouse(props: ThreeElements['group']) {
         doorId="closet_door005"
         geometry={nodes.Cube291.geometry}
         material={materials.wood2}
-        position={[-4.271, -0.092, -2.883]}
+        position={[-4.271, -0.092, -3.131]}
         openDirection={-1}
       >
         <mesh geometry={nodes.Cube291_1.geometry} material={materials.metal} />
@@ -2256,12 +2256,12 @@ export function HauntedHouse(props: ThreeElements['group']) {
               />
             </group>
           )}
-          <mesh
+          <mesh 
             name="closet002"
             geometry={nodes.closet002.geometry}
             material={materials.wood2}
-            position={[-4.792, -0.035, -4.345]}
-            scale={[1, 0.037, 1]}
+            position={[-4.792, -0.035, -4.394]}
+            scale={[1, 0.037, 0.863]}
           />
           <mesh
             name="table003"
