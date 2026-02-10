@@ -40,9 +40,9 @@ type GLTFResult = GLTF & {
 
 const difficultySettings: Record<Difficulty, { investigationSpeed: number }> = {
   practice: { investigationSpeed: 0 },
-  easy: { investigationSpeed: 7 },
-  normal: { investigationSpeed: 11 },
-  hard: { investigationSpeed: 15 },
+  easy: { investigationSpeed: 5 },
+  normal: { investigationSpeed: 9 },
+  hard: { investigationSpeed: 13 },
 };
 
 export function Granny(props: React.JSX.IntrinsicElements['group']) {
@@ -144,7 +144,16 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
 
   // Patrol and investigation logic
   useFrame((_, delta) => {
-    if (!grannyRef.current || !isInitialized || isCatching || inGameMenuOpen || isScreamerActive || isStopped || gameOver || hasEscaped)
+    if (
+      !grannyRef.current ||
+      !isInitialized ||
+      isCatching ||
+      inGameMenuOpen ||
+      isScreamerActive ||
+      isStopped ||
+      gameOver ||
+      hasEscaped
+    )
       return;
 
     const currentPos = grannyRef.current.translation();
@@ -493,7 +502,7 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
           playerRigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
           triggerCameraReset();
         }
-        
+
         // Reset granny position
         if (grannyRef.current && grannySpawnArray) {
           grannyRef.current.setTranslation(
@@ -503,7 +512,7 @@ export function Granny(props: React.JSX.IntrinsicElements['group']) {
           grannyRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
           grannyRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
         }
-        
+
         setIsCatching(false);
         screamerTriggered.current = false;
         resetPath();
