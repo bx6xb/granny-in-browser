@@ -40,9 +40,9 @@ type GLTFResult = GLTF & {
 
 const difficultySettings: Record<Difficulty, { investigationSpeed: number }> = {
   practice: { investigationSpeed: 0 },
-  easy: { investigationSpeed: 5 },
-  normal: { investigationSpeed: 8 },
-  hard: { investigationSpeed: 12 },
+  easy: { investigationSpeed: 4 },
+  normal: { investigationSpeed: 7 },
+  hard: { investigationSpeed: 10 },
 };
 
 export function Granny(props: React.JSX.IntrinsicElements['group']) {
