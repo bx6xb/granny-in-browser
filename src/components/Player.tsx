@@ -21,8 +21,6 @@ import { useBedHiding } from '../store/useBedHiding';
 import { useScreamer } from '../store/useScreamer';
 import { useGrannyState } from '../store/useGrannyState';
 import type { SpotLight as ThreeSpotLight } from 'three';
-import { useMobileControls } from '../store/useMobileControls';
-import { mobileMovement } from './MobileControls';
 
 const PLAYER_HEIGHT = 1.7;
 const CROUCH_HEIGHT = 0.9; // Adjust this value to fit through holes
@@ -764,9 +762,6 @@ export function Player() {
   const lastNearBed = useRef<string | null>(null);
   const currentBedObject = useRef<THREE.Object3D | null>(null);
 
-  // Expose movement ref for mobile controls
-  const { setInteract, setGrab, setDrop, setCrouch } = useMobileControls();
-
   // Configure raycaster to only check layer 1 (interactive objects)
   useEffect(() => {
     interactionRaycaster.current.layers.set(1);
@@ -1229,11 +1224,11 @@ export function Player() {
     // Reset moveDirection
     moveDirection.current.set(0, 0, 0);
 
-    // Combine keyboard and mobile movement
-    const isForward = movement.current.forward || mobileMovement.forward;
-    const isBackward = movement.current.backward || mobileMovement.backward;
-    const isLeft = movement.current.left || mobileMovement.left;
-    const isRight = movement.current.right || mobileMovement.right;
+    // Combine keyboard movement
+    const isForward = movement.current.forward;
+    const isBackward = movement.current.backward;
+    const isLeft = movement.current.left;
+    const isRight = movement.current.right;
 
     if (isForward) {
       moveDirection.current.add(direction.current);
@@ -1306,185 +1301,6 @@ export function Player() {
   // Get spawn position
   const spawnPosition: [number, number, number] = playerSpawnArray || [0, 2, 0];
 
-  // Mobile control callbacks
-  const handleInteract = useCallback(() => {
-    if (hasEscaped || inGameMenuOpen) return;
-
-    const currentHeldItem = useItems.getState().heldItem;
-    const nearPlankSlot = usePlank.getState().nearPlankSlot;
-    const plankPlaced = usePlank.getState().plankPlaced;
-
-    if (nearPlankSlot && currentHeldItem === 'wood_plank_item' && !plankPlaced) {
-      placePlank();
-      useItems.getState().dropItem([0, -100, 0]);
-      return;
-    }
-
-    const nearShaft = useWell.getState().nearShaft;
-    const handleSet = useWell.getState().handleSet;
-
-    if (nearShaft && currentHeldItem === 'handle' && !handleSet) {
-      setHandle();
-      useItems.getState().dropItem([0, -100, 0]);
-      return;
-    }
-
-    const nearMainDoor = useEscapeDoor.getState().nearMainDoor;
-    const isDoorUnlocked = useEscapeDoor.getState().isDoorUnlocked;
-
-    if (nearMainDoor && currentHeldItem === 'master_key' && isDoorUnlocked) {
-      escape();
-      return;
-    }
-
-    const nearLock = useLock.getState().nearLock;
-    const lockOpened = useEscapeDoor.getState().lockOpened;
-
-    if (nearLock && currentHeldItem === 'padlock_key' && !lockOpened) {
-      openLock();
-      return;
-    }
-
-    const nearWire = useWires.getState().nearWire;
-    const wiresState = useWires.getState();
-
-    if (nearWire && currentHeldItem === 'cut_pliers') {
-      if (nearWire === 'door_wire' && !wiresState.doorWireCut) {
-        useWires.getState().cutWire('door_wire');
-        cutWire();
-        return;
-      } else if (nearWire.startsWith('shield_wire') && !wiresState.shieldWireCut) {
-        useWires.getState().cutWire(nearWire);
-        cutWire();
-        return;
-      } else if (nearWire === 'attic_wire' && !wiresState.atticWireCut) {
-        useWires.getState().cutWire('attic_wire');
-        return;
-      }
-    }
-
-    const nearPlank = usePlank.getState().nearPlank;
-    const plankChipped = usePlank.getState().isChippedOff;
-
-    if (nearPlank && currentHeldItem === 'hammer' && !plankChipped) {
-      chipOffPlank();
-      return;
-    }
-
-    const nearTerminal = useTerminal.getState().nearTerminal;
-    const cardSwiped = useEscapeDoor.getState().cardSwiped;
-
-    if (nearTerminal && currentHeldItem === 'card' && !cardSwiped) {
-      swipeCard();
-      return;
-    }
-
-    const nearGuillotine = useGuillotine.getState().nearGuillotine;
-
-    if (nearGuillotine && currentHeldItem === 'watermelon') {
-      placeWatermelon();
-      useItems.getState().dropItem([0, 0, 0]);
-      return;
-    }
-
-    const nearBed = useBedHiding.getState().nearBed;
-    const isCurrentlyHiding = useBedHiding.getState().isHiding;
-
-    if (nearBed && !isCurrentlyHiding && playerRef.current && currentBedObject.current) {
-      const pos = playerRef.current.translation();
-      const bedWorldPos = new THREE.Vector3();
-      currentBedObject.current.getWorldPosition(bedWorldPos);
-
-      hideInBed(nearBed, [pos.x, pos.y, pos.z], [bedWorldPos.x, bedWorldPos.y, bedWorldPos.z]);
-      return;
-    } else if (isCurrentlyHiding) {
-      // When standing up, reset hasSeenPlayer if Granny hadn't seen player while hiding
-      const grannyHasSeenPlayer = useGrannyState.getState().hasSeenPlayer;
-      if (!grannyHasSeenPlayer) {
-        useGrannyState.getState().setHasSeenPlayer(false);
-      }
-
-      standUp();
-      return;
-    }
-
-    const nearbyDoorId = useDoors.getState().nearbyDoor;
-    if (nearbyDoorId) {
-      if (nearbyDoorId === 'safe_door001') {
-        const currentHeldItem = useItems.getState().heldItem;
-        const safeOpened = useSafe.getState().safeOpened;
-        if (currentHeldItem === 'safe_key' && !safeOpened) {
-          toggleDoor(nearbyDoorId);
-          openSafe();
-        }
-      } else {
-        toggleDoor(nearbyDoorId);
-      }
-    }
-  }, [
-    hasEscaped,
-    inGameMenuOpen,
-    toggleDoor,
-    placePlank,
-    setHandle,
-    escape,
-    openLock,
-    cutWire,
-    chipOffPlank,
-    swipeCard,
-    placeWatermelon,
-    hideInBed,
-    standUp,
-    openSafe,
-  ]);
-
-  const handleGrab = useCallback(() => {
-    if (hasEscaped || inGameMenuOpen) return;
-
-    const nearbyItemName = useItems.getState().nearbyItem;
-    const currentHeldItem = useItems.getState().heldItem;
-    if (nearbyItemName) {
-      if (currentHeldItem && playerRef.current) {
-        const pos = playerRef.current.translation();
-        dropItem([pos.x, pos.y - 0.5, pos.z]);
-      }
-      grabItem(nearbyItemName);
-    }
-  }, [hasEscaped, inGameMenuOpen, grabItem, dropItem]);
-
-  const handleDrop = useCallback(() => {
-    if (hasEscaped || inGameMenuOpen) return;
-
-    if (useItems.getState().heldItem && playerRef.current) {
-      const pos = playerRef.current.translation();
-      dropItem([pos.x, pos.y - 0.5, pos.z]);
-    }
-  }, [hasEscaped, inGameMenuOpen, dropItem]);
-
-  const handleCrouch = useCallback(() => {
-    if (hasEscaped || inGameMenuOpen) return;
-
-    movement.current.crouch = !movement.current.crouch;
-    setIsCrouching(!isCrouching);
-  }, [hasEscaped, inGameMenuOpen, isCrouching]);
-
-  // Register mobile control handlers
-  useEffect(() => {
-    setInteract(handleInteract);
-    setGrab(handleGrab);
-    setDrop(handleDrop);
-    setCrouch(handleCrouch);
-  }, [
-    setInteract,
-    setGrab,
-    setDrop,
-    setCrouch,
-    handleInteract,
-    handleGrab,
-    handleDrop,
-    handleCrouch,
-  ]);
-
   return (
     <>
       <PointerLockControls
@@ -1495,7 +1311,6 @@ export function Player() {
         pointerSpeed={0}
       />
 
-      {/* Player flashlight - optimized spotlight that follows camera direction */}
       <spotLight
         ref={flashlightRef}
         intensity={50}
@@ -1503,7 +1318,7 @@ export function Player() {
         penumbra={0.5}
         distance={20}
         decay={2}
-        castShadow={false} // Disabled for performance
+        castShadow={false}
         color="#fff5e6"
       />
 
@@ -1515,14 +1330,13 @@ export function Player() {
         lockRotations
         colliders={false}
         mass={80}
-        linearDamping={5} // Moderate damping for quick stop without killing speed
-        collisionGroups={(0x0001 << 16) | 0x0002} // Player in group 1, only collides with group 0 (static)
+        linearDamping={5}
+        collisionGroups={(0x0001 << 16) | 0x0002}
       >
-        {/* Capsule collider with dynamic height based on crouch state */}
         <CapsuleCollider
           args={[(isCrouching ? CROUCH_HEIGHT : PLAYER_HEIGHT) / 2, 0.3]}
-          friction={1.5} // Good grip without too much resistance
-          restitution={0} // No bounciness
+          friction={1.5}
+          restitution={0}
         />
       </RigidBody>
     </>

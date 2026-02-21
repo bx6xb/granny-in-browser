@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { Stats } from '@react-three/drei';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Physics } from '@react-three/rapier';
 import { HauntedHouse } from './components/HauntedHouse';
 import { Granny } from './components/Granny';
@@ -9,7 +9,7 @@ import { GameUI } from './components/GameUI';
 import { InGameMenu } from './components/InGameMenu';
 import { MainMenu } from './components/MainMenu';
 import { SettingsMenu } from './components/SettingsMenu';
-import { MobileControls } from './components/MobileControls';
+import { DeviceWarning } from './components/DeviceWarning';
 import { useGameSettings } from './store/useGameSettings';
 import { useDayState } from './store/useDayState';
 import { useEscapeDoor } from './store/useEscapeDoor';
@@ -18,6 +18,26 @@ export default function App() {
   const { screen, inGameMenuOpen, difficulty } = useGameSettings();
   const { gameOver } = useDayState();
   const { hasEscaped } = useEscapeDoor();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkDevice = () => {
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmallScreen = window.innerWidth <= 1024;
+      const mobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+      setIsMobile((isTouchDevice && isSmallScreen) || mobileUserAgent);
+    };
+
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
+
+  if (isMobile) {
+    return <DeviceWarning />;
+  }
 
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#000000' }}>
@@ -68,7 +88,6 @@ export default function App() {
 
             {import.meta.env.DEV && <Stats className="fps-stats" />}
           </Canvas>
-          <MobileControls disabled={inGameMenuOpen || gameOver || hasEscaped} />
         </>
       )}
     </div>
