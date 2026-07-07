@@ -4,7 +4,7 @@
 
 ![Gameplay screenshot](./docs/main.gif)
 
-### 📺 Watch how I built this
+### 📺 [Watch how I built this](https://youtu.be/AQbuqPIbsSE)
 
 [![Watch the video](https://img.youtube.com/vi/AQbuqPIbsSE/maxresdefault.jpg)](https://youtu.be/AQbuqPIbsSE)
 
