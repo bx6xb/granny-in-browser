@@ -2,9 +2,11 @@
 
 🎮 **[Play it here](https://granny-in-browser.vercel.app)**
 
-[![Watch the video](https://img.youtube.com/vi/AQbuqPIbsSE/maxresdefault.jpg)](https://youtu.be/AQbuqPIbsSE)
-
 ![Gameplay screenshot](./docs/main.gif)
+
+### 📺 Watch how I built this
+
+[![Watch the video](https://img.youtube.com/vi/AQbuqPIbsSE/maxresdefault.jpg)](https://youtu.be/AQbuqPIbsSE)
 
 ## About
 
